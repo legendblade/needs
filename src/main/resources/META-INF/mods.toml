@@ -1,0 +1,31 @@
+modLoader="javafml"
+loaderVersion="[28,)" (26 is current forge version)
+# issueTrackerURL="http://my.issue.tracker/"
+
+# A list of mods - how many allowed here is determined by the individual mod loader
+[[mods]]
+    modId="needswantsdesires"
+    version="${file.jarVersion}"
+    displayName="Needs, Wants, Desires"
+    # updateJSONURL="http://myurl.me/"
+    # displayURL="http://example.com/"
+    # logoFile="examplemod.png"
+    credits="The Nutrition mod for the idea"
+    authors="Taryn Winterblade and associated cats"
+    description='''
+        This is a description.
+    '''
+
+[[dependencies.needswantsdesires]]
+    modId="forge"
+    mandatory=true
+    versionRange="[28,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.needswantsdesires]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.14.4]"
+    ordering="NONE"
+    side="BOTH"
