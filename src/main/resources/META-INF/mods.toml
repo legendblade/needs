@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[28,)" (26 is current forge version)
+loaderVersion="[28,)"
 # issueTrackerURL="http://my.issue.tracker/"
 
 # A list of mods - how many allowed here is determined by the individual mod loader
