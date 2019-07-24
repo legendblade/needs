@@ -1,7 +1,6 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
 import com.google.gson.annotations.Expose;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
