@@ -5,14 +5,10 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.ManipulatorRegistry;
+import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 
 public class PerHourManipulator extends BaseManipulator {
-    static {
-        ManipulatorRegistry.RegisterManipulator("perHour", PerHourManipulator.class);
-    }
-
     @Expose
     private int amount;
 
@@ -53,6 +49,6 @@ public class PerHourManipulator extends BaseManipulator {
             return;
         }
 
-        evt.world.getPlayers().forEach((p) -> parent.AdjustScore(p, adjust, this));
+        evt.world.getPlayers().forEach((p) -> parent.adjustValue(p, adjust, this));
     }
 }

@@ -2,15 +2,16 @@ package org.winterblade.minecraft.mods.needs.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.io.FilenameUtils;
-import org.winterblade.minecraft.mods.needs.Need;
+import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.ManipulatorRegistry;
+import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
+import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.manipulators.ItemUsedManipulator;
 import org.winterblade.minecraft.mods.needs.manipulators.PerHourManipulator;
+import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -27,6 +28,11 @@ public class NeedInitializer {
 
     private NeedInitializer() {
         builder.excludeFieldsWithoutExposeAnnotation();
+
+        NeedRegistry.INSTANCE.register("custom", CustomNeed.class);
+
+        ManipulatorRegistry.INSTANCE.register("itemUsed", ItemUsedManipulator.class);
+        ManipulatorRegistry.INSTANCE.register("perHour", PerHourManipulator.class);
     }
 
     public void setup(@SuppressWarnings("unused") final FMLCommonSetupEvent event) {
@@ -49,9 +55,11 @@ public class NeedInitializer {
                 try {
                     Need need = GetGson().fromJson(new FileReader(file.toString()), Need.class);
 
-                    if (need.name == null || need.name.isEmpty()) need.name = FilenameUtils.getBaseName(file.toString());
+                    if (need instanceof CustomNeed && (need.getName()== null || need.getName().isEmpty())) {
+                        ((CustomNeed)need).setName(FilenameUtils.getBaseName(file.toString()));
+                    }
 
-                    need.OnCreated();
+                    need.finalizeDeserialization();
                     need.GetManipulators().forEach((m) -> m.OnCreated(need));
                 } catch (Exception e) {
                     NeedsMod.LOGGER.warn("Error reading needs file '" + file.toString() + "': " + e.toString());
@@ -64,6 +72,7 @@ public class NeedInitializer {
 
     private Gson GetGson() {
         if (gson == null) gson = builder.create();
+
         return gson;
     }
 }

@@ -11,7 +11,7 @@ import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.ManipulatorRegistry;
+import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 import org.winterblade.minecraft.mods.needs.util.items.ItemIngredient;
@@ -22,10 +22,6 @@ import java.util.Map;
 
 @JsonAdapter(ItemUsedManipulator.Deserializer.class)
 public class ItemUsedManipulator extends BaseManipulator {
-    {
-        ManipulatorRegistry.RegisterManipulator("itemUsed", ItemUsedManipulator.class);
-    }
-
     @Expose
     private int defaultAmount;
 
@@ -41,7 +37,7 @@ public class ItemUsedManipulator extends BaseManipulator {
         for (Map.Entry<IIngredient, Integer> item : itemValues.entrySet()) {
             if (!item.getKey().IsMatch(evt.getItem())) continue;
 
-            parent.AdjustScore(evt.getEntityLiving(), item.getValue(), this);
+            parent.adjustValue(evt.getEntityLiving(), item.getValue(), this);
             return;
         }
     }
