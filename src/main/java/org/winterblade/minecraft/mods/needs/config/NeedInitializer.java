@@ -27,10 +27,6 @@ public class NeedInitializer {
 
     private NeedInitializer() {
         builder.excludeFieldsWithoutExposeAnnotation();
-
-        // TODO: Base this off the annotation or the interface
-        ManipulatorRegistry.RegisterManipulator("perHour", PerHourManipulator.class);
-        ManipulatorRegistry.RegisterManipulator("itemUsed", ItemUsedManipulator.class);
     }
 
     public void setup(@SuppressWarnings("unused") final FMLCommonSetupEvent event) {

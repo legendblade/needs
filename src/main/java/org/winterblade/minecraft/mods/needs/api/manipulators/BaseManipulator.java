@@ -1,9 +1,11 @@
-package org.winterblade.minecraft.mods.needs.manipulators;
+package org.winterblade.minecraft.mods.needs.api.manipulators;
 
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import org.winterblade.minecraft.mods.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.ManipulatorRegistry;
+import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
+import org.winterblade.minecraft.mods.needs.manipulators.ItemUsedManipulator;
 
 import java.lang.reflect.Type;
 

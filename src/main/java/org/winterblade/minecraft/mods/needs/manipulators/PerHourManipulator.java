@@ -5,10 +5,14 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.NeedManipulator;
+import org.winterblade.minecraft.mods.needs.api.ManipulatorRegistry;
+import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 
-@NeedManipulator(type = "perHour")
 public class PerHourManipulator extends BaseManipulator {
+    static {
+        ManipulatorRegistry.RegisterManipulator("perHour", PerHourManipulator.class);
+    }
+
     @Expose
     private int amount;
 
@@ -35,6 +39,7 @@ public class PerHourManipulator extends BaseManipulator {
             return;
         }
 
+        // TODO: deal with negative delta because `time set` was used
         long delta = worldHour - lastFired;
         if (delta < 1) return;
 

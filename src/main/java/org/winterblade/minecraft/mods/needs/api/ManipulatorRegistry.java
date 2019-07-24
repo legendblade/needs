@@ -1,6 +1,6 @@
 package org.winterblade.minecraft.mods.needs.api;
 
-import org.winterblade.minecraft.mods.needs.manipulators.IManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
 
 import java.util.HashMap;
 import java.util.Map;

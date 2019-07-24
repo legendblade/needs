@@ -9,7 +9,7 @@ import net.minecraft.scoreboard.ScoreCriteria;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.text.StringTextComponent;
-import org.winterblade.minecraft.mods.needs.manipulators.IManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
 
 import java.util.List;
 
