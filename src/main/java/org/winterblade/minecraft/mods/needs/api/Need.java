@@ -64,7 +64,7 @@ public abstract class Need {
 
         // Get our current and clamped values:
         int current = getValue(player);
-        int newValue = Math.max(getMin(), Math.min(getMax(), current + adjust));
+        int newValue = Math.max(getMin(player), Math.min(getMax(player), current + adjust));
 
         // Finally, set the value and let our listeners know
         setValue(player, newValue);
@@ -96,14 +96,16 @@ public abstract class Need {
     /**
      * Gets the minimum value of this need
      * @return  The minimum value
+     * @param player    The player to get the min for
      */
-    public abstract int getMin();
+    public abstract int getMin(PlayerEntity player);
 
     /**
      * Gets the maximum value of this need
      * @return  The maximum value
+     * @param player    The player to get the max for
      */
-    public abstract int getMax();
+    public abstract int getMax(PlayerEntity player);
 
     /**
      * Initialize this need

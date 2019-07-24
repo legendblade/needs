@@ -47,11 +47,11 @@ public class CustomNeed extends Need {
         return name;
     }
 
-    public int getMin() {
+    public int getMin(PlayerEntity player) {
         return min;
     }
 
-    public int getMax() {
+    public int getMax(PlayerEntity player) {
         return max;
     }
 
