@@ -1,5 +1,6 @@
 package org.winterblade.minecraft.mods.needs.needs;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 
 interface ICustomNeedCapability {
@@ -9,5 +10,6 @@ interface ICustomNeedCapability {
 
     boolean isInitialized(String id);
 
+    @Nonnull
     Map<String, Integer> getValues();
 }

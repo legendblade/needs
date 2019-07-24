@@ -7,6 +7,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.Need;
 
@@ -39,7 +40,6 @@ public class CustomNeed extends Need {
 
     @Override
     public void onCreated() {
-        if (!isResetOnDeath()) return;
         MinecraftForge.EVENT_BUS.register(this);
     }
 
@@ -97,8 +97,25 @@ public class CustomNeed extends Need {
 
     @SubscribeEvent
     protected void onDeath(LivingDeathEvent event) {
-        if (event.isCanceled() || !(event.getEntity() instanceof PlayerEntity)) return;
+        if (event.isCanceled() || !isResetOnDeath() || !(event.getEntity() instanceof PlayerEntity)) return;
 
         setValue((PlayerEntity) event.getEntity(), getInitial());
+    }
+
+    @SubscribeEvent
+    protected void onClone(PlayerEvent.Clone event) {
+        if (!event.isWasDeath()) return;
+
+        // Oof
+        event
+            .getOriginal()
+                .getCapability(CAPABILITY)
+                .map(ICustomNeedCapability::getValues)
+                .ifPresent((values) ->
+                        event
+                            .getEntityPlayer()
+                                .getCapability(CAPABILITY)
+                                .ifPresent((cap) -> values.forEach(cap::setValue))
+                );
     }
 }
