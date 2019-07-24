@@ -9,6 +9,7 @@ import net.minecraftforge.common.MinecraftForge;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
 import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
+import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 
 import java.util.List;
@@ -19,9 +20,13 @@ public abstract class Need {
     @Expose
     private List<IManipulator> manipulators;
 
+    @Expose
+    private List<IMixin> mixins;
+
     public final void finalizeDeserialization() {
         // Freeze our manipulator list
         manipulators = ImmutableList.copyOf(manipulators);
+        mixins = ImmutableList.copyOf(mixins);
         onCreated();
     }
 
@@ -63,15 +68,23 @@ public abstract class Need {
 
         // Finally, set the value and let our listeners know
         setValue(player, newValue);
-        MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Post(this, player, source, adjust, newValue));
+        MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Post(this, player, source, current, newValue));
     }
 
     /**
      * Gets the manipulator list set for this need
      * @return  The manipulators
      */
-    public List<IManipulator> GetManipulators() {
+    public List<IManipulator> getManipulators() {
         return manipulators;
+    }
+
+    /**
+     * Gets the mixin list set for this need
+     * @return  The mixins
+     */
+    public List<IMixin> getMixins() {
+        return mixins;
     }
 
     /**
@@ -106,16 +119,16 @@ public abstract class Need {
     public abstract int getValue(PlayerEntity player);
 
     /**
-     * Sets the value of the need
-     * @param player    The player to set the value for
-     * @param newValue  The new value to set
-     */
-    public abstract void setValue(PlayerEntity player, int newValue);
-
-    /**
      * Gets if the value is initialized for the given player
      * @param player    The player to check
      * @return          If the value is initialized for the player
      */
     public abstract boolean isValueInitialized(PlayerEntity player);
+
+    /**
+     * Sets the value of the need
+     * @param player    The player to set the value for
+     * @param newValue  The new value to set
+     */
+    protected abstract void setValue(PlayerEntity player, int newValue);
 }

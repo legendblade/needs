@@ -28,7 +28,7 @@ public class ItemUsedManipulator extends BaseManipulator {
     private Map<IIngredient, Integer> itemValues = new HashMap<>();
 
     @Override
-    public void OnCreated() {
+    public void onCreated() {
         MinecraftForge.EVENT_BUS.register(this);
     }
 

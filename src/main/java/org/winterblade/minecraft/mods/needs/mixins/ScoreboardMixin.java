@@ -6,19 +6,12 @@ import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
 
-@Mod.EventBusSubscriber
 public class ScoreboardMixin extends BaseMixin {
-    public ScoreboardMixin(Need need) {
-        super(need);
-    }
-
     @SubscribeEvent
     public void onInitialized(NeedInitializationEvent.Post evt) {
         if (evt.getNeed() != need) return;

@@ -5,7 +5,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 
 public class PerHourManipulator extends BaseManipulator {
@@ -19,12 +18,11 @@ public class PerHourManipulator extends BaseManipulator {
     }
 
     @Override
-    public void OnCreated() {
-        MinecraftForge.EVENT_BUS.register(this);
+    public void onCreated() {
     }
 
     @SubscribeEvent
-    public void OnTick(TickEvent.WorldTickEvent evt) {
+    public void onTick(TickEvent.WorldTickEvent evt) {
         if(evt.world.isRemote) return;
 
         long worldHour = Math.floorDiv(evt.world.getDayTime(), 1000);

@@ -11,15 +11,15 @@ public abstract class BaseManipulator implements IManipulator {
     protected String messageFormat;
 
     @Override
-    public final void OnCreated(Need need) {
+    public final void onCreated(Need need) {
         parent = need;
-        OnCreated();
+        onCreated();
     }
 
-    public abstract void OnCreated();
+    public abstract void onCreated();
 
     @Override
-    public String FormatMessage(String needName, int amount, int newValue) {
+    public String formatMessage(String needName, int amount, int newValue) {
         return String.format(
                 messageFormat != null ? messageFormat : "Your %s has %s by %d to %d",
                 needName.toLowerCase(),
@@ -29,7 +29,7 @@ public abstract class BaseManipulator implements IManipulator {
         );
     }
 
-    protected void CopyFrom(ItemUsedManipulator other) {
+    protected void copyFrom(ItemUsedManipulator other) {
         messageFormat = other.messageFormat;
     }
 }

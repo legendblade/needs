@@ -2,15 +2,19 @@ package org.winterblade.minecraft.mods.needs.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.io.FilenameUtils;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
+import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.manipulators.ItemUsedManipulator;
 import org.winterblade.minecraft.mods.needs.manipulators.PerHourManipulator;
+import org.winterblade.minecraft.mods.needs.mixins.ChatMixin;
+import org.winterblade.minecraft.mods.needs.mixins.ScoreboardMixin;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 
 import java.io.FileReader;
@@ -29,10 +33,16 @@ public class NeedInitializer {
     private NeedInitializer() {
         builder.excludeFieldsWithoutExposeAnnotation();
 
+        // Need classes
         NeedRegistry.INSTANCE.register("custom", CustomNeed.class);
 
+        // Manipulators
         ManipulatorRegistry.INSTANCE.register("itemUsed", ItemUsedManipulator.class);
         ManipulatorRegistry.INSTANCE.register("perHour", PerHourManipulator.class);
+
+        // Mixins
+        MixinRegistry.INSTANCE.register("scoreboard", ScoreboardMixin.class);
+        MixinRegistry.INSTANCE.register("chat", ChatMixin.class);
     }
 
     public void setup(@SuppressWarnings("unused") final FMLCommonSetupEvent event) {
@@ -60,7 +70,16 @@ public class NeedInitializer {
                     }
 
                     need.finalizeDeserialization();
-                    need.GetManipulators().forEach((m) -> m.OnCreated(need));
+
+                    need.getManipulators().forEach((m) -> {
+                            m.onCreated(need);
+                            MinecraftForge.EVENT_BUS.register(m);
+                    });
+
+                    need.getMixins().forEach((m) -> {
+                        m.onCreated(need);
+                        MinecraftForge.EVENT_BUS.register(m);
+                    });
                 } catch (Exception e) {
                     NeedsMod.LOGGER.warn("Error reading needs file '" + file.toString() + "': " + e.toString());
                 }

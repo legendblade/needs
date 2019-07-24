@@ -6,7 +6,7 @@ import org.winterblade.minecraft.mods.needs.api.Need;
 
 @JsonAdapter(ManipulatorRegistry.class)
 public interface IManipulator {
-    void OnCreated(Need need);
+    void onCreated(Need need);
 
-    String FormatMessage(String needName, int amount, int newValue);
+    String formatMessage(String needName, int amount, int newValue);
 }
