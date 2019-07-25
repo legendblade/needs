@@ -16,10 +16,6 @@ public class PerHourManipulator extends BaseManipulator {
         amount = -1;
     }
 
-    @Override
-    public void onCreated() {
-    }
-
     @SubscribeEvent
     public void onTick(TickEvent.WorldTickEvent evt) {
         if(evt.world.isRemote) return;

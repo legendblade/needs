@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.manipulators.ItemUsedManipulator;
 
+@SuppressWarnings("WeakerAccess")
 public abstract class BaseManipulator implements IManipulator {
     protected Need parent;
 
@@ -16,7 +17,10 @@ public abstract class BaseManipulator implements IManipulator {
         onCreated();
     }
 
-    public abstract void onCreated();
+    /**
+     * Used to finish up any necessary post creation tasks
+     */
+    public void onCreated() {}
 
     @Override
     public String formatMessage(String needName, int amount, int newValue) {
@@ -27,9 +31,5 @@ public abstract class BaseManipulator implements IManipulator {
                 Math.abs(amount),
                 newValue
         );
-    }
-
-    protected void copyFrom(ItemUsedManipulator other) {
-        messageFormat = other.messageFormat;
     }
 }

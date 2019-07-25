@@ -27,11 +27,6 @@ public class ItemUsedManipulator extends BaseManipulator {
 
     private Map<IIngredient, Integer> itemValues = new HashMap<>();
 
-    @Override
-    public void onCreated() {
-        MinecraftForge.EVENT_BUS.register(this);
-    }
-
     @SubscribeEvent
     public void OnItemUsed(LivingEntityUseItemEvent.Finish evt) {
         for (Map.Entry<IIngredient, Integer> item : itemValues.entrySet()) {
