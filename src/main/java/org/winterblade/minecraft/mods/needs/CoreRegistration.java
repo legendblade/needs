@@ -10,6 +10,7 @@ import org.winterblade.minecraft.mods.needs.mixins.ChatMixin;
 import org.winterblade.minecraft.mods.needs.mixins.ScoreboardMixin;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 import org.winterblade.minecraft.mods.needs.needs.vanilla.FoodNeed;
+import org.winterblade.minecraft.mods.needs.needs.vanilla.HealthNeed;
 
 public class CoreRegistration {
     public static void register() {
@@ -21,12 +22,13 @@ public class CoreRegistration {
     private static void registerNeeds() {
         // Need classes
         NeedRegistry.INSTANCE.register("custom", CustomNeed.class);
-        NeedRegistry.INSTANCE.register("food", FoodNeed.class);
+        NeedRegistry.INSTANCE.register("food", FoodNeed.class, "hunger");
+        NeedRegistry.INSTANCE.register("health", HealthNeed.class, "hp");
     }
 
     private static void registerMixins() {
         // Mixins
-        MixinRegistry.INSTANCE.register("scoreboard", ScoreboardMixin.class);
+        MixinRegistry.INSTANCE.register("scoreboard", ScoreboardMixin.class, "score");
         MixinRegistry.INSTANCE.register("chat", ChatMixin.class);
     }
 

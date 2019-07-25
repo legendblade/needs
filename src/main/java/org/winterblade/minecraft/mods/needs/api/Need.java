@@ -30,7 +30,9 @@ public abstract class Need {
         onCreated();
     }
 
-    public abstract void onCreated();
+    public void onCreated() {
+
+    }
 
     /**
      * Wrapper implementation to cast the entity to a player
@@ -111,7 +113,9 @@ public abstract class Need {
      * Initialize this need
      * @param player The player to initialize
      */
-    public abstract void initialize(PlayerEntity player);
+    public void initialize(PlayerEntity player) {
+
+    }
 
     /**
      * Get the current value of the need
