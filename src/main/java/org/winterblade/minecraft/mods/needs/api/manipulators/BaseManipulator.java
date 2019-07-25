@@ -2,7 +2,6 @@ package org.winterblade.minecraft.mods.needs.api.manipulators;
 
 import com.google.gson.annotations.Expose;
 import org.winterblade.minecraft.mods.needs.api.Need;
-import org.winterblade.minecraft.mods.needs.manipulators.ItemUsedManipulator;
 
 @SuppressWarnings("WeakerAccess")
 public abstract class BaseManipulator implements IManipulator {
