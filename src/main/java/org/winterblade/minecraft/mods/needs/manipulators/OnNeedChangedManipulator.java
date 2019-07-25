@@ -41,13 +41,14 @@ public class OnNeedChangedManipulator extends BaseManipulator {
         otherNeed = NeedRegistry.INSTANCE.getType(need);
 
         if (otherNeed == null) throw new JsonParseException(need + " is not a valid need to compare to.");
+        NeedRegistry.INSTANCE.registerDependentNeed(need);
     }
 
     @SubscribeEvent
     protected void onOtherNeedChanged(NeedAdjustmentEvent.Post event) {
         if(!otherNeed.isAssignableFrom(event.getNeed().getClass())) return;
 
-        double diff = event.getCurrent() - event.getPrevious();
+        double diff = event.getPrevious() - event.getCurrent();
         if (diff < min || max < diff) return;
 
         amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue(event.getPlayer()));

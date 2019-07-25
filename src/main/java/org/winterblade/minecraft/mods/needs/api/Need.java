@@ -68,6 +68,9 @@ public abstract class Need {
         double current = getValue(player);
         double newValue = Math.max(getMin(player), Math.min(getMax(player), current + adjust));
 
+        // If the new value is the same as the current because we've hit the max/min, don't do anything
+        if (newValue == current) return;
+
         // Finally, set the value and let our listeners know
         setValue(player, newValue);
         MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Post(this, player, source, current, newValue));

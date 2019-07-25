@@ -127,7 +127,6 @@ jar {
             "ContainedDeps": "org.mariuszgromada.math:MathParser.org-mXparser:4.2.0"
         ])
     }
-    classifier = 'universal'
 }
 
 // Example configuration to allow publishing using the maven-publish task

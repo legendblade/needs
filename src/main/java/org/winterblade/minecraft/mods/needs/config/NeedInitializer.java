@@ -9,6 +9,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.winterblade.minecraft.mods.needs.CoreRegistration;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 
 import java.io.FileReader;
@@ -65,6 +66,8 @@ public class NeedInitializer {
                         m.onCreated(need);
                         MinecraftForge.EVENT_BUS.register(m);
                     });
+
+                    NeedRegistry.INSTANCE.cache(need);
                 } catch (Exception e) {
                     NeedsMod.LOGGER.warn("Error reading needs file '" + file.toString() + "': " + e.toString());
                 }
@@ -72,6 +75,8 @@ public class NeedInitializer {
         } catch (Exception e) {
             NeedsMod.LOGGER.warn("Error reading needs directory: " + e.toString());
         }
+
+        NeedRegistry.INSTANCE.cacheDependencies();
     }
 
     private Gson GetGson() {
