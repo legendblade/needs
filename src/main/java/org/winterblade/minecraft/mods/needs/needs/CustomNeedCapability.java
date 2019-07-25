@@ -23,15 +23,15 @@ import java.util.Map;
 @SuppressWarnings("unused")
 @Mod.EventBusSubscriber
 class CustomNeedCapability implements ICustomNeedCapability {
-    protected Map<String, Integer> values = new HashMap<>();
+    protected Map<String, Double> values = new HashMap<>();
 
     @Override
-    public int getValue(String id) {
-        return values.computeIfAbsent(id, k -> 0);
+    public double getValue(String id) {
+        return values.computeIfAbsent(id, k -> 0d);
     }
 
     @Override
-    public void setValue(String id, int value) {
+    public void setValue(String id, double value) {
         values.put(id, value);
     }
 
@@ -41,7 +41,7 @@ class CustomNeedCapability implements ICustomNeedCapability {
     }
 
     @Override
-    public Map<String, Integer> getValues() {
+    public Map<String, Double> getValues() {
         if (values == null) values = new HashMap<>();
         return values;
     }
@@ -60,7 +60,7 @@ class CustomNeedCapability implements ICustomNeedCapability {
         @Override
         public CompoundNBT writeNBT(Capability<ICustomNeedCapability> capability, ICustomNeedCapability instance, Direction side) {
             CompoundNBT nbt = new CompoundNBT();
-            instance.getValues().forEach(nbt::putInt);
+            instance.getValues().forEach(nbt::putDouble);
             return nbt;
         }
 
@@ -72,7 +72,7 @@ class CustomNeedCapability implements ICustomNeedCapability {
             }
 
             CompoundNBT nbtCompound = (CompoundNBT) nbt;
-            nbtCompound.keySet().forEach((k) -> instance.getValues().put(k, nbtCompound.getInt(k)));
+            nbtCompound.keySet().forEach((k) -> instance.getValues().put(k, nbtCompound.getDouble(k)));
         }
     }
 

@@ -10,18 +10,18 @@ public class HealthNeed extends Need {
     }
 
     @Override
-    public int getMin(PlayerEntity player) {
+    public double getMin(PlayerEntity player) {
         return 0;
     }
 
     @Override
-    public int getMax(PlayerEntity player) {
-        return Math.round(player.getMaxHealth() * 2);
+    public double getMax(PlayerEntity player) {
+        return Math.round(player.getMaxHealth());
     }
 
     @Override
-    public int getValue(PlayerEntity player) {
-        return Math.round(player.getMaxHealth() * 2);
+    public double getValue(PlayerEntity player) {
+        return Math.round(player.getMaxHealth());
     }
 
     @Override
@@ -30,7 +30,7 @@ public class HealthNeed extends Need {
     }
 
     @Override
-    protected void setValue(PlayerEntity player, int newValue) {
-        player.setHealth(newValue / 2);
+    protected void setValue(PlayerEntity player, double newValue) {
+        player.setHealth((float) newValue);
     }
 }

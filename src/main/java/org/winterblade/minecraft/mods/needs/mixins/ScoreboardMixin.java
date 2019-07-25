@@ -25,10 +25,10 @@ public class ScoreboardMixin extends BaseMixin {
         Score score = getOrCreateScore(evt, evt.getCurrent());
         if (score == null) return;
 
-        score.setScorePoints(evt.getCurrent());
+        score.setScorePoints((int) Math.round(evt.getCurrent()));
     }
 
-    private static Score getOrCreateScore(NeedEvent evt, int initialValue) {
+    private static Score getOrCreateScore(NeedEvent evt, double initialValue) {
         Scoreboard scoreboard = evt.getPlayer().getWorldScoreboard();
         //noinspection ConstantConditions
         if (scoreboard == null) return null;
@@ -52,7 +52,7 @@ public class ScoreboardMixin extends BaseMixin {
         if (score == null) {
             try {
                 score = scoreboard.getOrCreateScore(evt.getPlayer().getScoreboardName(), objective);
-                score.setScorePoints(initialValue);
+                score.setScorePoints((int) Math.round(initialValue));
             } catch (IllegalArgumentException e) {
                 // gg Mojang; this will blow up due to overly long UNs, but the other method won't.
                 NeedsMod.LOGGER.error("Unable to create scoreboard objective for '" + evt.getNeed().getName() + "'.", e);

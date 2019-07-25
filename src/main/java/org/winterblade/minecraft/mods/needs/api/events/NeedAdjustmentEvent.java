@@ -34,10 +34,10 @@ public class NeedAdjustmentEvent extends NeedEvent {
      * Called after a need has been adjusted for the given player
      */
     public static class Post extends NeedAdjustmentEvent {
-        private final int previous;
-        private final int current;
+        private final double previous;
+        private final double current;
 
-        public Post(Need need, PlayerEntity player, IManipulator source, int previous, int current) {
+        public Post(Need need, PlayerEntity player, IManipulator source, double previous, double current) {
             super(need, player, source);
             this.previous = previous;
             this.current = current;
@@ -47,7 +47,7 @@ public class NeedAdjustmentEvent extends NeedEvent {
          * Gets the previous value for the need
          * @return  The previous value
          */
-        public int getPrevious() {
+        public double getPrevious() {
             return previous;
         }
 
@@ -55,7 +55,7 @@ public class NeedAdjustmentEvent extends NeedEvent {
          * Gets the new value for the need
          * @return  The new value
          */
-        public int getCurrent() {
+        public double getCurrent() {
             return current;
         }
     }

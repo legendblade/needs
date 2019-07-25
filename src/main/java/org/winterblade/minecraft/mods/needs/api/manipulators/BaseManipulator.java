@@ -22,7 +22,7 @@ public abstract class BaseManipulator implements IManipulator {
     public void onCreated() {}
 
     @Override
-    public String formatMessage(String needName, int amount, int newValue) {
+    public String formatMessage(String needName, double amount, double newValue) {
         return String.format(
                 messageFormat != null ? messageFormat : "Your %s has %s by %d to %d",
                 needName.toLowerCase(),

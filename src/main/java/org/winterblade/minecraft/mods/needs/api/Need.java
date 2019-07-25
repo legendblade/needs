@@ -40,7 +40,7 @@ public abstract class Need {
      * @param adjust    The amount to adjust by
      * @param source    The source of the adjustment
      */
-    public final void adjustValue(Entity entity, int adjust, IManipulator source) {
+    public final void adjustValue(Entity entity, double adjust, IManipulator source) {
         if (!(entity instanceof PlayerEntity)) return;
         adjustValue((PlayerEntity) entity, adjust, source);
     }
@@ -51,7 +51,7 @@ public abstract class Need {
      * @param adjust      The amount to adjust by
      * @param source      The source of the adjustment
      */
-    public final void adjustValue(PlayerEntity player, int adjust, IManipulator source) {
+    public final void adjustValue(PlayerEntity player, double adjust, IManipulator source) {
         if (player == null || adjust == 0) return;
 
         // Check if we need to initialize the value for the player, or if we should bail entirely
@@ -65,8 +65,8 @@ public abstract class Need {
         if (MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Pre(this, player, source))) return;
 
         // Get our current and clamped values:
-        int current = getValue(player);
-        int newValue = Math.max(getMin(player), Math.min(getMax(player), current + adjust));
+        double current = getValue(player);
+        double newValue = Math.max(getMin(player), Math.min(getMax(player), current + adjust));
 
         // Finally, set the value and let our listeners know
         setValue(player, newValue);
@@ -100,14 +100,14 @@ public abstract class Need {
      * @return  The minimum value
      * @param player    The player to get the min for
      */
-    public abstract int getMin(PlayerEntity player);
+    public abstract double getMin(PlayerEntity player);
 
     /**
      * Gets the maximum value of this need
      * @return  The maximum value
      * @param player    The player to get the max for
      */
-    public abstract int getMax(PlayerEntity player);
+    public abstract double getMax(PlayerEntity player);
 
     /**
      * Initialize this need
@@ -122,7 +122,7 @@ public abstract class Need {
      * @param player    The player to get the value for
      * @return          The current value
      */
-    public abstract int getValue(PlayerEntity player);
+    public abstract double getValue(PlayerEntity player);
 
     /**
      * Gets if the value is initialized for the given player
@@ -136,5 +136,5 @@ public abstract class Need {
      * @param player    The player to set the value for
      * @param newValue  The new value to set
      */
-    protected abstract void setValue(PlayerEntity player, int newValue);
+    protected abstract void setValue(PlayerEntity player, double newValue);
 }

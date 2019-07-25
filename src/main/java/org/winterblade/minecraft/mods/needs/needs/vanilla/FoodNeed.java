@@ -15,12 +15,12 @@ public class FoodNeed extends Need {
     }
 
     @Override
-    public int getMin(PlayerEntity player) {
+    public double getMin(PlayerEntity player) {
         return 0;
     }
 
     @Override
-    public int getMax(PlayerEntity player) {
+    public double getMax(PlayerEntity player) {
         return 20;
     }
 
@@ -30,7 +30,7 @@ public class FoodNeed extends Need {
     }
 
     @Override
-    public int getValue(PlayerEntity player) {
+    public double getValue(PlayerEntity player) {
         return player.getFoodStats().getFoodLevel();
     }
 
@@ -40,7 +40,9 @@ public class FoodNeed extends Need {
     }
 
     @Override
-    protected void setValue(PlayerEntity player, int newValue) {
-        player.getFoodStats().setFoodLevel(newValue);
+    protected void setValue(PlayerEntity player, double newValue) {
+        player.getFoodStats().setFoodLevel((int) Math.round(newValue));
     }
+
+
 }

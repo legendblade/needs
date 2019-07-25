@@ -5,16 +5,13 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.util.expressions.NeedExpressionContext;
 
 public class PerHourManipulator extends BaseManipulator {
     @Expose
-    private int amount;
+    private NeedExpressionContext amount;
 
     private long lastFired = 0;
-
-    public PerHourManipulator() {
-        amount = -1;
-    }
 
     @SubscribeEvent
     public void onTick(TickEvent.WorldTickEvent evt) {
@@ -34,14 +31,18 @@ public class PerHourManipulator extends BaseManipulator {
 
         lastFired = worldHour;
 
-        int adjust;
-        try {
-            adjust = Math.toIntExact(delta * amount);
-        } catch (Exception e) {
-            NeedsMod.LOGGER.error("Unable to calculate adjustment amount because it's too large.");
-            return;
-        }
+        evt.world.getPlayers().forEach((p) -> {
+            double adjust;
+            amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue(p));
 
-        evt.world.getPlayers().forEach((p) -> parent.adjustValue(p, adjust, this));
+            try {
+                adjust = delta * amount.get();
+            } catch (Exception e) {
+                NeedsMod.LOGGER.error("Unable to calculate adjustment amount because it's too large.");
+                return;
+            }
+
+            parent.adjustValue(p, adjust, this);
+        });
     }
 }

@@ -4,12 +4,12 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 
 interface ICustomNeedCapability {
-    int getValue(String id);
+    double getValue(String id);
 
-    void setValue(String id, int value);
+    void setValue(String id, double value);
 
     boolean isInitialized(String id);
 
     @Nonnull
-    Map<String, Integer> getValues();
+    Map<String, Double> getValues();
 }

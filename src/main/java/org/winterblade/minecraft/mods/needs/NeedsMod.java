@@ -5,6 +5,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.mariuszgromada.math.mxparser.mXparser;
 import org.winterblade.minecraft.mods.needs.config.NeedInitializer;
 
 @Mod("needswantsdesires")
@@ -21,6 +22,7 @@ public class NeedsMod
     @SuppressWarnings("unused")
     private void setup(final FMLCommonSetupEvent event)
     {
-        LOGGER.info("Hi from pre-init?");
+        LOGGER.info("Needs, Wants, Desires uses mXparser for expression parsing. mXparser is released under the following license:");
+        LOGGER.info(mXparser.LICENSE);
     }
 }

@@ -6,12 +6,14 @@ buildscript {
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 version = '0.1'
 group = 'org.winterblade.minecraft.mods.needs' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
@@ -108,7 +110,7 @@ dependencies {
     // For more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
-
+    compile "org.mariuszgromada.math:MathParser.org-mXparser:4.2.0"
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
@@ -124,7 +126,18 @@ jar {
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
+    classifier = 'universal'
 }
+
+shadowJar {
+    dependencies {
+        include(dependency('org.mariuszgromada.math:MathParser.org-mXparser:4.2.0'))
+    }
+    relocate 'org.mariuszgromada.math', 'org.winterblade.shaded.org.mariuszgromada.math'
+    classifier = 'universal'
+}
+
+//project.getTasks().getByName("reobfJar").dependsOn(shadowJar)
 
 // Example configuration to allow publishing using the maven-publish task
 // we define a custom artifact that is sourced from the reobfJar output task
@@ -135,6 +148,7 @@ def reobfArtifact = artifacts.add('default', reobfFile) {
     type 'jar'
     builtBy 'reobfJar'
 }
+
 publishing {
     publications {
         mavenJava(MavenPublication) {

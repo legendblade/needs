@@ -8,5 +8,5 @@ import org.winterblade.minecraft.mods.needs.api.Need;
 public interface IManipulator {
     void onCreated(Need need);
 
-    String formatMessage(String needName, int amount, int newValue);
+    String formatMessage(String needName, double amount, double newValue);
 }

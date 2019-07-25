@@ -47,15 +47,15 @@ public class CustomNeed extends Need {
         return name;
     }
 
-    public int getMin(PlayerEntity player) {
+    public double getMin(PlayerEntity player) {
         return min;
     }
 
-    public int getMax(PlayerEntity player) {
+    public double getMax(PlayerEntity player) {
         return max;
     }
 
-    public int getInitial() {
+    public double getInitial() {
         return initial;
     }
 
@@ -73,7 +73,7 @@ public class CustomNeed extends Need {
     }
 
     @Override
-    public int getValue(PlayerEntity player) {
+    public double getValue(PlayerEntity player) {
         return player
             .getCapability(CAPABILITY)
                 .map((cap) -> cap.getValue(getName()))
@@ -81,7 +81,7 @@ public class CustomNeed extends Need {
     }
 
     @Override
-    public void setValue(PlayerEntity player, int newValue) {
+    public void setValue(PlayerEntity player, double newValue) {
         player
             .getCapability(CAPABILITY)
             .ifPresent((cap) -> cap.setValue(getName(), newValue));
