@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Built-By: mariu
+Created-By: Apache Maven 3.5.4
+Build-Jdk: 1.8.0_172
+Maven-Artifact: org.mariuszgromada.math:MathParser.org-mXparser:4.2.0

@@ -123,21 +123,12 @@ jar {
             "Implementation-Title": project.name,
             "Implementation-Version": "${version}",
             "Implementation-Vendor" :"Taryn Winterblade",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+            "ContainedDeps": "org.mariuszgromada.math:MathParser.org-mXparser:4.2.0"
         ])
     }
     classifier = 'universal'
 }
-
-shadowJar {
-    dependencies {
-        include(dependency('org.mariuszgromada.math:MathParser.org-mXparser:4.2.0'))
-    }
-    relocate 'org.mariuszgromada.math', 'org.winterblade.shaded.org.mariuszgromada.math'
-    classifier = 'universal'
-}
-
-//project.getTasks().getByName("reobfJar").dependsOn(shadowJar)
 
 // Example configuration to allow publishing using the maven-publish task
 // we define a custom artifact that is sourced from the reobfJar output task
