@@ -1,17 +1,24 @@
 package org.winterblade.minecraft.mods.needs.api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.TreeRangeMap;
+import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
+import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
 import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,6 +30,12 @@ public abstract class Need {
 
     @Expose
     private List<IMixin> mixins = Collections.emptyList();
+
+    @Expose
+    @SerializedName("levels")
+    private List<NeedLevel> levelList = Collections.emptyList();
+
+    private RangeMap<Double, NeedLevel> levels = TreeRangeMap.create();
 
     /**
      * Determines if a need should be able to be declared more than once.
@@ -37,6 +50,18 @@ public abstract class Need {
         // Freeze our manipulator list
         manipulators = ImmutableList.copyOf(manipulators);
         mixins = ImmutableList.copyOf(mixins);
+
+        // Ensure our levels are properly defined and don't overlap:
+        levelList.forEach((l) -> {
+            RangeMap<Double, NeedLevel> subRange = levels.subRangeMap(l.getRange());
+            if(0 < subRange.asMapOfRanges().size()) {
+                throw new JsonParseException("This need has overlapping levels; ensure that min/max ranges do not overlap");
+            }
+
+            levels.put(l.getRange(), l);
+        });
+        levels = ImmutableRangeMap.copyOf(levels);
+
         onCreated();
     }
 
@@ -145,6 +170,29 @@ public abstract class Need {
      * @return          If the value is initialized for the player
      */
     public abstract boolean isValueInitialized(PlayerEntity player);
+
+    /**
+     * Gets the current level for the given player; this calls
+     * getValue(player), so if you already have the value, you
+     * should instead just use getLevel(value)
+     * @param player The player to check for
+     * @return       The level, or NeedLevel.UNDEFINED if there isn't one
+     */
+    @Nonnull
+    public NeedLevel getLevel(PlayerEntity player) {
+        return getLevel(getValue(player));
+    }
+
+    /**
+     * Gets the current level for the given value
+     * @param value The value to check for
+     * @return       The level, or NeedLevel.UNDEFINED if there isn't one
+     */
+    @Nonnull
+    public NeedLevel getLevel(double value) {
+        NeedLevel level = levels.get(value);
+        return level != null ? level : NeedLevel.UNDEFINED;
+    }
 
     /**
      * Sets the value of the need

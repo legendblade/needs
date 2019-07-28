@@ -2,6 +2,7 @@ package org.winterblade.minecraft.mods.needs.api.manipulators;
 
 import com.google.gson.annotations.Expose;
 import org.winterblade.minecraft.mods.needs.api.Need;
+import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 
 @SuppressWarnings("WeakerAccess")
 public abstract class BaseManipulator implements IManipulator {
@@ -27,13 +28,14 @@ public abstract class BaseManipulator implements IManipulator {
     public void onCreated() {}
 
     @Override
-    public String formatMessage(String needName, double amount, double newValue) {
+    public String formatMessage(String needName, double amount, double newValue, NeedLevel level) {
         return String.format(
-                messageFormat != null ? messageFormat : "Your %s has %s by %.2f to %.2f",
+                messageFormat != null ? messageFormat : "Your %s has %s by %.2f to %.2f; you're now %s.",
                 needName.toLowerCase(),
                 amount < 0 ? "decreased" : "increased",
                 Math.abs(amount),
-                newValue
+                newValue,
+                !level.equals(NeedLevel.UNDEFINED) ? level.getName().toLowerCase() : "neutral"
         );
     }
 

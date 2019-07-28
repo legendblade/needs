@@ -15,7 +15,8 @@ public class ChatMixin extends BaseMixin {
                 evt.getSource().formatMessage(
                     evt.getNeed().getName(),
                     evt.getCurrent() - evt.getPrevious(),
-                    evt.getCurrent()
+                    evt.getCurrent(),
+                    evt.getNeed().getLevel(evt.getCurrent())
                 )
             ), false);
     }

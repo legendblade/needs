@@ -61,8 +61,8 @@ public class NeedInitializer {
                     need.finalizeDeserialization();
 
                     need.getManipulators().forEach((m) -> {
-                            m.onCreated(need);
-                            MinecraftForge.EVENT_BUS.register(m);
+                        m.onCreated(need);
+                        MinecraftForge.EVENT_BUS.register(m);
                     });
 
                     need.getMixins().forEach((m) -> {
