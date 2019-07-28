@@ -1,9 +1,9 @@
 package org.winterblade.minecraft.mods.needs.needs.vanilla;
 
 import net.minecraft.entity.player.PlayerEntity;
-import org.winterblade.minecraft.mods.needs.api.Need;
+import org.winterblade.minecraft.mods.needs.needs.CachedTickingNeed;
 
-public class HealthNeed extends Need {
+public class HealthNeed extends CachedTickingNeed {
     @Override
     public String getName() {
         return "Health";
@@ -21,7 +21,7 @@ public class HealthNeed extends Need {
 
     @Override
     public double getValue(PlayerEntity player) {
-        return Math.round(player.getMaxHealth());
+        return Math.round(player.getHealth());
     }
 
     @Override
@@ -33,4 +33,5 @@ public class HealthNeed extends Need {
     protected void setValue(PlayerEntity player, double newValue) {
         player.setHealth((float) newValue);
     }
+
 }

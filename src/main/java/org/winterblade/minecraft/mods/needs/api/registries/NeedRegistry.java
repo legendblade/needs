@@ -3,6 +3,9 @@ package org.winterblade.minecraft.mods.needs.api.registries;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.util.TypedRegistry;
@@ -10,6 +13,8 @@ import org.winterblade.minecraft.mods.needs.util.TypedRegistry;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 @SuppressWarnings("WeakerAccess")
@@ -18,6 +23,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
     private final Set<String> dependencies = new HashSet<>();
     private final Set<Need> loaded = new HashSet<>();
+    private final WeakHashMap<Need, Consumer<PlayerEntity>> perPlayerTick = new WeakHashMap<>();
 
     @Override
     public String getName() {
@@ -106,5 +112,29 @@ public class NeedRegistry extends TypedRegistry<Need> {
                         .findFirst()
                         .orElse(null)
                 );
+    }
+
+    /**
+     * Sets an action to get called for this need, every 5 ticks, per player
+     * @param need   The need to register
+     * @param action The action to call
+     */
+    public void requestPlayerTickUpdate(Need need, Consumer<PlayerEntity> action) {
+        // Register us on the first event added:
+        if (perPlayerTick.size() <= 0) MinecraftForge.EVENT_BUS.addListener(this::onTick);
+
+        perPlayerTick.put(need, action);
+    }
+
+    /**
+     * Called when the world ticks, if we have a listener that needs it
+     * @param event The tick event
+     */
+    private void onTick(TickEvent.WorldTickEvent event) {
+        if (event.world.isRemote || event.phase != TickEvent.Phase.END || (event.world.getGameTime() % 5) != 0) return;
+
+        event.world
+            .getPlayers()
+            .forEach((p) -> perPlayerTick.forEach((key, value) -> value.accept(p)));
     }
 }

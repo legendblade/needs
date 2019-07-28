@@ -1,22 +1,9 @@
 package org.winterblade.minecraft.mods.needs.needs.vanilla;
 
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import org.winterblade.minecraft.mods.needs.api.Need;
-import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
-import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.needs.CachedTickingNeed;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class FoodNeed extends Need {
-    private Map<String, Integer> cache = new HashMap<>();
-
-    @Override
-    public void onCreated() {
-        MinecraftForge.EVENT_BUS.addListener(this::onTick);
-    }
+public class FoodNeed extends CachedTickingNeed {
 
     @Override
     public String getName() {
@@ -53,19 +40,4 @@ public class FoodNeed extends Need {
         player.getFoodStats().setFoodLevel((int) Math.round(newValue));
     }
 
-    private void onTick(TickEvent.WorldTickEvent event) {
-        if (event.world.isRemote) return;
-
-        // TODO: this needs to be extracted into a single class so we're not iterating world players everywhere.
-        event.world
-                .getPlayers()
-                .forEach((p) -> {
-                    int current = p.getFoodStats().getFoodLevel();
-                    int prev = cache.computeIfAbsent(p.getCachedUniqueIdString(), (p2) -> current);
-                    if (current == prev) return;
-
-                    MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Post(this, p, BaseManipulator.EXTERNAL, current, prev));
-                    cache.put(p.getCachedUniqueIdString(), current);
-                });
-    }
 }
