@@ -55,6 +55,9 @@ public class NeedInitializer {
                         ((CustomNeed)need).setName(FilenameUtils.getBaseName(file.toString()));
                     }
 
+                    if (!NeedRegistry.INSTANCE.isValid(need)) {
+                        throw new IllegalArgumentException("This need duplicates another need");
+                    }
                     need.finalizeDeserialization();
 
                     need.getManipulators().forEach((m) -> {
@@ -67,7 +70,7 @@ public class NeedInitializer {
                         MinecraftForge.EVENT_BUS.register(m);
                     });
 
-                    NeedRegistry.INSTANCE.cache(need);
+                    NeedRegistry.INSTANCE.register(need);
                 } catch (Exception e) {
                     NeedsMod.LOGGER.warn("Error reading needs file '" + file.toString() + "': " + e.toString());
                 }
@@ -76,7 +79,7 @@ public class NeedInitializer {
             NeedsMod.LOGGER.warn("Error reading needs directory: " + e.toString());
         }
 
-        NeedRegistry.INSTANCE.cacheDependencies();
+        NeedRegistry.INSTANCE.validateDependencies();
     }
 
     private Gson GetGson() {

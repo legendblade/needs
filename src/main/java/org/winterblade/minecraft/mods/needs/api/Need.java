@@ -23,6 +23,15 @@ public abstract class Need {
     @Expose
     private List<IMixin> mixins;
 
+    /**
+     * Determines if a need should be able to be declared more than once.
+     * Override this anytime it makes sense to have multiple needs of the same class
+     * @return  True if this can be declared more than once; false otherwise
+     */
+    public boolean allowMultiple() {
+        return false;
+    }
+
     public final void finalizeDeserialization() {
         // Freeze our manipulator list
         manipulators = ImmutableList.copyOf(manipulators);

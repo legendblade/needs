@@ -39,6 +39,11 @@ public class CustomNeed extends Need {
     }
 
     @Override
+    public boolean allowMultiple() {
+        return true;
+    }
+
+    @Override
     public void onCreated() {
         MinecraftForge.EVENT_BUS.register(this);
     }

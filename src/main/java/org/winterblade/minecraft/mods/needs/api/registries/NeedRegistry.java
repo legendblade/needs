@@ -10,7 +10,9 @@ import org.winterblade.minecraft.mods.needs.util.TypedRegistry;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
+@SuppressWarnings("WeakerAccess")
 public class NeedRegistry extends TypedRegistry<Need> {
     public static final NeedRegistry INSTANCE = new NeedRegistry();
 
@@ -27,30 +29,41 @@ public class NeedRegistry extends TypedRegistry<Need> {
         return INSTANCE.doDeserialize(json, typeOfT, context);
     }
 
-    public void registerDependentNeed(String needType) {
-        if (getType(needType) == null) {
-            NeedsMod.LOGGER.error("Need of type " + needType + " was requested as a dependency but no type of that name was found.");
-            return;
+    /**
+     * Checks if the need is valid and should be loaded
+     * @param need The need to register
+     * @return     True if the need can be registered, false otherwise
+     */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean isValid(Need need) {
+        Predicate<Need> predicate = (n) -> n.getName().equals(need.getName());
+
+        if (!need.allowMultiple()) {
+            predicate = predicate.or((n) -> n.getClass().equals(need.getClass()));
         }
-        dependencies.add(needType);
+
+        return loaded.stream().noneMatch(predicate);
     }
 
-    public void cache(Need need) {
+    public void registerDependentNeed(String name) {
+        dependencies.add(name);
+    }
+
+    /**
+     * Register the created need
+     * @param need The need to register
+     * @throws IllegalArgumentException If the need could not be registered because it isn't valid
+     */
+    public void register(Need need) throws IllegalArgumentException {
+        if (!isValid(need)) throw new IllegalArgumentException("Tried to register need of same name or singleton with same class.");
         loaded.add(need);
     }
 
-    public void cacheDependencies() {
+    public void validateDependencies() {
         dependencies.forEach((d) -> {
-            Class<? extends Need> type = getType(d);
+            if (loaded.stream().anyMatch((n) -> n.getName().equals(d))) return;
 
-            // Skip already loaded deps
-            if (loaded.stream().anyMatch((l) -> type.isAssignableFrom(l.getClass()))) return;
-
-            try {
-                loaded.add(type.newInstance());
-            } catch (InstantiationException | IllegalAccessException e) {
-                NeedsMod.LOGGER.error("Unable to load dependency " + d, e);
-            }
+            NeedsMod.LOGGER.error("A need of name '" + d + "' wasn't loaded while validating dependencies of other needs.");
         });
     }
 }
