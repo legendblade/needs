@@ -12,16 +12,17 @@ import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
 import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 
+import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 @JsonAdapter(NeedRegistry.class)
 public abstract class Need {
     @Expose
-    private List<IManipulator> manipulators;
+    private List<IManipulator> manipulators = Collections.emptyList();
 
     @Expose
-    private List<IMixin> mixins;
+    private List<IMixin> mixins = Collections.emptyList();
 
     /**
      * Determines if a need should be able to be declared more than once.
@@ -61,7 +62,7 @@ public abstract class Need {
      * @param source      The source of the adjustment
      */
     public final void adjustValue(PlayerEntity player, double adjust, IManipulator source) {
-        if (player == null || adjust == 0) return;
+        if (player == null || adjust == 0 || player.world.isRemote) return;
 
         // Check if we need to initialize the value for the player, or if we should bail entirely
         if (!isValueInitialized(player)) {
@@ -83,6 +84,8 @@ public abstract class Need {
         // Finally, set the value and let our listeners know
         setValue(player, newValue);
         MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Post(this, player, source, current, newValue));
+
+        // TODO: Send updates to player
     }
 
     /**

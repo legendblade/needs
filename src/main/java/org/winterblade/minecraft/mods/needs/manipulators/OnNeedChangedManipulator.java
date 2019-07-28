@@ -5,6 +5,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
@@ -26,6 +27,8 @@ public class OnNeedChangedManipulator extends BaseManipulator {
     @Expose
     protected OtherNeedChangedExpressionContext amount;
 
+    protected Need otherNeed;
+
     public OnNeedChangedManipulator() {
         min = Integer.MIN_VALUE;
         max = Integer.MAX_VALUE;
@@ -37,9 +40,16 @@ public class OnNeedChangedManipulator extends BaseManipulator {
         NeedRegistry.INSTANCE.registerDependentNeed(need);
     }
 
+    public Need getOtherNeed() {
+        if (otherNeed != null) return otherNeed;
+
+        otherNeed = NeedRegistry.INSTANCE.getByName(need);
+        return otherNeed;
+    }
+
     @SubscribeEvent
     protected void onOtherNeedChanged(NeedAdjustmentEvent.Post event) {
-        if(!event.getNeed().getName().equals(need)) return;
+        if(!event.getNeed().equals(getOtherNeed())) return;
 
         double diff = event.getPrevious() - event.getCurrent();
         if (diff < min || max < diff) return;

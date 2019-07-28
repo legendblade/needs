@@ -13,6 +13,8 @@ public class OnDeathManipulator extends BaseManipulator {
 
     @SubscribeEvent
     protected void onDeath(LivingDeathEvent event) {
+        if (event.getEntity().world.isRemote) return;
+
         amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue((PlayerEntity) event.getEntity()));
         if (!event.isCanceled()) parent.adjustValue(event.getEntity(), amount.get(), this);
     }

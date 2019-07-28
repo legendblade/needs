@@ -30,6 +30,8 @@ public class ItemUsedManipulator extends BaseManipulator {
 
     @SubscribeEvent
     public void OnItemUsed(LivingEntityUseItemEvent.Finish evt) {
+        if (evt.getEntity().world.isRemote) return;
+
         for (Map.Entry<IIngredient, Integer> item : itemValues.entrySet()) {
             if (!item.getKey().isMatch(evt.getItem())) continue;
 

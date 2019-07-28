@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class TypedRegistry<T> implements JsonDeserializer<T> {
-    private Map<String, Class<? extends T>> registry = new HashMap<>();
+    protected Map<String, Class<? extends T>> registry = new HashMap<>();
 
     public abstract String getName();
 

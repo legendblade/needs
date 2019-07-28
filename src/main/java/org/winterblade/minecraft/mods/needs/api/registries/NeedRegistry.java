@@ -63,7 +63,48 @@ public class NeedRegistry extends TypedRegistry<Need> {
         dependencies.forEach((d) -> {
             if (loaded.stream().anyMatch((n) -> n.getName().equals(d))) return;
 
+            // Check if the name is a type:
+            Class<? extends Need> type = getType(d);
+            if (type != null) {
+                if (loaded.stream().anyMatch((l) -> type.isAssignableFrom(l.getClass()))) {
+                    NeedsMod.LOGGER.error("Dependency '" + d + "' would have loaded a type of the same name, but one is already registered.");
+                    return;
+                }
+
+                try {
+                    Need need = type.newInstance();
+                    loaded.add(need);
+                    need.finalizeDeserialization();
+                    return;
+                } catch (InstantiationException | IllegalAccessException e) {
+                    NeedsMod.LOGGER.error("Unable to load dependency " + d, e);
+                }
+            }
+
             NeedsMod.LOGGER.error("A need of name '" + d + "' wasn't loaded while validating dependencies of other needs.");
         });
+    }
+
+    /**
+     * Gets a need by name, falling back to type otherwise
+     * @param need  The name of the need
+     * @return      The need matching that name or type.
+     */
+    public Need getByName(String need) {
+        return loaded
+                .stream()
+                .filter((n) -> n.getName().equals(need))
+                .findFirst()
+                .orElse(loaded
+                        .stream()
+                        .filter((n) ->
+                            registry
+                                .entrySet()
+                                .stream()
+                                .anyMatch((rn) -> rn.getValue().equals(n.getClass()) && rn.getKey().equals(need))
+                        )
+                        .findFirst()
+                        .orElse(null)
+                );
     }
 }
