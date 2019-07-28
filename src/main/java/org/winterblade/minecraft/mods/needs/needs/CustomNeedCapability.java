@@ -7,7 +7,7 @@ import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -20,7 +20,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 @Mod.EventBusSubscriber
 class CustomNeedCapability implements ICustomNeedCapability {
     protected Map<String, Double> values = new HashMap<>();
@@ -40,6 +40,7 @@ class CustomNeedCapability implements ICustomNeedCapability {
         return values.containsKey(id);
     }
 
+    @Nonnull
     @Override
     public Map<String, Double> getValues() {
         if (values == null) values = new HashMap<>();
@@ -76,15 +77,18 @@ class CustomNeedCapability implements ICustomNeedCapability {
         }
     }
 
-    static class Provider implements ICapabilityProvider, INBTSerializable<CompoundNBT> {
+    static class Provider extends CapabilityProvider<Provider> implements INBTSerializable<CompoundNBT> {
         private final ICustomNeedCapability theActualBloodyCap = new CustomNeedCapability();
         private final LazyOptional<ICustomNeedCapability> capability = LazyOptional.of(() -> theActualBloodyCap);
+
+        protected Provider() {
+            super(Provider.class);
+        }
 
         @Nonnull
         @Override
         public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-            //noinspection ConstantConditions
-            return cap != CustomNeed.CAPABILITY ? null : capability.cast();
+            return cap == CustomNeed.CAPABILITY ? capability.cast() : super.getCapability(cap, side);
         }
 
         @Override
