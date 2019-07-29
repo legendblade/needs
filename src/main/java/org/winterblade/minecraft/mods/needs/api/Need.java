@@ -1,9 +1,6 @@
 package org.winterblade.minecraft.mods.needs.api;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableRangeMap;
-import com.google.common.collect.RangeMap;
-import com.google.common.collect.TreeRangeMap;
+import com.google.common.collect.*;
 import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
@@ -21,6 +18,7 @@ import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 @JsonAdapter(NeedRegistry.class)
@@ -101,6 +99,7 @@ public abstract class Need {
 
         // Get our current and clamped values:
         double current = getValue(player);
+        NeedLevel prevLevel = getLevel(current);
         double newValue = Math.max(getMin(player), Math.min(getMax(player), current + adjust));
 
         // If the new value is the same as the current because we've hit the max/min, don't do anything
@@ -109,6 +108,13 @@ public abstract class Need {
         // Finally, set the value and let our listeners know
         setValue(player, newValue);
         MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Post(this, player, source, current, newValue));
+
+        // Deal with new level:
+        NeedLevel newLevel = getLevel(newValue);
+        if (!prevLevel.equals(newLevel)) {
+            prevLevel.onExit(player);
+            newLevel.onEnter(player);
+        }
 
         // TODO: Send updates to player
     }
@@ -192,6 +198,14 @@ public abstract class Need {
     public NeedLevel getLevel(double value) {
         NeedLevel level = levels.get(value);
         return level != null ? level : NeedLevel.UNDEFINED;
+    }
+
+    /**
+     * Gets the levels for this particular need
+     * @return  The map of ranges to need levels
+     */
+    public Map<Range<Double>, NeedLevel> getLevels() {
+        return levels.asMapOfRanges();
     }
 
     /**

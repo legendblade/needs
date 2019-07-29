@@ -1,5 +1,7 @@
 package org.winterblade.minecraft.mods.needs;
 
+import org.winterblade.minecraft.mods.needs.actions.PotionEffectLevelAction;
+import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
@@ -18,6 +20,7 @@ public class CoreRegistration {
         registerNeeds();
         registerManipulators();
         registerMixins();
+        registerActions();
     }
 
     private static void registerNeeds() {
@@ -39,5 +42,10 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register("perHour", PerHourManipulator.class);
         ManipulatorRegistry.INSTANCE.register("onDeath", OnDeathManipulator.class);
         ManipulatorRegistry.INSTANCE.register("onNeedChanged", OnNeedChangedManipulator.class);
+    }
+
+    private static void registerActions() {
+        // Actions
+        LevelActionRegistry.INSTANCE.register("potionEffect", PotionEffectLevelAction.class);
     }
 }

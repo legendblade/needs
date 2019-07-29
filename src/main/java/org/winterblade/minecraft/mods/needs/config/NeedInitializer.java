@@ -70,6 +70,11 @@ public class NeedInitializer {
                         MinecraftForge.EVENT_BUS.register(m);
                     });
 
+                    need.getLevels().forEach((k, v) -> {
+                        v.onCreated(need);
+                        MinecraftForge.EVENT_BUS.register(v);
+                    });
+
                     NeedRegistry.INSTANCE.register(need);
                 } catch (Exception e) {
                     NeedsMod.LOGGER.warn("Error reading needs file '" + file.toString() + "': " + e.toString());
