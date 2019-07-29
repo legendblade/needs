@@ -13,6 +13,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
+import org.winterblade.minecraft.mods.needs.api.events.NeedLevelEvent;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
 import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
@@ -126,7 +127,6 @@ public abstract class Need {
 
         // Get our current and clamped values:
         double current = getValue(player);
-        NeedLevel prevLevel = getLevel(current);
         double newValue = Math.max(getMin(player), Math.min(getMax(player), current + adjust));
 
         // If the new value is the same as the current because we've hit the max/min, don't do anything
@@ -134,16 +134,30 @@ public abstract class Need {
 
         // Finally, set the value and let our listeners know
         setValue(player, newValue);
-        MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Post(this, player, source, current, newValue));
+        sendUpdates(player, source, current, newValue);
+    }
+
+    /**
+     * Call after the value of a need changes from an external source; is automatically called
+     * after adjustValue has fired.
+     * @param player    The player whose values are updated
+     * @param source    The source of the adjustment
+     * @param prevValue The previous value of the need
+     * @param newValue  The new value of the need
+     */
+    protected void sendUpdates(PlayerEntity player, IManipulator source, double prevValue, double newValue) {
+        MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Post(this, player, source, prevValue, newValue));
 
         // Deal with new level:
+        NeedLevel prevLevel = getLevel(prevValue);
         NeedLevel newLevel = getLevel(newValue);
         if (!prevLevel.equals(newLevel)) {
             prevLevel.onExit(player);
             newLevel.onEnter(player);
+            MinecraftForge.EVENT_BUS.post(new NeedLevelEvent.Changed(this, player, source, prevValue, newValue, prevLevel, newLevel));
         }
 
-        // TODO: Send updates to player
+        // TODO: Send updates to player(s?)
     }
 
     /**

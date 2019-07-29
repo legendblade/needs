@@ -1,9 +1,7 @@
 package org.winterblade.minecraft.mods.needs.needs;
 
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraftforge.common.MinecraftForge;
 import org.winterblade.minecraft.mods.needs.api.Need;
-import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 
@@ -23,7 +21,7 @@ public abstract class CachedTickingNeed extends Need {
         double prev = cache.computeIfAbsent(p.getCachedUniqueIdString(), (p2) -> current);
         if (current == prev) return;
 
-        MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Post(this, p, BaseManipulator.EXTERNAL, current, prev));
+        sendUpdates(p, BaseManipulator.EXTERNAL, prev, current);
         cache.put(p.getCachedUniqueIdString(), current);
     }
 }
