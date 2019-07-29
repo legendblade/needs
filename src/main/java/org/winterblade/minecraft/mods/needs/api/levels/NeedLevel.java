@@ -205,7 +205,9 @@ public class NeedLevel {
             output.name = obj.getAsJsonPrimitive("name").getAsString();
 
             // Deal with the ranges
-            output.range = RangeHelper.parseObjectToRange(obj);
+            output.range = obj.has("range")
+                ? RangeHelper.parseStringAsRange(obj.getAsJsonPrimitive("range").getAsString())
+                : RangeHelper.parseObjectToRange(obj);
 
             // Actions:
             output.entryActions = deserializeActions(context, obj, "onEnter");
