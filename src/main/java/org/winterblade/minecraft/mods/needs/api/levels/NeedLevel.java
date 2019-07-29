@@ -12,6 +12,7 @@ import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.actions.ILevelAction;
 import org.winterblade.minecraft.mods.needs.api.actions.IReappliedOnDeathLevelAction;
 import org.winterblade.minecraft.mods.needs.api.actions.TickingLevelAction;
+import org.winterblade.minecraft.mods.needs.util.RangeHelper;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Type;
@@ -204,18 +205,7 @@ public class NeedLevel {
             output.name = obj.getAsJsonPrimitive("name").getAsString();
 
             // Deal with the ranges
-            double min = Double.MIN_VALUE;
-            double max = Double.MAX_VALUE;
-
-            if (obj.has("min")) min = obj.getAsJsonPrimitive("min").getAsDouble();
-            if (obj.has("max")) max = obj.getAsJsonPrimitive("max").getAsDouble();
-
-            if (min == Double.MIN_VALUE && max == Double.MAX_VALUE) output.range = Range.all();
-            else if(min == Double.MIN_VALUE) output.range = Range.lessThan(max);
-            else if(max == Double.MAX_VALUE) output.range = Range.atLeast(min);
-            else output.range = Range.closedOpen(min, max);
-
-            if (output.range.isEmpty()) throw new JsonParseException("Invalid range specified: [" + min + "," + max + ")");
+            output.range = RangeHelper.parseObjectToRange(obj);
 
             // Actions:
             output.entryActions = deserializeActions(context, obj, "onEnter");
