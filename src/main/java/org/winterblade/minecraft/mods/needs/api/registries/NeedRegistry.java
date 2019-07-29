@@ -127,7 +127,8 @@ public class NeedRegistry extends TypedRegistry<Need> {
     }
 
     /**
-     * Called when the world ticks, if we have a listener that needs it
+     * Called when the world ticks, if we have a listener that needs it. This uses the world tick rather than
+     * the player tick to avoid %5'ing in every player
      * @param event The tick event
      */
     private void onTick(TickEvent.WorldTickEvent event) {
