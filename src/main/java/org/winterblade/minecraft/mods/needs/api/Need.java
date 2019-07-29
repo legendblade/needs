@@ -8,6 +8,10 @@ import com.google.gson.annotations.SerializedName;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.winterblade.minecraft.mods.needs.api.actions.IReappliedOnDeathLevelAction;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
@@ -61,6 +65,8 @@ public abstract class Need {
         levels = ImmutableRangeMap.copyOf(levels);
 
         onCreated();
+
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onRespawned);
     }
 
     public void onCreated() {
@@ -214,4 +220,11 @@ public abstract class Need {
      * @param newValue  The new value to set
      */
     protected abstract void setValue(PlayerEntity player, double newValue);
+
+    protected void onRespawned(PlayerEvent.Clone event) {
+        if (event.isCanceled() || !event.isWasDeath()) return;
+
+        NeedLevel level = getLevel(event.getEntityPlayer());
+        level.onRespawned(event);
+    }
 }

@@ -8,12 +8,13 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.Need;
+import org.winterblade.minecraft.mods.needs.api.actions.IReappliedOnDeathLevelAction;
 import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 
 import javax.annotation.Nullable;
 
-public class PotionEffectLevelAction extends LevelAction {
+public class PotionEffectLevelAction extends LevelAction implements IReappliedOnDeathLevelAction {
     @Expose
     private String effect;
 
@@ -22,6 +23,9 @@ public class PotionEffectLevelAction extends LevelAction {
 
     @Expose
     private int amplifier;
+
+    @Expose
+    private boolean persistOnDeath;
 
     private Effect theEffect;
 
@@ -70,5 +74,21 @@ public class PotionEffectLevelAction extends LevelAction {
         if (eff == null) return;
 
         player.removePotionEffect(eff);
+    }
+
+    @Override
+    public void onRespawned(Need need, NeedLevel level, PlayerEntity player, PlayerEntity oldPlayer) {
+        if (!persistOnDeath) return;
+
+        Effect eff = getTheEffect();
+        if (eff == null) return;
+
+        EffectInstance effectInstance = oldPlayer.getActivePotionEffect(eff);
+        if (effectInstance != null) player.addPotionEffect(effectInstance);
+    }
+
+    @Override
+    public void onRespawnedWhenContinuous(Need need, NeedLevel level, PlayerEntity player, PlayerEntity oldPlayer) {
+        onContinuousStart(need, level, player);
     }
 }

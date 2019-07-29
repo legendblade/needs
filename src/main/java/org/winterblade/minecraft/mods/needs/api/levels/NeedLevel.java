@@ -5,13 +5,14 @@ import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import org.winterblade.minecraft.mods.needs.api.Need;
+import org.winterblade.minecraft.mods.needs.api.actions.ILevelAction;
+import org.winterblade.minecraft.mods.needs.api.actions.IReappliedOnDeathLevelAction;
 import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
 import org.winterblade.minecraft.mods.needs.api.actions.TickingLevelAction;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -28,13 +29,19 @@ public class NeedLevel {
     protected Range<Double> range;
 
     @Expose
-    protected List<LevelAction> entryActions = Collections.emptyList();
+    protected List<ILevelAction> entryActions = Collections.emptyList();
 
     @Expose
-    protected List<LevelAction> continuousActions = Collections.emptyList();
+    protected List<ILevelAction> continuousActions = Collections.emptyList();
 
     @Expose
-    protected List<LevelAction> exitActions = Collections.emptyList();
+    protected List<ILevelAction> exitActions = Collections.emptyList();
+
+    @Expose
+    protected List<IReappliedOnDeathLevelAction> reappliedActions = Collections.emptyList();
+
+    @Expose
+    protected List<IReappliedOnDeathLevelAction> reappliedContinuousActions = Collections.emptyList();
 
     protected Consumer<PlayerEntity> tickAction;
 
@@ -51,10 +58,19 @@ public class NeedLevel {
     public void onCreated(Need parent) {
         this.parent = parent;
 
+        entryActions.forEach((ea) -> {
+            if (!(ea instanceof IReappliedOnDeathLevelAction)) return;
+            reappliedActions.add((IReappliedOnDeathLevelAction)ea);
+        });
+
         if(continuousActions.isEmpty()) return;
 
         // Build up our consumer
-        for (LevelAction ca : continuousActions) {
+        for (ILevelAction ca : continuousActions) {
+            if ((ca instanceof IReappliedOnDeathLevelAction)) {
+                reappliedContinuousActions.add((IReappliedOnDeathLevelAction)ca);
+            }
+
             if (!(ca instanceof TickingLevelAction)) continue;
             TickingLevelAction tla = (TickingLevelAction)ca;
 
@@ -75,6 +91,11 @@ public class NeedLevel {
 
     private void onTick(PlayerEntity player) {
         tickAction.accept(player);
+    }
+
+    public void onRespawned(PlayerEvent.Clone event) {
+        reappliedActions.forEach((ea) -> ea.onRespawned(parent, this, event.getEntityPlayer(), event.getOriginal()));
+        reappliedContinuousActions.forEach((ea) -> ea.onRespawnedWhenContinuous(parent, this, event.getEntityPlayer(), event.getOriginal()));
     }
 
     static class Deserializer implements JsonDeserializer<NeedLevel> {
@@ -111,7 +132,7 @@ public class NeedLevel {
             return output;
         }
 
-        private List<LevelAction> deserializeActions(JsonDeserializationContext context, JsonObject obj, String key) {
+        private List<ILevelAction> deserializeActions(JsonDeserializationContext context, JsonObject obj, String key) {
             if (!obj.has(key)) return Collections.emptyList();
 
             JsonElement el = obj.get(key);
