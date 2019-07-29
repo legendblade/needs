@@ -8,10 +8,9 @@ import com.google.gson.annotations.SerializedName;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.winterblade.minecraft.mods.needs.api.actions.IReappliedOnDeathLevelAction;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
@@ -54,19 +53,41 @@ public abstract class Need {
         mixins = ImmutableList.copyOf(mixins);
 
         // Ensure our levels are properly defined and don't overlap:
-        levelList.forEach((l) -> {
+        for (NeedLevel l : levelList) {
             RangeMap<Double, NeedLevel> subRange = levels.subRangeMap(l.getRange());
-            if(0 < subRange.asMapOfRanges().size()) {
+            if (0 < subRange.asMapOfRanges().size()) {
                 throw new JsonParseException("This need has overlapping levels; ensure that min/max ranges do not overlap");
             }
 
             levels.put(l.getRange(), l);
-        });
+        }
         levels = ImmutableRangeMap.copyOf(levels);
 
+        // Finalize creating everything:
+        getManipulators().forEach((m) -> {
+            m.onCreated(this);
+            MinecraftForge.EVENT_BUS.register(m);
+        });
+
+        getMixins().forEach((m) -> {
+            m.onCreated(this);
+            MinecraftForge.EVENT_BUS.register(m);
+        });
+
+        boolean hasTickingActions = false;
+        for (Map.Entry<Range<Double>,NeedLevel> kv : getLevels().entrySet()) {
+            NeedLevel v = kv.getValue();
+            v.onCreated(this);
+            MinecraftForge.EVENT_BUS.register(v);
+            hasTickingActions = hasTickingActions || v.hasTickingActions();
+        }
+
+        // Let subclasses wrap up anything they need to:
         onCreated();
 
+        // Register ourself where necessary:
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onRespawned);
+        if (hasTickingActions) MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onPlayerJoined);
     }
 
     public void onCreated() {
@@ -221,10 +242,26 @@ public abstract class Need {
      */
     protected abstract void setValue(PlayerEntity player, double newValue);
 
-    protected void onRespawned(PlayerEvent.Clone event) {
+    /**
+     * Called when a player is respawning
+     * @param event The event
+     */
+    private void onRespawned(PlayerEvent.Clone event) {
         if (event.isCanceled() || !event.isWasDeath()) return;
 
         NeedLevel level = getLevel(event.getEntityPlayer());
-        level.onRespawned(event);
+        level.onRespawned(event.getEntityPlayer(), event.getOriginal());
+    }
+
+    /**
+     * Called when an entity has joined the world
+     * @param event The event
+     */
+    private void onPlayerJoined(EntityJoinWorldEvent event) {
+        if (event.isCanceled() || event.getWorld().isRemote || !(event.getEntity() instanceof PlayerEntity)) return;
+
+        PlayerEntity entity = (PlayerEntity) event.getEntity();
+        NeedLevel level = getLevel(entity);
+        level.onPlayerJoined(entity);
     }
 }

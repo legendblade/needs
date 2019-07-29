@@ -1,6 +1,7 @@
 package org.winterblade.minecraft.mods.needs;
 
 import org.winterblade.minecraft.mods.needs.actions.PotionEffectLevelAction;
+import org.winterblade.minecraft.mods.needs.actions.TestingTickLevelAction;
 import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
@@ -21,6 +22,7 @@ public class CoreRegistration {
         registerManipulators();
         registerMixins();
         registerActions();
+        registerDebug();
     }
 
     private static void registerNeeds() {
@@ -47,5 +49,9 @@ public class CoreRegistration {
     private static void registerActions() {
         // Actions
         LevelActionRegistry.INSTANCE.register("potionEffect", PotionEffectLevelAction.class);
+    }
+
+    private static void registerDebug() {
+        LevelActionRegistry.INSTANCE.register("tickDebug", TestingTickLevelAction.class);
     }
 }

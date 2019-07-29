@@ -2,13 +2,12 @@ package org.winterblade.minecraft.mods.needs.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.io.FilenameUtils;
 import org.winterblade.minecraft.mods.needs.CoreRegistration;
-import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 
@@ -58,23 +57,8 @@ public class NeedInitializer {
                     if (!NeedRegistry.INSTANCE.isValid(need)) {
                         throw new IllegalArgumentException("This need duplicates another need");
                     }
+
                     need.finalizeDeserialization();
-
-                    need.getManipulators().forEach((m) -> {
-                        m.onCreated(need);
-                        MinecraftForge.EVENT_BUS.register(m);
-                    });
-
-                    need.getMixins().forEach((m) -> {
-                        m.onCreated(need);
-                        MinecraftForge.EVENT_BUS.register(m);
-                    });
-
-                    need.getLevels().forEach((k, v) -> {
-                        v.onCreated(need);
-                        MinecraftForge.EVENT_BUS.register(v);
-                    });
-
                     NeedRegistry.INSTANCE.register(need);
                 } catch (Exception e) {
                     NeedsMod.LOGGER.warn("Error reading needs file '" + file.toString() + "': " + e.toString());
