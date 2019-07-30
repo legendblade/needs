@@ -69,7 +69,7 @@ public class OnNeedChangedManipulator extends BaseManipulator {
     protected void onOtherNeedChanged(NeedAdjustmentEvent.Post event) {
         if(!event.getNeed().equals(getOtherNeed())) return;
 
-        double diff = event.getPrevious() - event.getCurrent();
+        double diff = event.getCurrent() - event.getPrevious();
         if (diff < min || max < diff) return;
 
         amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue(event.getPlayer()));
