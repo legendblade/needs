@@ -2,6 +2,8 @@ package org.winterblade.minecraft.mods.needs.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.io.FilenameUtils;
@@ -11,6 +13,7 @@ import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,18 +57,20 @@ public class NeedInitializer {
                     DigestInputStream dis = new DigestInputStream(Files.newInputStream(file), md);
                     InputStreamReader reader = new InputStreamReader(dis);
 
-                    Need need = GetGson().fromJson(reader, Need.class);
+                    // If we're on the client, don't bother with the extra step to store content
+                    DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+                        Need need = GetGson().fromJson(reader, Need.class);
+                        register(file, md, need, null);
+                    });
 
-                    if (need instanceof CustomNeed && (need.getName()== null || need.getName().isEmpty())) {
-                        ((CustomNeed)need).setName(FilenameUtils.getBaseName(file.toString()));
-                    }
+                    // Otherwise, do.
+                    DistExecutor.runWhenOn(Dist.DEDICATED_SERVER, () -> () -> {
+                        BufferedReader buf = new BufferedReader(reader);
+                        String content = buf.lines().collect(Collectors.joining());
 
-                    if (!NeedRegistry.INSTANCE.isValid(need)) {
-                        throw new IllegalArgumentException("This need duplicates another need");
-                    }
-
-                    need.finalizeDeserialization();
-                    NeedRegistry.INSTANCE.register(need, need.getName(), md.digest());
+                        Need need = GetGson().fromJson(content, Need.class);
+                        register(file, md, need, content);
+                    });
                 } catch (Exception e) {
                     NeedsMod.LOGGER.warn("Error reading needs file '" + file.toString() + "': " + e.toString());
                 }
@@ -75,6 +80,26 @@ public class NeedInitializer {
         }
 
         NeedRegistry.INSTANCE.validateDependencies();
+    }
+
+    /**
+     * Registers the need after deserialization
+     * @param file    The file the need was loaded from
+     * @param md      The message digest
+     * @param need    The need itself
+     * @param content The file content if on the server side
+     */
+    private void register(Path file, MessageDigest md, Need need, @Nullable String content) {
+        if (need instanceof CustomNeed && (need.getName() == null || need.getName().isEmpty())) {
+            ((CustomNeed)need).setName(FilenameUtils.getBaseName(file.toString()));
+        }
+
+        if (!NeedRegistry.INSTANCE.isValid(need)) {
+            throw new IllegalArgumentException("This need duplicates another need");
+        }
+
+        need.finalizeDeserialization();
+        NeedRegistry.INSTANCE.register(need, need.getName(), md.digest(), content);
     }
 
     private Gson GetGson() {

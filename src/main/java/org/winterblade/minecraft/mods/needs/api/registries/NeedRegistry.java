@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.util.Tuple;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.DistExecutor;
@@ -18,10 +19,12 @@ import org.winterblade.minecraft.mods.needs.network.ConfigDesyncPacket;
 import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 import org.winterblade.minecraft.mods.needs.util.TypedRegistry;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("WeakerAccess")
 public class NeedRegistry extends TypedRegistry<Need> {
@@ -35,7 +38,12 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * Client-side cache
      */
     private final Map<String, Double> localCache = new HashMap<>();
+
+    /**
+     * Config storage; client and server both have hashes, server has full configs
+     */
     private final Map<String, byte[]> cachedConfigHashes = new HashMap<>();
+    private final Map<String, String> cachedConfigs = new HashMap<>();
 
     @Override
     public String getName() {
@@ -79,13 +87,15 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
     /**
      * Registers a need from a file
-     * @param need   The need
-     * @param id     The ID
-     * @param digest The digest of the file
+     * @param need    The need
+     * @param id      The ID
+     * @param digest  The digest of the file
+     * @param content The file content, if on the server
      */
-    public void register(Need need, String id, byte[] digest) {
+    public void register(Need need, String id, byte[] digest, @Nullable String content) {
         register(need);
         cachedConfigHashes.put(id, digest);
+        if (content != null) cachedConfigs.put(id, content);
     }
 
     public void validateDependencies() {
@@ -172,19 +182,23 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param configHashes The map of ID to file hash
      */
     public void validateConfig(Map<String, byte[]> configHashes) {
-        configHashes.forEach((k, v) -> {
-            boolean exists = cachedConfigHashes.containsKey(k);
-            if (exists && Arrays.equals(cachedConfigHashes.get(k), v)) return;
-
-            NetworkManager.INSTANCE.sendToServer(
-                new ConfigDesyncPacket(
-                    k,
-                    exists
-                        ? ConfigDesyncPacket.desyncTypes.BAD_HASH
-                        : ConfigDesyncPacket.desyncTypes.MISSING
-                )
-            );
-        });
+        NetworkManager.INSTANCE.sendToServer(
+            new ConfigDesyncPacket(
+                configHashes
+                    .entrySet()
+                    .stream()
+                    .map((kv) -> {
+                        boolean exists = cachedConfigHashes.containsKey(kv.getKey());
+                        if (exists && Arrays.equals(cachedConfigHashes.get(kv.getKey()), kv.getValue())) return null;
+                        return new Tuple<>(kv.getKey(), exists
+                            ? ConfigDesyncPacket.DesyncTypes.BAD_HASH
+                            : ConfigDesyncPacket.DesyncTypes.MISSING);
+                    })
+                    .filter(Objects::nonNull)
+                    // TODO: Check local cache
+                    .collect(Collectors.toMap(Tuple::getA, Tuple::getB))
+            )
+        );
     }
 
     public void onLogin(PlayerEvent.PlayerLoggedInEvent event) {

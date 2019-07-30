@@ -5,25 +5,35 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.NetworkEvent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class ConfigDesyncPacket {
-    private final static desyncTypes[] desyncTypeCache = desyncTypes.values();
-    private final String needId;
-    private final desyncTypes desyncType;
+    private final static DesyncTypes[] desyncTypeCache = DesyncTypes.values();
+    private final Map<String, DesyncTypes> desyncs;
 
-    public ConfigDesyncPacket(String needId, desyncTypes desyncType) {
-        this.needId = needId;
-        this.desyncType = desyncType;
+    public ConfigDesyncPacket(Map<String,DesyncTypes> desyncs) {
+        this.desyncs = desyncs;
     }
 
     public void encode(PacketBuffer packetBuffer) {
-        packetBuffer.writeString(needId);
-        packetBuffer.writeInt(desyncType.ordinal());
+        packetBuffer.writeInt(desyncs.size());
+        desyncs.forEach((k, v) -> {
+            packetBuffer.writeString(k);
+            packetBuffer.writeInt(v.ordinal());
+        });
     }
 
     public static ConfigDesyncPacket decode(PacketBuffer packetBuffer) {
-        return new ConfigDesyncPacket(packetBuffer.readString(), desyncTypeCache[packetBuffer.readInt()]);
+        int count = packetBuffer.readInt();
+        Map<String, DesyncTypes> output = new HashMap<>();
+
+        for (int i = 0; i < count; i++) {
+            output.put(packetBuffer.readString(), desyncTypeCache[packetBuffer.readInt()]);
+        }
+
+        return new ConfigDesyncPacket(output);
     }
 
     public static void handle(ConfigDesyncPacket msg, Supplier<NetworkEvent.Context> ctx) {
@@ -33,17 +43,22 @@ public class ConfigDesyncPacket {
             if (thePlayer == null) return;
 
             // TODO: deal with updating configs
-            if (msg.desyncType == desyncTypes.MISSING) {
-                thePlayer.sendMessage(new StringTextComponent("Need " + msg.needId + " does not exist in your local config."));
-                return;
-            }
+            msg.desyncs.forEach((needId, desyncType) -> {
+                if (desyncType == DesyncTypes.MISSING) {
+                    thePlayer.sendMessage(new StringTextComponent("Need " + needId + " does not exist in your local config."));
+                    return;
+                }
 
-            thePlayer.sendMessage(new StringTextComponent("Need " + msg.needId + "'s config does not match between server and client."));
+                thePlayer.sendMessage(new StringTextComponent("Need " + needId + "'s config does not match between server and client."));
+            });
+
+            // TODO: Move this to after any missing configs have been synced:
+
         });
         ctx.get().setPacketHandled(true);
     }
 
-    public enum desyncTypes {
+    public enum DesyncTypes {
         MISSING,
         BAD_HASH
     }
