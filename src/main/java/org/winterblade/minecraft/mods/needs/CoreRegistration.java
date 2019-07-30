@@ -10,6 +10,7 @@ import org.winterblade.minecraft.mods.needs.manipulators.ItemUsedManipulator;
 import org.winterblade.minecraft.mods.needs.manipulators.OnDeathManipulator;
 import org.winterblade.minecraft.mods.needs.manipulators.OnNeedChangedManipulator;
 import org.winterblade.minecraft.mods.needs.manipulators.PerHourManipulator;
+import org.winterblade.minecraft.mods.needs.mixins.ChatLevelMixin;
 import org.winterblade.minecraft.mods.needs.mixins.ChatMixin;
 import org.winterblade.minecraft.mods.needs.mixins.ScoreboardMixin;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
@@ -35,7 +36,8 @@ public class CoreRegistration {
     private static void registerMixins() {
         // Mixins
         MixinRegistry.INSTANCE.register("scoreboard", ScoreboardMixin.class, "score");
-        MixinRegistry.INSTANCE.register("chat", ChatMixin.class);
+        MixinRegistry.INSTANCE.register("chatOnChanged", ChatMixin.class);
+        MixinRegistry.INSTANCE.register("chatOnLevel", ChatLevelMixin.class, "chat");
     }
 
     private static void registerManipulators() {

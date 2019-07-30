@@ -238,7 +238,7 @@ public class NeedLevel {
         @Nonnull
         @Override
         public String getName() {
-            return "";
+            return "Neutral";
         }
 
         @Nonnull
