@@ -23,7 +23,7 @@ public class NetworkManager {
         INSTANCE.registerMessage(packetId++, ConfigCheckPacket.class, ConfigCheckPacket::encode, ConfigCheckPacket::decode, ConfigCheckPacket::handle);
         INSTANCE.registerMessage(packetId++, ConfigDesyncPacket.class, ConfigDesyncPacket::encode, ConfigDesyncPacket::decode, ConfigDesyncPacket::handle);
         // TODO: Config sync packet
-
+        INSTANCE.registerMessage(packetId++, ConfigSyncedPacket.class, ConfigSyncedPacket::encode, ConfigSyncedPacket::decode, ConfigSyncedPacket::handle);
         INSTANCE.registerMessage(packetId++, NeedUpdatePacket.class, NeedUpdatePacket::encode, NeedUpdatePacket::decode, NeedUpdatePacket::handle);
     }
 }

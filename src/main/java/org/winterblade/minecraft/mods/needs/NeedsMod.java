@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import org.mariuszgromada.math.mxparser.mXparser;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.config.NeedInitializer;
-import org.winterblade.minecraft.mods.needs.network.ConfigCheckPacket;
 
 @Mod(NeedsMod.MODID)
 public class NeedsMod

@@ -7,10 +7,12 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedLevelEvent;
@@ -18,6 +20,8 @@ import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
 import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
+import org.winterblade.minecraft.mods.needs.network.NeedUpdatePacket;
+import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -157,7 +161,12 @@ public abstract class Need {
             MinecraftForge.EVENT_BUS.post(new NeedLevelEvent.Changed(this, player, source, prevValue, newValue, prevLevel, newLevel));
         }
 
-        // TODO: Send updates to player(s?)
+        // Make really, really, really sure we're on the server side before sending a packet to the player:
+        if (!(player instanceof ServerPlayerEntity)) return;
+        NetworkManager.INSTANCE.send(
+            PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
+            new NeedUpdatePacket(getName(), newValue)
+        );
     }
 
     /**

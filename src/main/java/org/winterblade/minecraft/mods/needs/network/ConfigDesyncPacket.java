@@ -51,9 +51,6 @@ public class ConfigDesyncPacket {
 
                 thePlayer.sendMessage(new StringTextComponent("Need " + needId + "'s config does not match between server and client."));
             });
-
-            // TODO: Move this to after any missing configs have been synced:
-
         });
         ctx.get().setPacketHandled(true);
     }

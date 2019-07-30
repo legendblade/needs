@@ -16,12 +16,15 @@ import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.network.ConfigCheckPacket;
 import org.winterblade.minecraft.mods.needs.network.ConfigDesyncPacket;
+import org.winterblade.minecraft.mods.needs.network.ConfigSyncedPacket;
 import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 import org.winterblade.minecraft.mods.needs.util.TypedRegistry;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -37,7 +40,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
     /**
      * Client-side cache
      */
-    private final Map<String, Double> localCache = new HashMap<>();
+    private final Map<String, Double> localCache = new ConcurrentHashMap<>();
 
     /**
      * Config storage; client and server both have hashes, server has full configs
@@ -182,22 +185,24 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param configHashes The map of ID to file hash
      */
     public void validateConfig(Map<String, byte[]> configHashes) {
-        NetworkManager.INSTANCE.sendToServer(
-            new ConfigDesyncPacket(
-                configHashes
-                    .entrySet()
-                    .stream()
-                    .map((kv) -> {
-                        boolean exists = cachedConfigHashes.containsKey(kv.getKey());
-                        if (exists && Arrays.equals(cachedConfigHashes.get(kv.getKey()), kv.getValue())) return null;
-                        return new Tuple<>(kv.getKey(), exists
+        Map<String, ConfigDesyncPacket.DesyncTypes> desyncs = configHashes
+                .entrySet()
+                .stream()
+                .map((kv) -> {
+                    boolean exists = cachedConfigHashes.containsKey(kv.getKey());
+                    if (exists && Arrays.equals(cachedConfigHashes.get(kv.getKey()), kv.getValue())) return null;
+                    return new Tuple<>(kv.getKey(), exists
                             ? ConfigDesyncPacket.DesyncTypes.BAD_HASH
                             : ConfigDesyncPacket.DesyncTypes.MISSING);
-                    })
-                    .filter(Objects::nonNull)
-                    // TODO: Check local cache
-                    .collect(Collectors.toMap(Tuple::getA, Tuple::getB))
-            )
+                })
+                .filter(Objects::nonNull)
+                // TODO: Check local cache
+                .collect(Collectors.toMap(Tuple::getA, Tuple::getB));
+
+        NetworkManager.INSTANCE.sendToServer(
+            desyncs.size() <= 0
+                ? new ConfigSyncedPacket()
+                : new ConfigDesyncPacket(desyncs)
         );
     }
 
@@ -209,6 +214,24 @@ public class NeedRegistry extends TypedRegistry<Need> {
             PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer()),
             new ConfigCheckPacket(cachedConfigHashes)
         ));
+
+        // Shortcut the entire system when it's just the local client:
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            // Yes, I know, this is breaking rules about cross access from server to client
+            onConfigSynced(event.getPlayer(), (n, v) -> localCache.put(n.getName(), v));
+        });
+    }
+
+    /**
+     * Called once a player is done receiving all updated configs
+     * @param player   The player
+     * @param callback Callback invoked with the value of a single need
+     */
+    public void onConfigSynced(PlayerEntity player, BiConsumer<Need, Double> callback) {
+        // TODO: I'd prefer to sync slowly instead of all at once; figure out a way to appropriately run later
+        loaded.forEach((n) -> {
+            callback.accept(n, n.getValue(player));
+        });
     }
 
     /**
