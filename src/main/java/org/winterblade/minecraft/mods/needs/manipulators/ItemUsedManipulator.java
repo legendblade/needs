@@ -57,7 +57,7 @@ public class ItemUsedManipulator extends BaseManipulator {
         }
 
         // Rough string capacity for tooltips:
-        capacity = parent.getName().length() + 8;
+        capacity = parent.getName().length() + 12;
     }
 
     @SubscribeEvent
@@ -92,7 +92,10 @@ public class ItemUsedManipulator extends BaseManipulator {
                 break;
             }
 
-            if (!found) return;
+            if (!found || value == 0) {
+                itemCache.put(event.getItemStack(), "");
+                return;
+            }
             StringBuilder theLine = new StringBuilder(capacity);
 
             String color = formatting.get(value);
@@ -100,7 +103,10 @@ public class ItemUsedManipulator extends BaseManipulator {
 
             theLine.append(parent.getName());
             theLine.append(": ");
-            theLine.append(value);
+            theLine.append(value < 0 ? '-' : '+');
+            theLine.append(Math.abs(value));
+            theLine.append("  ");
+            theLine.append(value < 0 ? '\u25bc' : '\u25b2'); // Up or down arrows
 
             msg = theLine.toString();
             itemCache.put(event.getItemStack(), msg);
