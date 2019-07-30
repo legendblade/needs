@@ -11,11 +11,13 @@ import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NeedInitializer {
@@ -48,7 +50,11 @@ public class NeedInitializer {
 
             for (Path file : (Iterable<Path>)files::iterator) {
                 try {
-                    Need need = GetGson().fromJson(new FileReader(file.toString()), Need.class);
+                    MessageDigest md = MessageDigest.getInstance("MD5");
+                    DigestInputStream dis = new DigestInputStream(Files.newInputStream(file), md);
+                    InputStreamReader reader = new InputStreamReader(dis);
+
+                    Need need = GetGson().fromJson(reader, Need.class);
 
                     if (need instanceof CustomNeed && (need.getName()== null || need.getName().isEmpty())) {
                         ((CustomNeed)need).setName(FilenameUtils.getBaseName(file.toString()));
@@ -59,7 +65,7 @@ public class NeedInitializer {
                     }
 
                     need.finalizeDeserialization();
-                    NeedRegistry.INSTANCE.register(need);
+                    NeedRegistry.INSTANCE.register(need, need.getName(), md.digest());
                 } catch (Exception e) {
                     NeedsMod.LOGGER.warn("Error reading needs file '" + file.toString() + "': " + e.toString());
                 }

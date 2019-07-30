@@ -8,9 +8,9 @@ import com.google.gson.annotations.SerializedName;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedLevelEvent;
@@ -271,11 +271,8 @@ public abstract class Need {
      * Called when an entity has joined the world
      * @param event The event
      */
-    private void onPlayerJoined(EntityJoinWorldEvent event) {
-        if (event.isCanceled() || event.getWorld().isRemote || !(event.getEntity() instanceof PlayerEntity)) return;
-
-        PlayerEntity entity = (PlayerEntity) event.getEntity();
-        NeedLevel level = getLevel(entity);
-        level.onPlayerJoined(entity);
+    private void onPlayerJoined(PlayerLoggedInEvent event) {
+        NeedLevel level = getLevel(event.getPlayer());
+        level.onPlayerJoined(event.getPlayer());
     }
 }

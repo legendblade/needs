@@ -16,6 +16,7 @@ import org.winterblade.minecraft.mods.needs.mixins.ScoreboardMixin;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 import org.winterblade.minecraft.mods.needs.needs.vanilla.FoodNeed;
 import org.winterblade.minecraft.mods.needs.needs.vanilla.HealthNeed;
+import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 
 public class CoreRegistration {
     public static void register() {
@@ -24,6 +25,8 @@ public class CoreRegistration {
         registerMixins();
         registerActions();
         registerDebug();
+
+        NetworkManager.register();
     }
 
     private static void registerNeeds() {
