@@ -8,6 +8,7 @@ import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
 public abstract class ComponentBase extends BoundedComponent implements IMouseDragListener, IMouseScrollListener {
+    protected boolean display = true;
     private final List<IComponent> subcomponents = new ArrayList<>();
     private final List<IMouseClickListener> clickListeners = new ArrayList<>();
     private final List<IMouseDragListener> dragListeners = new ArrayList<>();
@@ -35,6 +36,7 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
      */
     @Override
     public void draw(final int x, final int y) {
+        if (!display) return;
         drawSubComponents(x, y);
     }
 
@@ -68,6 +70,14 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
             if (isInBounds(x, y, subcomponent)) return subcomponent.mouseScrolled(x, y, lines);
         }
         return false;
+    }
+
+    public boolean isVisible() {
+        return display;
+    }
+
+    public void setVisible(boolean display) {
+        this.display = display;
     }
 
     protected static boolean isInBounds(final double x, final double y, final IComponent subcomponent) {

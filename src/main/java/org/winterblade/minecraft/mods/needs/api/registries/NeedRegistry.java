@@ -1,5 +1,6 @@
 package org.winterblade.minecraft.mods.needs.api.registries;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
@@ -41,7 +42,8 @@ public class NeedRegistry extends TypedRegistry<Need> {
     /**
      * Client-side cache
      */
-    private final Map<String, Double> localCache = new ConcurrentHashMap<>();
+    private final Map<String, AtomicDouble> localCache = new ConcurrentHashMap<>();
+    private List<Tuple<Need, AtomicDouble>> sortedLocalCache;
 
     /**
      * Config storage; client and server both have hashes, server has full configs
@@ -168,19 +170,36 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param need  The need ID
      * @param value The new value
      */
-    public void setLocalNeed(String need, double value) {
-        localCache.put(need, value);
+    public void setLocalNeed(final String need, final double value) {
+        localCache.compute(need, (k, v) -> {
+            if (v != null) {
+                v.set(value);
+                return v;
+            }
+
+            sortedLocalCache = null;
+            return new AtomicDouble(value);
+        });
+
         // TODO: This is debug
         NeedDisplayScreen.open();
     }
 
     /**
      * Called on the client side to get the local cache
-     * @param need The need ID to get
-     * @return  The cached value, or 0 if no cache exists
+     * @return  The cache
      */
-    public double getLocalNeedValue(String need) {
-        return localCache.getOrDefault(need, 0d);
+    public List<Tuple<Need, AtomicDouble>> getLocalNeeds() {
+        if (sortedLocalCache != null) return sortedLocalCache;
+
+        sortedLocalCache = localCache
+                .entrySet()
+                .stream()
+                .map((kv) -> new Tuple<>(getByName(kv.getKey()), kv.getValue()))
+                .sorted(Comparator.comparing(pairs -> pairs.getA().getName()))
+                .collect(Collectors.toList());
+
+        return sortedLocalCache;
     }
 
     /**

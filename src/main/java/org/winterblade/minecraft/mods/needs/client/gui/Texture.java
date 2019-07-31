@@ -121,4 +121,12 @@ public class Texture {
         bufferbuilder.pos( x,  y, z).tex(u1, v1).endVertex();
         tessellator.draw();
     }
+
+    public int getDrawWidth() {
+        return drawWidth;
+    }
+
+    public int getDrawHeight() {
+        return drawHeight;
+    }
 }

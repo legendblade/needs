@@ -5,11 +5,12 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Rectangle2d;
 
 public class TextComponent implements IComponent {
-    private final String text;
     private final int color;
     private final boolean hasShadow;
     private final FontRenderer fontRenderer;
-    private final Rectangle2d bounds;
+
+    private String text;
+    private Rectangle2d bounds;
 
     public TextComponent(final String text, final int x, final int y, final int color) {
         this(text, x, y, color, false);
@@ -32,5 +33,14 @@ public class TextComponent implements IComponent {
     @Override
     public Rectangle2d getBounds() {
         return bounds;
+    }
+
+    /**
+     * Sets the text and updates the bounding box
+     * @param text The new text
+     */
+    public void setText(String text) {
+        this.text = text;
+        this.bounds = new Rectangle2d(bounds.getX(), bounds.getY(), fontRenderer.getStringWidth(text), fontRenderer.FONT_HEIGHT);
     }
 }

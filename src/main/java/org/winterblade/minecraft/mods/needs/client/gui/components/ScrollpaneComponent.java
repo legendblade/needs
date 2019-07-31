@@ -4,17 +4,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Rectangle2d;
 import org.lwjgl.opengl.GL11;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class ScrollpaneComponent extends BoundedComponent implements IMouseScrollListener {
+public class ScrollpaneComponent<T extends IComponent> extends BoundedComponent implements IMouseScrollListener {
     private final ScrollbarComponent bar;
     private final int maxItems;
     private final int componentHeight;
-    private final BiConsumer<IComponent, Integer> populator;
+    private final BiConsumer<T, Integer> populator;
     private final Minecraft client;
 
-    private final IComponent[] components;
+    private final List<T> components;
 
     /**
      *
@@ -24,8 +26,8 @@ public class ScrollpaneComponent extends BoundedComponent implements IMouseScrol
      * @param componentHeight The height of individual components
      * @param populator       Function that accepts: the component and the offset
      */
-    public ScrollpaneComponent(final ScrollbarComponent bar, final Rectangle2d bounds, final Function<Integer, IComponent> itemCtor,
-                               final int componentHeight, final BiConsumer<IComponent, Integer> populator) {
+    public ScrollpaneComponent(final ScrollbarComponent bar, final Rectangle2d bounds, final Function<Integer, T> itemCtor,
+                               final int componentHeight, final BiConsumer<T, Integer> populator) {
         super(bounds);
         this.bar = bar;
         this.componentHeight = componentHeight;
@@ -33,9 +35,9 @@ public class ScrollpaneComponent extends BoundedComponent implements IMouseScrol
         this.maxItems = Math.floorDiv(bounds.getHeight(), componentHeight)+2;
 
         // Create our list items
-        components = new IComponent[maxItems];
+        components = new ArrayList<>(maxItems);
         for (int i = 0; i < maxItems; i++) {
-            components[i] = itemCtor.apply(i);
+            components.add(itemCtor.apply(i));
         }
 
         client = Minecraft.getInstance();
@@ -59,8 +61,9 @@ public class ScrollpaneComponent extends BoundedComponent implements IMouseScrol
         GL11.glScissor(x1, y1, x2, y2);
 
         for (int i = 0; i < maxItems; i++) {
-            populator.accept(components[i], offset + i);
-            components[i].draw(x, y - yOff + i * componentHeight);
+            final T c = components.get(i);
+            populator.accept(c, offset + i);
+            c.draw(x, y - yOff + i * componentHeight);
         }
 
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
@@ -68,7 +71,7 @@ public class ScrollpaneComponent extends BoundedComponent implements IMouseScrol
 
     @Override
     public boolean mouseScrolled(final double x, final double y, final double lines) {
-        bar.adjustScroll((int) Math.ceil(lines * -5));
+        bar.adjustScroll((int) Math.ceil(lines * -15));
         return true;
     }
 }

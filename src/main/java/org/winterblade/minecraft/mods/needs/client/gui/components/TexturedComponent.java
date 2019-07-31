@@ -13,6 +13,7 @@ public class TexturedComponent extends ComponentBase {
 
     @Override
     public void draw(final int x, final int y) {
+        if (!display) return;
         texture.bind();
         texture.draw(x, y, 0);
         super.draw(x, y);
