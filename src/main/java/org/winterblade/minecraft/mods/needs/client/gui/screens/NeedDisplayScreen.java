@@ -28,7 +28,7 @@ public class NeedDisplayScreen extends ComponentScreen {
             new Rectangle2d(298, 24, 12, 195),
             texture.getSubtexture(12, 15, 318, 0),
             texture.getSubtexture(12, 15, 330, 0),
-            () -> NeedRegistry.INSTANCE.getLocalNeeds().size() * itemHeight
+            () -> (NeedRegistry.INSTANCE.getLocalNeeds().size() * itemHeight) - 195
         );
         window.addComponent(bar);
         window.addComponent(new ScrollpaneComponent<>(

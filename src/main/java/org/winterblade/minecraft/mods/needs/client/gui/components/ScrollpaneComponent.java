@@ -71,7 +71,7 @@ public class ScrollpaneComponent<T extends IComponent> extends BoundedComponent 
 
     @Override
     public boolean mouseScrolled(final double x, final double y, final double lines) {
-        bar.adjustScroll((int) Math.ceil(lines * -15));
+        bar.adjustScroll(lines);
         return true;
     }
 }

@@ -16,6 +16,7 @@ import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.client.gui.screens.NeedDisplayScreen;
+import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 import org.winterblade.minecraft.mods.needs.network.ConfigCheckPacket;
 import org.winterblade.minecraft.mods.needs.network.ConfigDesyncPacket;
 import org.winterblade.minecraft.mods.needs.network.ConfigSyncedPacket;
@@ -198,6 +199,14 @@ public class NeedRegistry extends TypedRegistry<Need> {
                 .map((kv) -> new Tuple<>(getByName(kv.getKey()), kv.getValue()))
                 .sorted(Comparator.comparing(pairs -> pairs.getA().getName()))
                 .collect(Collectors.toList());
+
+        // TODO: DEBUG, because I need data, data, data
+        final Random r = new Random();
+        for (int i = 1; i < 30; i++) {
+            final CustomNeed need = new CustomNeed();
+            need.setName("Random need " + i);
+            sortedLocalCache.add(new Tuple<>(need, new AtomicDouble(r.nextInt(100))));
+        }
 
         return sortedLocalCache;
     }

@@ -2,10 +2,14 @@ package org.winterblade.minecraft.mods.needs.client.gui.components;
 
 import net.minecraft.client.renderer.Rectangle2d;
 import org.winterblade.minecraft.mods.needs.client.gui.Texture;
+import org.winterblade.minecraft.mods.needs.client.gui.screens.ComponentScreen;
 
 import java.util.function.Supplier;
 
-public class ScrollbarComponent extends BoundedComponent {
+@SuppressWarnings("WeakerAccess")
+public class ScrollbarComponent extends BoundedComponent implements IMouseScrollListener, IMouseClickListener {
+    private static final int SCROLL_SPEED = 15;
+
     private final Texture active;
     private final Texture inactive;
     private final Supplier<Integer> maxHeight;
@@ -24,16 +28,19 @@ public class ScrollbarComponent extends BoundedComponent {
 
     @Override
     public void draw(final int x, final int y) {
+        final int prevMax = max;
         max = maxHeight.get();
-        if (max <= bounds.getHeight()) {
+        if (max <= 0) {
+            currentOffset = 0;
             canScroll = false;
             inactive.bind();
             inactive.draw(x, y, 1);
             return;
         }
+        if (max != prevMax) setScrollOffset(currentOffset);
 
         canScroll = true;
-        final int handleY = Math.floorDiv(currentOffset, max) * activeHeight;
+        final int handleY = (int) Math.floor((currentOffset / (double)max) * activeHeight);
         active.bind();
         active.draw(x, y + handleY, 1);
     }
@@ -43,14 +50,30 @@ public class ScrollbarComponent extends BoundedComponent {
     }
 
     public void setScrollOffset(final int offset) {
-        if (!canScroll) {
-            currentOffset = 0;
-            return;
-        }
-        currentOffset = Math.max(Math.min(offset, max - activeHeight), 0);
+        currentOffset = canScroll
+            ? Math.max(Math.min(offset, max), 0)
+            : 0;
     }
 
-    public void adjustScroll(final int amount) {
-        setScrollOffset(currentOffset + amount);
+    public void adjustScroll(final double amount) {
+        setScrollOffset(currentOffset + (int) Math.ceil(amount * -SCROLL_SPEED));
+    }
+
+    @Override
+    public boolean mouseScrolled(final double x, final double y, final double lines) {
+        adjustScroll(lines);
+        return true;
+    }
+
+    @Override
+    public boolean mouseClicked(final double x, final double y, final ComponentScreen.MouseButtons button) {
+        // TODO: This is lazy
+        setScrollOffset((int) Math.floor((y/(double)activeHeight) * max));
+        return true;
+    }
+
+    @Override
+    public boolean mouseReleased(final double x, final double y, final ComponentScreen.MouseButtons button) {
+        return true;
     }
 }

@@ -43,7 +43,10 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
     @Override
     public boolean mouseClicked(final double x, final double y, final ComponentScreen.MouseButtons button) {
         for (final IMouseClickListener subcomponent : clickListeners) {
-            if (isInBounds(x, y, subcomponent)) return subcomponent.mouseClicked(x, y, button);
+            if (isInBounds(x, y, subcomponent)) {
+                final Rectangle2d sb = subcomponent.getBounds();
+                return subcomponent.mouseClicked(x - sb.getX(), y - sb.getY(), button);
+            }
         }
         return false;
     }
@@ -51,7 +54,10 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
     @Override
     public boolean mouseReleased(final double x, final double y, final ComponentScreen.MouseButtons button) {
         for (final IMouseClickListener subcomponent : clickListeners) {
-            if (isInBounds(x, y, subcomponent)) return subcomponent.mouseReleased(x, y, button);
+            if (isInBounds(x, y, subcomponent)) {
+                final Rectangle2d sb = subcomponent.getBounds();
+                return subcomponent.mouseReleased(x - sb.getX(), y - sb.getY(), button);
+            }
         }
         return false;
     }
@@ -59,7 +65,10 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
     @Override
     public boolean mouseDragged(final double x, final double y, final ComponentScreen.MouseButtons button, final double dragX, final double dragY) {
         for (final IMouseDragListener subcomponent : dragListeners) {
-            if (isInBounds(x, y, subcomponent) && isInBounds(dragX, dragY, subcomponent)) return subcomponent.mouseDragged(x, y, button, dragX, dragY);
+            if (isInBounds(x, y, subcomponent) && isInBounds(dragX, dragY, subcomponent)) {
+                final Rectangle2d sb = subcomponent.getBounds();
+                return subcomponent.mouseDragged(x - sb.getX(), y - sb.getY(), button, dragX - sb.getX(), dragY - sb.getY());
+            }
         }
         return false;
     }
@@ -67,7 +76,10 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
     @Override
     public boolean mouseScrolled(final double x, final double y, final double lines) {
         for (final IMouseScrollListener subcomponent : scrollListeners) {
-            if (isInBounds(x, y, subcomponent)) return subcomponent.mouseScrolled(x, y, lines);
+            if (isInBounds(x, y, subcomponent)) {
+                final Rectangle2d sb = subcomponent.getBounds();
+                return subcomponent.mouseScrolled(x - sb.getX(), y - sb.getY(), lines);
+            }
         }
         return false;
     }
@@ -76,7 +88,7 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
         return display;
     }
 
-    public void setVisible(boolean display) {
+    public void setVisible(final boolean display) {
         this.display = display;
     }
 
