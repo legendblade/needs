@@ -1,17 +1,16 @@
 package org.winterblade.minecraft.mods.needs.client.gui.components;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.Rectangle2d;
 import org.lwjgl.opengl.GL11;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class ScrollpaneComponent implements IComponent {
+public class ScrollpaneComponent extends BoundedComponent implements IMouseScrollListener {
     private final ScrollbarComponent bar;
     private final int maxItems;
     private final int componentHeight;
-    private final int width;
-    private final int height;
     private final BiConsumer<IComponent, Integer> populator;
     private final Minecraft client;
 
@@ -20,20 +19,18 @@ public class ScrollpaneComponent implements IComponent {
     /**
      *
      * @param bar             The scrollbar component
-     * @param width           The overall width of the scrollpane
-     * @param height          The overall height of the scrollpane
+     * @param bounds          The bounds of the pane
      * @param itemCtor        Returns a component for the given item offset
      * @param componentHeight The height of individual components
      * @param populator       Function that accepts: the component and the offset
      */
-    public ScrollpaneComponent(final ScrollbarComponent bar, final int width, final int height, final Function<Integer, IComponent> itemCtor,
+    public ScrollpaneComponent(final ScrollbarComponent bar, final Rectangle2d bounds, final Function<Integer, IComponent> itemCtor,
                                final int componentHeight, final BiConsumer<IComponent, Integer> populator) {
+        super(bounds);
         this.bar = bar;
         this.componentHeight = componentHeight;
-        this.width = width;
-        this.height = height;
         this.populator = populator;
-        this.maxItems = Math.floorDiv(height, componentHeight)+2;
+        this.maxItems = Math.floorDiv(bounds.getHeight(), componentHeight)+2;
 
         // Create our list items
         components = new IComponent[maxItems];
@@ -55,9 +52,9 @@ public class ScrollpaneComponent implements IComponent {
         final double scaleH = client.mainWindow.getHeight() / (double)client.mainWindow.getScaledHeight();
 
         final int x1 = (int) ((x) * scaleW);
-        final int y1 = client.mainWindow.getHeight() - ((int) (y * scaleH) + (int) (height * scaleH));
-        final int x2 = (int) (width * scaleW);
-        final int y2 = (int) (height * scaleH);
+        final int y1 = client.mainWindow.getHeight() - ((int) (y * scaleH) + (int) (bounds.getHeight() * scaleH));
+        final int x2 = (int) (bounds.getWidth() * scaleW);
+        final int y2 = (int) (bounds.getHeight() * scaleH);
 
         GL11.glScissor(x1, y1, x2, y2);
 
@@ -67,5 +64,11 @@ public class ScrollpaneComponent implements IComponent {
         }
 
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
+    }
+
+    @Override
+    public boolean mouseScrolled(final double x, final double y, final double lines) {
+        bar.adjustScroll((int) Math.ceil(lines * -5));
+        return true;
     }
 }

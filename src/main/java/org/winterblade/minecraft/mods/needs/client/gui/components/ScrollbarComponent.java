@@ -1,9 +1,12 @@
 package org.winterblade.minecraft.mods.needs.client.gui.components;
 
-public class ScrollbarComponent implements IComponent {
+import net.minecraft.client.renderer.Rectangle2d;
+
+public class ScrollbarComponent extends BoundedComponent {
     private int currentOffset;
 
-    public ScrollbarComponent() {
+    public ScrollbarComponent(final Rectangle2d bounds) {
+        super(bounds);
         currentOffset = 0;
     }
 
@@ -18,5 +21,9 @@ public class ScrollbarComponent implements IComponent {
 
     public void setScrollOffset(final int offset) {
         currentOffset = offset;
+    }
+
+    public void adjustScroll(final int amount) {
+        currentOffset += amount;
     }
 }
