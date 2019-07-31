@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.Need;
+import org.winterblade.minecraft.mods.needs.client.gui.screens.NeedDisplayScreen;
 import org.winterblade.minecraft.mods.needs.network.ConfigCheckPacket;
 import org.winterblade.minecraft.mods.needs.network.ConfigDesyncPacket;
 import org.winterblade.minecraft.mods.needs.network.ConfigSyncedPacket;
@@ -169,6 +170,8 @@ public class NeedRegistry extends TypedRegistry<Need> {
      */
     public void setLocalNeed(String need, double value) {
         localCache.put(need, value);
+        // TODO: This is debug
+        NeedDisplayScreen.open();
     }
 
     /**
@@ -218,7 +221,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
         // Shortcut the entire system when it's just the local client:
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             // Yes, I know, this is breaking rules about cross access from server to client
-            onConfigSynced(event.getPlayer(), (n, v) -> localCache.put(n.getName(), v));
+            onConfigSynced(event.getPlayer(), (n, v) -> setLocalNeed(n.getName(), v));
         });
     }
 
