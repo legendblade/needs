@@ -8,6 +8,7 @@ import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
+import org.winterblade.minecraft.mods.needs.client.gui.Texture;
 import org.winterblade.minecraft.mods.needs.util.ColorAdapter;
 
 import javax.annotation.Nonnull;
@@ -16,7 +17,7 @@ import java.util.*;
 @SuppressWarnings("WeakerAccess")
 public class UiMixin extends BaseMixin {
     public static final UiMixin NONE;
-    public static final ResourceLocation GENERIC_ICON = new ResourceLocation(NeedsMod.MODID, "gui/generic_need.png");
+    public static final Texture GENERIC_ICON = new Texture(new ResourceLocation(NeedsMod.MODID, "gui/generic_need.png"), 34, 34);
     private static List<Need.Local> sortedLocalCache;
 
     static {
@@ -26,17 +27,43 @@ public class UiMixin extends BaseMixin {
     }
 
     @Expose
+    @SuppressWarnings("FieldMayBeFinal")
     private String displayName;
 
     @Expose
+    @SuppressWarnings("FieldMayBeFinal")
     private String icon;
+
+    @Expose
+    @SuppressWarnings("FieldMayBeFinal")
+    private int iconWidth = 34;
+
+    @Expose
+    @SuppressWarnings("FieldMayBeFinal")
+    private int iconHeight = 34;
+
+    @Expose
+    @SuppressWarnings("FieldMayBeFinal")
+    private int iconX = 0;
+
+    @Expose
+    @SuppressWarnings("FieldMayBeFinal")
+    private int iconY = 0;
+
+    @Expose
+    @SuppressWarnings("FieldMayBeFinal")
+    private int iconOffsetX = 0;
+
+    @Expose
+    @SuppressWarnings("FieldMayBeFinal")
+    private int iconOffsetY = 0;
 
     @Expose
     @JsonAdapter(ColorAdapter.class)
     private int color;
 
     private boolean shouldDisplay = true;
-    private ResourceLocation iconTexture;
+    private Texture iconTexture;
 
     @Override
     public void onCreated(final Need need) {
@@ -48,8 +75,19 @@ public class UiMixin extends BaseMixin {
             final String[] split = icon.split(":");
 
             if (split.length <= 0) iconTexture = GENERIC_ICON;
-            else if (split.length <= 1) iconTexture = new ResourceLocation(NeedsMod.MODID, "gui/needs/" + icon);
-            else iconTexture = new ResourceLocation(split[0], split[1]);
+            else if (split.length <= 1) {
+                iconTexture = new Texture(new ResourceLocation(NeedsMod.MODID, "textures/gui/needs/" + icon),34,34);
+            } else {
+                iconTexture = new Texture(
+                    new ResourceLocation(split[0], split[1]),
+                    iconWidth,
+                    iconHeight,
+                    iconX,
+                    iconY,
+                    iconWidth,
+                    iconHeight
+                );
+            }
         } else {
             iconTexture = GENERIC_ICON;
         }
@@ -65,8 +103,16 @@ public class UiMixin extends BaseMixin {
     }
 
     @Nonnull
-    public ResourceLocation getIconTexture() {
+    public Texture getIconTexture() {
         return iconTexture != null ? iconTexture : GENERIC_ICON;
+    }
+
+    public int getIconOffsetX() {
+        return iconOffsetX;
+    }
+
+    public int getIconOffsetY() {
+        return iconOffsetY;
     }
 
     public int getColor() {

@@ -63,6 +63,7 @@ public class ScrollpaneComponent<T extends IComponent> extends BoundedComponent 
         for (int i = 0; i < maxItems; i++) {
             final T c = components.get(i);
             populator.accept(c, offset + i);
+            if (!c.isVisible()) continue;
             c.draw(x, y - yOff + i * componentHeight);
         }
 

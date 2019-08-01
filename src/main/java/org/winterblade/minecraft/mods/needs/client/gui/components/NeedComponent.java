@@ -15,6 +15,9 @@ public class NeedComponent extends TexturedComponent {
     private final ColorBarComponent currentBounds;
     private final MovableTextureComponent lowerBound;
     private final MovableTextureComponent upperBound;
+    private Texture icon;
+    private int iconOffsetX;
+    private int iconOffsetY;
 
     public NeedComponent(final Texture texture, final Rectangle2d bounds) {
         super(texture, bounds);
@@ -46,6 +49,15 @@ public class NeedComponent extends TexturedComponent {
         addComponent(upperBound);
 
         setVisible(false);
+    }
+
+    @Override
+    public void draw(final int x, final int y) {
+        super.draw(x, y);
+
+        // We're just cheating, because the icon can move around and change and (etc, etc) and I'm lazy:
+        icon.bind();
+        icon.draw(x + iconOffsetX + 3, y + iconOffsetY + 3,1);
     }
 
     public void setTitle(final String title) {
@@ -109,5 +121,17 @@ public class NeedComponent extends TexturedComponent {
 
         this.level.setVisible(true);
         this.level.setText(level);
+    }
+
+    /**
+     * Sets the icon to draw later
+     * @param icon    The icon texture
+     * @param offsetX The icon's X offset
+     * @param offsetY The icon's Y offset
+     */
+    public void setIcon(final Texture icon, final int offsetX, final int offsetY) {
+        this.icon = icon;
+        this.iconOffsetX = offsetX;
+        this.iconOffsetY = offsetY;
     }
 }

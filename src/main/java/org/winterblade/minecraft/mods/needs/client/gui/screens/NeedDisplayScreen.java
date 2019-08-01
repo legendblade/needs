@@ -63,6 +63,7 @@ public class NeedDisplayScreen extends ComponentScreen {
                     );
 
                     c.setLevel(localNeed.getLevel(), localNeed.hasLevels());
+                    c.setIcon(mixin.getIconTexture(), mixin.getIconOffsetX(), mixin.getIconOffsetY());
                 }
         ));
     }

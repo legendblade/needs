@@ -58,7 +58,7 @@ public class Texture {
      * @param drawWidth  The width to draw the texture
      * @param drawHeight The height to draw the texture
      */
-    protected Texture(final ResourceLocation loc, final int texWidth, final int texHeight, final int xOffset,
+    public Texture(final ResourceLocation loc, final int texWidth, final int texHeight, final int xOffset,
                       final int yOffset, final int drawWidth, final int drawHeight) {
         this.loc = loc;
         this.width = texWidth;
