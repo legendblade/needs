@@ -1,6 +1,5 @@
 package org.winterblade.minecraft.mods.needs.api.registries;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
@@ -43,7 +42,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
     /**
      * Client-side cache
      */
-    private final Map<String, AtomicDouble> localCache = new ConcurrentHashMap<>();
+    private final Map<String, Need.Local> localCache = new ConcurrentHashMap<>();
     private List<Need.Local> sortedLocalCache;
 
     /**
@@ -169,18 +168,26 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
     /**
      * Called on the client side when a need's value is changed by the server
-     * @param need  The need ID
+     * @param name  The need ID
      * @param value The new value
+     * @param min   The min value of the need for this player
+     * @param max   The max value of the need for this player
      */
-    public void setLocalNeed(final String need, final double value) {
-        localCache.compute(need, (k, v) -> {
+    public void setLocalNeed(final String name, final double value, final double min, final double max) {
+        localCache.compute(name, (k, v) -> {
             if (v != null) {
-                v.set(value);
+                v.setValue(value);
+                v.setMin(min);
+                v.setMax(max);
                 return v;
             }
 
+            final Need need = getByName(name);
+            if (need == null) return null;
+
             sortedLocalCache = null;
-            return new AtomicDouble(value);
+
+            return new Need.Local(need, value, min, max);
         });
 
         // TODO: This is debug
@@ -196,9 +203,9 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
         // Iterate the map, pulling out any now invalid needs
         sortedLocalCache = new ArrayList<>();
-        final Iterator<Map.Entry<String, AtomicDouble>> iter = localCache.entrySet().iterator();
+        final Iterator<Map.Entry<String, Need.Local>> iter = localCache.entrySet().iterator();
         while (iter.hasNext()) {
-            final Map.Entry<String, AtomicDouble> kv = iter.next();
+            final Map.Entry<String, Need.Local> kv = iter.next();
             final Need need = getByName(kv.getKey());
 
             // This will happen if a config update pulls out a need (which isn't possible yet, but Soon TM)
@@ -207,7 +214,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
                 continue;
             }
 
-            sortedLocalCache.add(new Need.Local(need, kv.getValue()));
+            sortedLocalCache.add(kv.getValue());
         }
 
         // Finally, sort it by name
@@ -218,7 +225,10 @@ public class NeedRegistry extends TypedRegistry<Need> {
         for (int i = 1; i < 30; i++) {
             final CustomNeed need = new CustomNeed();
             need.setName("Random need " + i);
-            sortedLocalCache.add(new Need.Local(need, new AtomicDouble(r.nextInt(100))));
+            final int spread = r.nextInt(50000);
+            final int min = r.nextInt(spread) - (r.nextInt(250) + 125);
+            final int max = min + spread;
+            sortedLocalCache.add(new Need.Local(need, r.nextInt(spread) + min, min, max));
         }
 
         return sortedLocalCache;
@@ -250,7 +260,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
         );
     }
 
-    public void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+    public void onLogin(final PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getPlayer() instanceof ServerPlayerEntity)) return;
 
         // Only run config sync when on the dedicated server; if you manage to desync configs on a client... how?
@@ -262,7 +272,9 @@ public class NeedRegistry extends TypedRegistry<Need> {
         // Shortcut the entire system when it's just the local client:
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             // Yes, I know, this is breaking rules about cross access from server to client
-            onConfigSynced(event.getPlayer(), (n, v) -> setLocalNeed(n.getName(), v));
+            onConfigSynced(event.getPlayer(),
+                (n, v) -> setLocalNeed(n.getName(), v, n.getMin(event.getPlayer()), n.getMax(event.getPlayer()))
+            );
         });
     }
 
@@ -271,7 +283,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param player   The player
      * @param callback Callback invoked with the value of a single need
      */
-    public void onConfigSynced(PlayerEntity player, BiConsumer<Need, Double> callback) {
+    public void onConfigSynced(final PlayerEntity player, final BiConsumer<Need, Double> callback) {
         // TODO: I'd prefer to sync slowly instead of all at once; figure out a way to appropriately run later
         loaded.forEach((n) -> {
             callback.accept(n, n.getValue(player));

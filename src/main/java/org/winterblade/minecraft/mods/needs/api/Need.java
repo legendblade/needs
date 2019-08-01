@@ -29,7 +29,6 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 @JsonAdapter(NeedRegistry.class)
@@ -152,12 +151,12 @@ public abstract class Need {
      * @param prevValue The previous value of the need
      * @param newValue  The new value of the need
      */
-    protected void sendUpdates(PlayerEntity player, IManipulator source, double prevValue, double newValue) {
+    protected void sendUpdates(final PlayerEntity player, final IManipulator source, final double prevValue, final double newValue) {
         MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Post(this, player, source, prevValue, newValue));
 
         // Deal with new level:
-        NeedLevel prevLevel = getLevel(prevValue);
-        NeedLevel newLevel = getLevel(newValue);
+        final NeedLevel prevLevel = getLevel(prevValue);
+        final NeedLevel newLevel = getLevel(newValue);
         if (!prevLevel.equals(newLevel)) {
             prevLevel.onExit(player);
             newLevel.onEnter(player);
@@ -168,7 +167,7 @@ public abstract class Need {
         if (!(player instanceof ServerPlayerEntity)) return;
         NetworkManager.INSTANCE.send(
             PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-            new NeedUpdatePacket(getName(), newValue)
+            new NeedUpdatePacket(getName(), newValue, getMin(player), getMax(player))
         );
     }
 
@@ -195,14 +194,14 @@ public abstract class Need {
     public abstract String getName();
 
     /**
-     * Gets the minimum value of this need
+     * Gets the minimum value of this need; this will be called often
      * @return  The minimum value
      * @param player    The player to get the min for
      */
     public abstract double getMin(PlayerEntity player);
 
     /**
-     * Gets the maximum value of this need
+     * Gets the maximum value of this need; this will be called often
      * @return  The maximum value
      * @param player    The player to get the max for
      */
@@ -212,19 +211,19 @@ public abstract class Need {
      * Initialize this need
      * @param player The player to initialize
      */
-    public void initialize(PlayerEntity player) {
+    public void initialize(final PlayerEntity player) {
 
     }
 
     /**
-     * Get the current value of the need
+     * Get the current value of the need; this will be called often
      * @param player    The player to get the value for
      * @return          The current value
      */
     public abstract double getValue(PlayerEntity player);
 
     /**
-     * Gets if the value is initialized for the given player
+     * Gets if the value is initialized for the given player; this will be called often
      * @param player    The player to check
      * @return          If the value is initialized for the player
      */
@@ -290,13 +289,17 @@ public abstract class Need {
 
     public static class Local {
         private final WeakReference<Need> need;
-        private final AtomicDouble value;
+        private double value;
+        private double min;
+        private double max;
         private final String name;
 
-        public Local(@Nonnull final Need need, @Nonnull final AtomicDouble value) {
+        public Local(@Nonnull final Need need, final double value, final double min, final double max) {
             this.name = need.getName();
             this.need = new WeakReference<>(need);
             this.value = value;
+            this.min = min;
+            this.max = max;
         }
 
         /**
@@ -309,12 +312,19 @@ public abstract class Need {
         }
 
         /**
-         * Gets the local cached value of the need; this instance is safe to hold on to
-         * as long as the need itself is valid and will get updated as the local cache does.
-         * @return The atomic holder of the local cached value
+         * Gets the local cached value of the need
+         * @return The local cached value
          */
-        public AtomicDouble getValue() {
+        public double getValue() {
             return value;
+        }
+
+        /**
+         * Sets the local cached value of the need
+         * @param value The value
+         */
+        public void setValue(final double value) {
+            this.value = value;
         }
 
         /**
@@ -326,13 +336,20 @@ public abstract class Need {
         }
 
         public double getMin() {
-            // TODO:
-            return 0;
+            return min;
+        }
+
+        public void setMin(final double min) {
+            this.min = min;
         }
 
         public double getMax() {
             // TODO:
-            return 100;
+            return max;
+        }
+
+        public void setMax(final double max) {
+            this.max = max;
         }
     }
 }

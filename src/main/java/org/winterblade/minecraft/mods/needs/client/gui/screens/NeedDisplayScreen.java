@@ -41,16 +41,16 @@ public class NeedDisplayScreen extends ComponentScreen {
                         return;
                     }
 
-                    final Need.Local pair = localNeeds.get(i);
-                    final Need need = pair.getNeed().get();
+                    final Need.Local localNeed = localNeeds.get(i);
+                    final Need need = localNeed.getNeed().get();
                     if (need == null) {
                         c.setVisible(false);
                         return;
                     }
 
                     c.setVisible(true);
-                    c.setTitle(pair.getName());
-                    c.setBarValues(pair.getMin(), pair.getMax(), pair.getValue().doubleValue(), (i * 0x66) % 0xFFFFFF);
+                    c.setTitle(localNeed.getName());
+                    c.setBarValues(localNeed.getMin(), localNeed.getMax(), localNeed.getValue(), (i * 0x66) % 0xFFFFFF);
                 }
         ));
     }

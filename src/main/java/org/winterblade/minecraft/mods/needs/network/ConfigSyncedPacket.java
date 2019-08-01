@@ -13,21 +13,21 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("unused")
 public class ConfigSyncedPacket {
-    public void encode(PacketBuffer packetBuffer) {
+    public void encode(final PacketBuffer packetBuffer) {
     }
 
-    public static ConfigSyncedPacket decode(PacketBuffer packetBuffer) {
+    public static ConfigSyncedPacket decode(final PacketBuffer packetBuffer) {
         return new ConfigSyncedPacket();
     }
 
-    public static void handle(ConfigSyncedPacket msg, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(final ConfigSyncedPacket msg, final Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ServerPlayerEntity sender = ctx.get().getSender();
+            final ServerPlayerEntity sender = ctx.get().getSender();
             if (sender == null) return;
 
-            PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> sender);
+            final PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> sender);
             NeedRegistry.INSTANCE.onConfigSynced(sender, (n, v) ->
-                NetworkManager.INSTANCE.send(target, new NeedUpdatePacket(n.getName(), v))
+                NetworkManager.INSTANCE.send(target, new NeedUpdatePacket(n.getName(), v, n.getMin(sender), n.getMax(sender)))
             );
         });
         ctx.get().setPacketHandled(true);
