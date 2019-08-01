@@ -1,11 +1,9 @@
 package org.winterblade.minecraft.mods.needs.client.gui.screens;
 
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraft.util.text.ITextComponent;
-import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.client.gui.Texture;
-import org.winterblade.minecraft.mods.needs.client.gui.components.*;
+import org.winterblade.minecraft.mods.needs.client.gui.components.ComponentBase;
 
 import javax.annotation.Nonnull;
 

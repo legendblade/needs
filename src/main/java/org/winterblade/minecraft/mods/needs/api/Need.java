@@ -1,6 +1,7 @@
 package org.winterblade.minecraft.mods.needs.api;
 
 import com.google.common.collect.*;
+import com.google.common.util.concurrent.AtomicDouble;
 import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
@@ -24,9 +25,11 @@ import org.winterblade.minecraft.mods.needs.network.NeedUpdatePacket;
 import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 
 import javax.annotation.Nonnull;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 @JsonAdapter(NeedRegistry.class)
@@ -283,5 +286,53 @@ public abstract class Need {
     private void onPlayerJoined(PlayerLoggedInEvent event) {
         NeedLevel level = getLevel(event.getPlayer());
         level.onPlayerJoined(event.getPlayer());
+    }
+
+    public static class Local {
+        private final WeakReference<Need> need;
+        private final AtomicDouble value;
+        private final String name;
+
+        public Local(@Nonnull final Need need, @Nonnull final AtomicDouble value) {
+            this.name = need.getName();
+            this.need = new WeakReference<>(need);
+            this.value = value;
+        }
+
+        /**
+         * The local cached need; this need is not guaranteed to remain valid through configuration reloads
+         * and the direct value should not be held onto itself.
+         * @return  A weak reference to the need
+         */
+        public WeakReference<Need> getNeed() {
+            return need;
+        }
+
+        /**
+         * Gets the local cached value of the need; this instance is safe to hold on to
+         * as long as the need itself is valid and will get updated as the local cache does.
+         * @return The atomic holder of the local cached value
+         */
+        public AtomicDouble getValue() {
+            return value;
+        }
+
+        /**
+         * Gets the name of this need
+         * @return The name of the need
+         */
+        public String getName() {
+            return name;
+        }
+
+        public double getMin() {
+            // TODO:
+            return 0;
+        }
+
+        public double getMax() {
+            // TODO:
+            return 100;
+        }
     }
 }

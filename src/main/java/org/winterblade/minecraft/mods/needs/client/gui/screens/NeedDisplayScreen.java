@@ -1,9 +1,7 @@
 package org.winterblade.minecraft.mods.needs.client.gui.screens;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Rectangle2d;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.text.StringTextComponent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.Need;
@@ -37,16 +35,22 @@ public class NeedDisplayScreen extends ComponentScreen {
                 (i) -> new NeedComponent(texture.getSubtexture(284, itemHeight, 0, 227), new Rectangle2d(0, 0, 284, itemHeight)),
                 itemHeight,
                 (c, i) -> {
-                    final List<Tuple<Need, AtomicDouble>> localNeeds = NeedRegistry.INSTANCE.getLocalNeeds();
+                    final List<Need.Local> localNeeds = NeedRegistry.INSTANCE.getLocalNeeds();
                     if (localNeeds.size() <= i) {
                         c.setVisible(false);
                         return;
                     }
 
-                    final Tuple<Need, AtomicDouble> pair = localNeeds.get(i);
+                    final Need.Local pair = localNeeds.get(i);
+                    final Need need = pair.getNeed().get();
+                    if (need == null) {
+                        c.setVisible(false);
+                        return;
+                    }
 
                     c.setVisible(true);
-                    c.setTitle(pair.getA().getName());
+                    c.setTitle(pair.getName());
+                    c.setBarValues(pair.getMin(), pair.getMax(), pair.getValue().doubleValue(), (i * 0x66) % 0xFFFFFF);
                 }
         ));
     }

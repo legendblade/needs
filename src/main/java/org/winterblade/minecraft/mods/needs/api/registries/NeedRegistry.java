@@ -44,7 +44,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * Client-side cache
      */
     private final Map<String, AtomicDouble> localCache = new ConcurrentHashMap<>();
-    private List<Tuple<Need, AtomicDouble>> sortedLocalCache;
+    private List<Need.Local> sortedLocalCache;
 
     /**
      * Config storage; client and server both have hashes, server has full configs
@@ -136,6 +136,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param need  The name of the need
      * @return      The need matching that name or type.
      */
+    @Nullable
     public Need getByName(String need) {
         return loaded
                 .stream()
@@ -190,22 +191,34 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * Called on the client side to get the local cache
      * @return  The cache
      */
-    public List<Tuple<Need, AtomicDouble>> getLocalNeeds() {
+    public List<Need.Local> getLocalNeeds() {
         if (sortedLocalCache != null) return sortedLocalCache;
 
-        sortedLocalCache = localCache
-                .entrySet()
-                .stream()
-                .map((kv) -> new Tuple<>(getByName(kv.getKey()), kv.getValue()))
-                .sorted(Comparator.comparing(pairs -> pairs.getA().getName()))
-                .collect(Collectors.toList());
+        // Iterate the map, pulling out any now invalid needs
+        sortedLocalCache = new ArrayList<>();
+        final Iterator<Map.Entry<String, AtomicDouble>> iter = localCache.entrySet().iterator();
+        while (iter.hasNext()) {
+            final Map.Entry<String, AtomicDouble> kv = iter.next();
+            final Need need = getByName(kv.getKey());
+
+            // This will happen if a config update pulls out a need (which isn't possible yet, but Soon TM)
+            if (need == null) {
+                iter.remove();
+                continue;
+            }
+
+            sortedLocalCache.add(new Need.Local(need, kv.getValue()));
+        }
+
+        // Finally, sort it by name
+        sortedLocalCache.sort(Comparator.comparing(Need.Local::getName));
 
         // TODO: DEBUG, because I need data, data, data
         final Random r = new Random();
         for (int i = 1; i < 30; i++) {
             final CustomNeed need = new CustomNeed();
             need.setName("Random need " + i);
-            sortedLocalCache.add(new Tuple<>(need, new AtomicDouble(r.nextInt(100))));
+            sortedLocalCache.add(new Need.Local(need, new AtomicDouble(r.nextInt(100))));
         }
 
         return sortedLocalCache;
