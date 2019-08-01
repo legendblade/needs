@@ -20,6 +20,7 @@ import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
 import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
+import org.winterblade.minecraft.mods.needs.mixins.UiMixin;
 import org.winterblade.minecraft.mods.needs.network.NeedUpdatePacket;
 import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 
@@ -29,6 +30,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 @JsonAdapter(NeedRegistry.class)
@@ -44,6 +47,7 @@ public abstract class Need {
     private List<NeedLevel> levelList = Collections.emptyList();
 
     private RangeMap<Double, NeedLevel> levels = TreeRangeMap.create();
+    private boolean shouldSync;
 
     /**
      * Determines if a need should be able to be declared more than once.
@@ -164,7 +168,7 @@ public abstract class Need {
         }
 
         // Make really, really, really sure we're on the server side before sending a packet to the player:
-        if (!(player instanceof ServerPlayerEntity)) return;
+        if (!shouldSync || !(player instanceof ServerPlayerEntity)) return;
         NetworkManager.INSTANCE.send(
             PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
             new NeedUpdatePacket(getName(), newValue, getMin(player), getMax(player))
@@ -258,6 +262,23 @@ public abstract class Need {
      */
     public Map<Range<Double>, NeedLevel> getLevels() {
         return levels.asMapOfRanges();
+    }
+
+    /**
+     * Flags the need to be synced from the server to the client. This is generally set by a mixin,
+     * but can also be set by a mod
+     */
+    public final void enableSyncing() {
+        shouldSync = true;
+        NeedRegistry.INSTANCE.registerForSync();
+    }
+
+    /**
+     * Checks if the need should be synced
+     * @return True if the need should sync
+     */
+    public final boolean shouldSync() {
+        return shouldSync;
     }
 
     /**

@@ -1,5 +1,6 @@
 package org.winterblade.minecraft.mods.needs.api.registries;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
@@ -14,8 +15,8 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.Need;
+import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
 import org.winterblade.minecraft.mods.needs.client.gui.screens.NeedDisplayScreen;
-import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 import org.winterblade.minecraft.mods.needs.network.ConfigCheckPacket;
 import org.winterblade.minecraft.mods.needs.network.ConfigDesyncPacket;
 import org.winterblade.minecraft.mods.needs.network.ConfigSyncedPacket;
@@ -38,12 +39,12 @@ public class NeedRegistry extends TypedRegistry<Need> {
     private final Set<String> dependencies = new HashSet<>();
     private final Set<Need> loaded = new HashSet<>();
     private final WeakHashMap<Need, Consumer<PlayerEntity>> perPlayerTick = new WeakHashMap<>();
+    private boolean shouldSync = false;
 
     /**
      * Client-side cache
      */
     private final Map<String, Need.Local> localCache = new ConcurrentHashMap<>();
-    private List<Need.Local> sortedLocalCache;
 
     /**
      * Config storage; client and server both have hashes, server has full configs
@@ -167,6 +168,17 @@ public class NeedRegistry extends TypedRegistry<Need> {
     }
 
     /**
+     * Registers that a need needs to be synced down from the server to the client.
+     *
+     * Without at least one need being synced, the system will not transmit any update packets to the player.
+     *
+     * If you do anything client side with a need, you should register it here and work with the standard sync process.
+     */
+    public void registerForSync() {
+        shouldSync = true;
+    }
+
+    /**
      * Called on the client side when a need's value is changed by the server
      * @param name  The need ID
      * @param value The new value
@@ -182,10 +194,10 @@ public class NeedRegistry extends TypedRegistry<Need> {
                 return v;
             }
 
+            MinecraftForge.EVENT_BUS.post(new LocalCacheUpdatedEvent());
+
             final Need need = getByName(name);
             if (need == null) return null;
-
-            sortedLocalCache = null;
 
             return new Need.Local(need, value, min, max);
         });
@@ -195,31 +207,11 @@ public class NeedRegistry extends TypedRegistry<Need> {
     }
 
     /**
-     * Called on the client side to get the local cache
-     * @return  The cache
+     * Gets an immutable copy of the local cahce
+     * @return The cache
      */
-    public List<Need.Local> getLocalNeeds() {
-        if (sortedLocalCache != null) return sortedLocalCache;
-
-        // Iterate the map, pulling out any now invalid needs
-        sortedLocalCache = new ArrayList<>();
-        final Iterator<Map.Entry<String, Need.Local>> iter = localCache.entrySet().iterator();
-        while (iter.hasNext()) {
-            final Map.Entry<String, Need.Local> kv = iter.next();
-            final Need need = getByName(kv.getKey());
-
-            // This will happen if a config update pulls out a need (which isn't possible yet, but Soon TM)
-            if (need == null) {
-                iter.remove();
-                continue;
-            }
-
-            sortedLocalCache.add(kv.getValue());
-        }
-
-        // Finally, sort it by name
-        sortedLocalCache.sort(Comparator.comparing(Need.Local::getName));
-        return sortedLocalCache;
+    public Map<String, Need.Local> getLocalCache() {
+        return ImmutableMap.copyOf(localCache);
     }
 
     /**
@@ -248,6 +240,10 @@ public class NeedRegistry extends TypedRegistry<Need> {
         );
     }
 
+    /**
+     * Called when the player logs in to the server
+     * @param event The login event
+     */
     public void onLogin(final PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getPlayer() instanceof ServerPlayerEntity)) return;
 
@@ -274,6 +270,9 @@ public class NeedRegistry extends TypedRegistry<Need> {
     public void onConfigSynced(final PlayerEntity player, final BiConsumer<Need, Double> callback) {
         // TODO: I'd prefer to sync slowly instead of all at once; figure out a way to appropriately run later
         loaded.forEach((n) -> {
+            // Only sync the need values if it's required on the clietn
+            if(!n.shouldSync()) return;
+
             callback.accept(n, n.getValue(player));
         });
     }

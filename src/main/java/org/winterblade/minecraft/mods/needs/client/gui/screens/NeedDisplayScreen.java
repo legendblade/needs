@@ -5,9 +5,9 @@ import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraft.util.text.StringTextComponent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.Need;
-import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.client.gui.Texture;
 import org.winterblade.minecraft.mods.needs.client.gui.components.*;
+import org.winterblade.minecraft.mods.needs.mixins.UiMixin;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class NeedDisplayScreen extends ComponentScreen {
             new Rectangle2d(298, 24, 12, 195),
             texture.getSubtexture(12, 15, 318, 0),
             texture.getSubtexture(12, 15, 330, 0),
-            () -> (NeedRegistry.INSTANCE.getLocalNeeds().size() * itemHeight) - 195
+            () -> (UiMixin.getLocalNeeds().size() * itemHeight) - 195
         );
         window.addComponent(bar);
         window.addComponent(new ScrollpaneComponent<>(
@@ -35,7 +35,7 @@ public class NeedDisplayScreen extends ComponentScreen {
                 (i) -> new NeedComponent(texture.getSubtexture(284, itemHeight, 0, 227), new Rectangle2d(0, 0, 284, itemHeight)),
                 itemHeight,
                 (c, i) -> {
-                    final List<Need.Local> localNeeds = NeedRegistry.INSTANCE.getLocalNeeds();
+                    final List<Need.Local> localNeeds = UiMixin.getLocalNeeds();
                     if (localNeeds.size() <= i) {
                         c.setVisible(false);
                         return;
@@ -48,12 +48,19 @@ public class NeedDisplayScreen extends ComponentScreen {
                         return;
                     }
 
-                    c.setVisible(true);
-                    c.setTitle(localNeed.getName());
+                    final UiMixin mixin = UiMixin.getInstance(need);
 
-                    // TODO: Get color from need config itself
-                    final int color = (int) (((0x333 * (long) i) << (i + 1)) % 0xFFFFFF);
-                    c.setBarValues(localNeed.getMin(), localNeed.getMax(), localNeed.getValue(), color, localNeed.getLower(), localNeed.getUpper());
+                    c.setVisible(true);
+                    c.setTitle(mixin.getDisplayName());
+
+                    c.setBarValues(
+                        localNeed.getMin(),
+                        localNeed.getMax(),
+                        localNeed.getValue(),
+                        mixin.getColor(),
+                        localNeed.getLower(),
+                        localNeed.getUpper()
+                    );
 
                     c.setLevel(localNeed.getLevel(), localNeed.hasLevels());
                 }
