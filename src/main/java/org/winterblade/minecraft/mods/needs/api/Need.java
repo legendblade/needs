@@ -1,7 +1,6 @@
 package org.winterblade.minecraft.mods.needs.api;
 
 import com.google.common.collect.*;
-import com.google.common.util.concurrent.AtomicDouble;
 import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
@@ -27,6 +26,7 @@ import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 import javax.annotation.Nonnull;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -294,12 +294,18 @@ public abstract class Need {
         private double max;
         private final String name;
 
+        private boolean hasLevels;
+        private String level;
+        private double lower;
+        private double upper;
+
         public Local(@Nonnull final Need need, final double value, final double min, final double max) {
             this.name = need.getName();
             this.need = new WeakReference<>(need);
-            this.value = value;
-            this.min = min;
-            this.max = max;
+
+            setValue(value);
+            setMax(min);
+            setMax(max);
         }
 
         /**
@@ -325,6 +331,48 @@ public abstract class Need {
          */
         public void setValue(final double value) {
             this.value = value;
+
+            final Need need = getNeed().get();
+            if (need == null) return;
+
+            // Cache this too:
+            final NeedLevel level = need.getLevel(value);
+            this.level = level.getName();
+
+            if (level == NeedLevel.UNDEFINED) {
+                // We need to get the next bound in another way
+                final Map<Range<Double>, NeedLevel> levels = need.getLevels();
+
+                if (0 < levels.size()) {
+                    final Iterator<Range<Double>> iter = levels.keySet().iterator();
+                    this.hasLevels = true;
+
+                    double low = Double.MIN_VALUE;
+                    double high = Double.MAX_VALUE;
+                    while (iter.hasNext()) {
+                        final Range<Double> r = iter.next();
+                        if (r.hasUpperBound() && r.upperEndpoint() <= value) low = r.upperEndpoint();
+
+                        if (r.hasLowerBound() && value <= r.lowerEndpoint()) {
+                            // Once we've found the upper bound, that's guaranteed to be the value we need
+                            high = r.lowerEndpoint();
+                            break;
+                        }
+                    }
+
+                    this.lower = low;
+                    this.upper = high;
+                } else {
+                    this.lower = Double.MIN_VALUE;
+                    this.upper = Double.MAX_VALUE;
+                    this.hasLevels = false;
+                }
+            } else {
+                final Range<Double> range = level.getRange();
+                this.lower = range.hasLowerBound() ? range.lowerEndpoint() : Double.MIN_VALUE;
+                this.upper = range.hasUpperBound() ? range.upperEndpoint() : Double.MAX_VALUE;
+                this.hasLevels = true;
+            }
         }
 
         /**
@@ -344,12 +392,27 @@ public abstract class Need {
         }
 
         public double getMax() {
-            // TODO:
-            return max;
+           return max;
         }
 
         public void setMax(final double max) {
             this.max = max;
+        }
+
+        public String getLevel() {
+            return level;
+        }
+
+        public double getLower() {
+            return lower;
+        }
+
+        public double getUpper() {
+            return upper;
+        }
+
+        public boolean hasLevels() {
+            return hasLevels;
         }
     }
 }

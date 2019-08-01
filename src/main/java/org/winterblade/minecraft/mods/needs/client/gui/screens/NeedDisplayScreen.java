@@ -50,7 +50,12 @@ public class NeedDisplayScreen extends ComponentScreen {
 
                     c.setVisible(true);
                     c.setTitle(localNeed.getName());
-                    c.setBarValues(localNeed.getMin(), localNeed.getMax(), localNeed.getValue(), (i * 0x66) % 0xFFFFFF);
+
+                    // TODO: Get color from need config itself
+                    final int color = (int) (((0x333 * (long) i) << (i + 1)) % 0xFFFFFF);
+                    c.setBarValues(localNeed.getMin(), localNeed.getMax(), localNeed.getValue(), color, localNeed.getLower(), localNeed.getUpper());
+
+                    c.setLevel(localNeed.getLevel(), localNeed.hasLevels());
                 }
         ));
     }

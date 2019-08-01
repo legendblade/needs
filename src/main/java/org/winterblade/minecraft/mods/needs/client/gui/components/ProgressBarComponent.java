@@ -1,17 +1,28 @@
 package org.winterblade.minecraft.mods.needs.client.gui.components;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraftforge.fml.client.config.GuiUtils;
 
 public class ProgressBarComponent extends BoundedComponent {
+    private final boolean showText;
     private double min = 0;
     private double max = 1;
     private double value = 0;
     private int color = 0x00FFFF;
+    private final FontRenderer fontRenderer = Minecraft.getInstance().fontRenderer;
+    private int valueWidth;
+    private String valueText;
 
     public ProgressBarComponent(final Rectangle2d bounds) {
+        this(bounds, true);
+    }
+
+    public ProgressBarComponent(final Rectangle2d bounds, final boolean showText) {
         super(bounds);
         // TODO: Directions other than left-to-right
+        this.showText = showText;
     }
 
     public double getMin() {
@@ -38,6 +49,10 @@ public class ProgressBarComponent extends BoundedComponent {
 
     public void setValue(final double value) {
         this.value = value;
+        if (showText) {
+            valueText = Double.toString(value);
+            valueWidth = fontRenderer.getStringWidth(valueText);
+        }
     }
 
     public int getColor() {
@@ -56,13 +71,16 @@ public class ProgressBarComponent extends BoundedComponent {
     public void draw(final int x, final int y) {
         final int right;
         if (value < min) {
-            right = 0;
+            right = x;
         } else if (max < value || min == max) {
-            right = bounds.getWidth();
+            right = x + bounds.getWidth();
         } else {
-            right = (int) (Math.round((value - min) / (max - min) * bounds.getWidth()));
+            right = x + (int) (Math.round((value - min) / (max - min) * bounds.getWidth()));
         }
 
-        GuiUtils.drawGradientRect(1, x, y, x + right, y + bounds.getHeight(), color, color);
+        GuiUtils.drawGradientRect(0, x, y, right, y + bounds.getHeight(), color, color);
+
+        if (!showText) return;
+        fontRenderer.drawStringWithShadow(valueText, Math.max(right - valueWidth - 1, x + 1), y + 1, 0xFFFFFF);
     }
 }

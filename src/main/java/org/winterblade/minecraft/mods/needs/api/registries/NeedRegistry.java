@@ -219,18 +219,6 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
         // Finally, sort it by name
         sortedLocalCache.sort(Comparator.comparing(Need.Local::getName));
-
-        // TODO: DEBUG, because I need data, data, data
-        final Random r = new Random();
-        for (int i = 1; i < 30; i++) {
-            final CustomNeed need = new CustomNeed();
-            need.setName("Random need " + i);
-            final int spread = r.nextInt(50000);
-            final int min = r.nextInt(spread) - (r.nextInt(250) + 125);
-            final int max = min + spread;
-            sortedLocalCache.add(new Need.Local(need, r.nextInt(spread) + min, min, max));
-        }
-
         return sortedLocalCache;
     }
 
