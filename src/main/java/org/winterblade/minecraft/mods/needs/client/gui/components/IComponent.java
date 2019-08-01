@@ -7,4 +7,7 @@ public interface IComponent {
 
     Rectangle2d getBounds();
 
+    void setVisible(boolean visible);
+
+    boolean isVisible();
 }

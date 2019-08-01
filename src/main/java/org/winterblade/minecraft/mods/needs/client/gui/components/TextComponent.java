@@ -5,6 +5,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraftforge.common.util.TextTable;
 
+@SuppressWarnings("WeakerAccess")
 public class TextComponent implements IComponent {
     private final int color;
     private final boolean hasShadow;
@@ -67,12 +68,17 @@ public class TextComponent implements IComponent {
      * Sets the text and updates the bounding box
      * @param text The new text
      */
-    public void setText(String text) {
+    public void setText(final String text) {
         this.text = text;
         this.bounds = new Rectangle2d(bounds.getX(), bounds.getY(), fontRenderer.getStringWidth(text), fontRenderer.FONT_HEIGHT);
     }
 
     public void setVisible(final boolean isVisible) {
         this.isVisible = isVisible;
+    }
+
+    @Override
+    public boolean isVisible() {
+        return isVisible;
     }
 }

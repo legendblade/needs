@@ -18,7 +18,6 @@ public class MovableTextureComponent extends TexturedComponent {
 
     @Override
     public void draw(final int x, final int y) {
-        if (!display) return;
         super.draw(x + xOffset, y + yOffset);
     }
 }

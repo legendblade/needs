@@ -12,6 +12,7 @@ public class NeedComponent extends TexturedComponent {
     private final TextComponent minText;
     private final TextComponent maxText;
     private final TextComponent level;
+    private final ColorBarComponent currentBounds;
     private final MovableTextureComponent lowerBound;
     private final MovableTextureComponent upperBound;
 
@@ -21,7 +22,8 @@ public class NeedComponent extends TexturedComponent {
         title = new TextComponent("", 38, 4, 0xFFFFFF, true);
         addComponent(title);
 
-        progress = new ProgressBarComponent(new Rectangle2d(39, 15, BAR_WIDTH, 10));
+        final Rectangle2d barBounds = new Rectangle2d(39, 15, BAR_WIDTH, 10);
+        progress = new ProgressBarComponent(barBounds);
         addComponent(progress);
 
         minText = new TextComponent("", 38, 28, 0xFFFFFF);
@@ -33,13 +35,17 @@ public class NeedComponent extends TexturedComponent {
         level = new TextComponent("", 281, 4, 0xFFFFFF, true, TextTable.Alignment.RIGHT);
         addComponent(level);
 
+        currentBounds = new ColorBarComponent(new Rectangle2d(39, barBounds.getY() + 2, BAR_WIDTH, barBounds.getHeight() - 4));
+        currentBounds.setColor(0x77333333); // Transparent dark gray
+        addComponent(currentBounds);
+
         final Texture boundsTexture = texture.getSubtexture(1, 14, 284, 227);
         lowerBound = new MovableTextureComponent(boundsTexture, new Rectangle2d(39, 13, 1, 14));
         upperBound = new MovableTextureComponent(boundsTexture, new Rectangle2d(39, 13, 1, 14));
         addComponent(lowerBound);
         addComponent(upperBound);
 
-        display = false;
+        setVisible(false);
     }
 
     public void setTitle(final String title) {
@@ -63,17 +69,30 @@ public class NeedComponent extends TexturedComponent {
         minText.setText(Double.toString(min));
         maxText.setText(Double.toString(max));
 
-        final double range = max - min;
-        if (lower == Double.MIN_VALUE || lower <= min) lowerBound.setVisible(false);
-        else {
-            lowerBound.setVisible(true);
-            lowerBound.setOffsets((int) (((lower - min) / range) * BAR_WIDTH), 0);
+        if ((lower == Double.MIN_VALUE || lower < min) && (upper == Double.MAX_VALUE || max < upper)) {
+            currentBounds.setVisible(false);
+            lowerBound.setVisible(false);
+            return;
         }
 
-        if (upper == Double.MAX_VALUE || max <= upper) upperBound.setVisible(false);
-        else {
+        currentBounds.setVisible(true);
+        final double range = max - min;
+        if (lower == Double.MIN_VALUE || lower <= min) {
+            lowerBound.setVisible(false);
+            currentBounds.setLeft(0);
+        } else {
+            lowerBound.setVisible(true);
+            lowerBound.setOffsets((int) (((lower - min) / range) * BAR_WIDTH), 0);
+            currentBounds.setLeft((int) (((lower - min) / range) * BAR_WIDTH));
+        }
+
+        if (upper == Double.MAX_VALUE || max <= upper) {
+            upperBound.setVisible(false);
+            currentBounds.setRight(BAR_WIDTH);
+        } else {
             upperBound.setVisible(true);
             upperBound.setOffsets((int) (((upper - min) / range) * BAR_WIDTH), 0);
+            currentBounds.setRight((int) (((upper - min) / range) * BAR_WIDTH));
         }
     }
 

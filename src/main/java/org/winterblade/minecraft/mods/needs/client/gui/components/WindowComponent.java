@@ -16,7 +16,7 @@ public class WindowComponent extends TexturedComponent {
 
     @Override
     public void draw(final int x, final int y) {
-        if (!display) return;
+        if (!isVisible()) return;
         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         super.draw(x, y);
     }

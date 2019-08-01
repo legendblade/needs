@@ -8,7 +8,6 @@ import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
 public abstract class ComponentBase extends BoundedComponent implements IMouseDragListener, IMouseScrollListener {
-    protected boolean display = true;
     private final List<IComponent> subcomponents = new ArrayList<>();
     private final List<IMouseClickListener> clickListeners = new ArrayList<>();
     private final List<IMouseDragListener> dragListeners = new ArrayList<>();
@@ -36,13 +35,14 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
      */
     @Override
     public void draw(final int x, final int y) {
-        if (!display) return;
+        if (!isVisible()) return;
         drawSubComponents(x, y);
     }
 
     @Override
     public boolean mouseClicked(final double x, final double y, final ComponentScreen.MouseButtons button) {
         for (final IMouseClickListener subcomponent : clickListeners) {
+            if (!subcomponent.isVisible()) continue;
             if (isInBounds(x, y, subcomponent)) {
                 final Rectangle2d sb = subcomponent.getBounds();
                 return subcomponent.mouseClicked(x - sb.getX(), y - sb.getY(), button);
@@ -54,6 +54,7 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
     @Override
     public boolean mouseReleased(final double x, final double y, final ComponentScreen.MouseButtons button) {
         for (final IMouseClickListener subcomponent : clickListeners) {
+            if (!subcomponent.isVisible()) continue;
             if (isInBounds(x, y, subcomponent)) {
                 final Rectangle2d sb = subcomponent.getBounds();
                 return subcomponent.mouseReleased(x - sb.getX(), y - sb.getY(), button);
@@ -65,6 +66,7 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
     @Override
     public boolean mouseDragged(final double x, final double y, final ComponentScreen.MouseButtons button, final double dragX, final double dragY) {
         for (final IMouseDragListener subcomponent : dragListeners) {
+            if (!subcomponent.isVisible()) continue;
             if (isInBounds(x, y, subcomponent) && isInBounds(dragX, dragY, subcomponent)) {
                 final Rectangle2d sb = subcomponent.getBounds();
                 return subcomponent.mouseDragged(x - sb.getX(), y - sb.getY(), button, dragX - sb.getX(), dragY - sb.getY());
@@ -76,20 +78,13 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
     @Override
     public boolean mouseScrolled(final double x, final double y, final double lines) {
         for (final IMouseScrollListener subcomponent : scrollListeners) {
+            if (!subcomponent.isVisible()) continue;
             if (isInBounds(x, y, subcomponent)) {
                 final Rectangle2d sb = subcomponent.getBounds();
                 return subcomponent.mouseScrolled(x - sb.getX(), y - sb.getY(), lines);
             }
         }
         return false;
-    }
-
-    public boolean isVisible() {
-        return display;
-    }
-
-    public void setVisible(final boolean display) {
-        this.display = display;
     }
 
     protected static boolean isInBounds(final double x, final double y, final IComponent subcomponent) {
@@ -102,6 +97,7 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
 
     protected void drawSubComponents(final int x, final int y) {
         for (final IComponent s : subcomponents) {
+            if (!s.isVisible()) continue;
             final Rectangle2d subBounds = s.getBounds();
             s.draw(x + subBounds.getX(), y + subBounds.getY());
         }
