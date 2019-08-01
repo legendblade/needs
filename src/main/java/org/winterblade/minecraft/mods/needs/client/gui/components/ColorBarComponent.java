@@ -40,6 +40,6 @@ public class ColorBarComponent extends BoundedComponent {
     }
 
     protected void drawBar(final int y, final int left, final int right) {
-        GuiUtils.drawGradientRect(0, left, y, right, y + bounds.getHeight(), getColor(), getColor());
+        GuiUtils.drawGradientRect(-1, left, y, right, y + bounds.getHeight(), getColor(), getColor());
     }
 }
