@@ -7,6 +7,7 @@ import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.client.gui.Texture;
 import org.winterblade.minecraft.mods.needs.client.gui.components.*;
+import org.winterblade.minecraft.mods.needs.client.gui.widgets.InventoryButton;
 import org.winterblade.minecraft.mods.needs.mixins.UiMixin;
 
 import java.util.List;
@@ -66,6 +67,14 @@ public class NeedDisplayScreen extends ComponentScreen {
                     c.setIcon(mixin.getIconTexture(), mixin.getIconOffsetX(), mixin.getIconOffsetY());
                 }
         ));
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+
+        // Add a button to go back to the inventory:
+        addButton(new InventoryButton(guiLeft + 319,guiTop + 1));
     }
 
     public static void open() {

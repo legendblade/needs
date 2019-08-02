@@ -12,7 +12,9 @@ import org.winterblade.minecraft.mods.needs.client.gui.Texture;
 import org.winterblade.minecraft.mods.needs.util.ColorAdapter;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
 public class UiMixin extends BaseMixin {

@@ -76,7 +76,7 @@ public abstract class ComponentScreen extends Screen {
      */
     @Override
     public boolean mouseClicked(final double x, final double y, final int button) {
-        return window.mouseClicked(x - guiLeft, y - guiTop, mapButton(button));
+        return window.mouseClicked(x - guiLeft, y - guiTop, mapButton(button)) || super.mouseClicked(x, y, button);
     }
 
     /**
@@ -88,7 +88,7 @@ public abstract class ComponentScreen extends Screen {
      */
     @Override
     public boolean mouseReleased(final double x, final double y, final int button) {
-        return window.mouseReleased(x - guiLeft, y - guiTop, mapButton(button));
+        return window.mouseReleased(x - guiLeft, y - guiTop, mapButton(button)) || super.mouseReleased(x, y, button);
     }
 
     /**
@@ -102,7 +102,7 @@ public abstract class ComponentScreen extends Screen {
      */
     @Override
     public boolean mouseDragged(final double x, final double y, final int button, final double dragX, final double dragY) {
-        return window.mouseDragged(x - guiLeft, y - guiTop, mapButton(button), dragX, dragY);
+        return window.mouseDragged(x - guiLeft, y - guiTop, mapButton(button), dragX, dragY) || super.mouseDragged(x, y, button, dragX, dragY);
     }
 
     /**
@@ -114,7 +114,7 @@ public abstract class ComponentScreen extends Screen {
      */
     @Override
     public boolean mouseScrolled(final double x, final double y, final double lines) {
-        return window.mouseScrolled(x - guiLeft, y - guiTop, lines);
+        return window.mouseScrolled(x - guiLeft, y - guiTop, lines) || super.mouseScrolled(x, y, lines);
     }
 
     private static MouseButtons mapButton(final int button) {

@@ -201,9 +201,6 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
             return new Need.Local(need, value, min, max);
         });
-
-        // TODO: This is debug
-        NeedDisplayScreen.open();
     }
 
     /**
