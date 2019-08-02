@@ -95,7 +95,7 @@ public class NeedLevel {
      * Fired when this level is created
      * @param parent The need the level is part of
      */
-    public void onCreated(Need parent) {
+    public void onCreated(final Need parent) {
         this.parent = parent;
 
         reappliedActions = new ArrayList<>();
@@ -107,14 +107,14 @@ public class NeedLevel {
         });
 
         // Build up our consumer
-        for (ILevelAction ca : continuousActions) {
+        for (final ILevelAction ca : continuousActions) {
             if ((ca instanceof IReappliedOnDeathLevelAction)) {
                 reappliedContinuousActions.add((IReappliedOnDeathLevelAction) ca);
             }
 
             // I'm going to theorize that this is faster than forEach'ing the list:
             if (!(ca instanceof TickingLevelAction)) continue;
-            TickingLevelAction tla = (TickingLevelAction) ca;
+            final TickingLevelAction tla = (TickingLevelAction) ca;
 
             if (tickAction == null) tickAction = (p) -> tla.onContinuousTick(parent, this, p);
             else tickAction = tickAction.andThen((p) -> tla.onContinuousTick(parent, this, p));
@@ -137,7 +137,7 @@ public class NeedLevel {
      * Called by the parent need when entering this level, after exit has been called on the previous level
      * @param player The player involved
      */
-    public void onEnter(PlayerEntity player) {
+    public void onEnter(final PlayerEntity player) {
         entryActions.forEach((ea) -> ea.onEntered(parent, this, player));
         continuousActions.forEach((ea) -> ea.onContinuousStart(parent, this, player));
         if (hasTickingActions()) tickingPlayers.put(player, this);
@@ -147,7 +147,7 @@ public class NeedLevel {
      * Called when exiting this level, called before entering the new level
      * @param player The player involved
      */
-    public void onExit(PlayerEntity player) {
+    public void onExit(final PlayerEntity player) {
         continuousActions.forEach((ea) -> ea.onContinuousEnd(parent, this, player));
         exitActions.forEach((ea) -> ea.onExited(parent, this, player));
         if (hasTickingActions()) tickingPlayers.remove(player);
@@ -157,7 +157,7 @@ public class NeedLevel {
      * Called when the player joins a world
      * @param player The player
      */
-    public void onPlayerJoined(PlayerEntity player) {
+    public void onPlayerJoined(final PlayerEntity player) {
         if (!hasTickingActions() || tickingPlayers.containsKey(player)) return;
         tickingPlayers.put(player, this);
     }
@@ -166,7 +166,7 @@ public class NeedLevel {
      * Called when ticking this level, per player
      * @param player The player involved
      */
-    private void onTick(PlayerEntity player) {
+    private void onTick(final PlayerEntity player) {
         if (!player.isAlive()) return;
         tickAction.accept(player);
     }
@@ -176,7 +176,7 @@ public class NeedLevel {
      * @param player    The new player entity
      * @param oldPlayer The old player entity
      */
-    public void onRespawned(PlayerEntity player, PlayerEntity oldPlayer) {
+    public void onRespawned(final PlayerEntity player, final PlayerEntity oldPlayer) {
         reappliedActions.forEach((ea) -> ea.onRespawned(parent, this, player, oldPlayer));
         reappliedContinuousActions.forEach((ea) -> ea.onRespawnedWhenContinuous(parent, this, player, oldPlayer));
 
@@ -187,7 +187,7 @@ public class NeedLevel {
      * Called when ticking the server
      * @param event The event
      */
-    private static void onServerTick(TickEvent.ServerTickEvent event) {
+    private static void onServerTick(final TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         tickingPlayers.forEach((p, v) -> v.onTick(p));
     }
@@ -195,11 +195,11 @@ public class NeedLevel {
     static class Deserializer implements JsonDeserializer<NeedLevel> {
 
         @Override
-        public NeedLevel deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public NeedLevel deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
             if (!json.isJsonObject()) throw new JsonParseException("Level must be an object.");
-            JsonObject obj = json.getAsJsonObject();
+            final JsonObject obj = json.getAsJsonObject();
 
-            NeedLevel output = new NeedLevel();
+            final NeedLevel output = new NeedLevel();
 
             if (!obj.has("name")) throw new JsonParseException("Level must have a name.");
             output.name = obj.getAsJsonPrimitive("name").getAsString();
@@ -217,10 +217,10 @@ public class NeedLevel {
             return output;
         }
 
-        private List<ILevelAction> deserializeActions(JsonDeserializationContext context, JsonObject obj, String key) {
+        private List<ILevelAction> deserializeActions(final JsonDeserializationContext context, final JsonObject obj, final String key) {
             if (!obj.has(key)) return Collections.emptyList();
 
-            JsonElement el = obj.get(key);
+            final JsonElement el = obj.get(key);
 
             if (el.isJsonObject()) {
                 return Collections.singletonList(context.deserialize(el, ILevelAction.class));
@@ -248,22 +248,22 @@ public class NeedLevel {
         }
 
         @Override
-        public void onCreated(Need parent) {
+        public void onCreated(final Need parent) {
 
         }
 
         @Override
-        public void onEnter(PlayerEntity player) {
+        public void onEnter(final PlayerEntity player) {
 
         }
 
         @Override
-        public void onExit(PlayerEntity player) {
+        public void onExit(final PlayerEntity player) {
 
         }
 
         @Override
-        public void onRespawned(PlayerEntity player, PlayerEntity oldPlayer) {
+        public void onRespawned(final PlayerEntity player, final PlayerEntity oldPlayer) {
 
         }
 
@@ -273,7 +273,7 @@ public class NeedLevel {
         }
 
         @Override
-        public void onPlayerJoined(PlayerEntity player) {
+        public void onPlayerJoined(final PlayerEntity player) {
 
         }
     }

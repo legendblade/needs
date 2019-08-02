@@ -52,11 +52,11 @@ public class CustomNeed extends Need {
         return name;
     }
 
-    public double getMin(PlayerEntity player) {
+    public double getMin(final PlayerEntity player) {
         return min;
     }
 
-    public double getMax(PlayerEntity player) {
+    public double getMax(final PlayerEntity player) {
         return max;
     }
 
@@ -68,17 +68,17 @@ public class CustomNeed extends Need {
         return resetOnDeath;
     }
 
-    public void setName(String baseName) {
+    public void setName(final String baseName) {
         name = baseName;
     }
 
     @Override
-    public void initialize(PlayerEntity player) {
+    public void initialize(final PlayerEntity player) {
         setValue(player, getInitial());
     }
 
     @Override
-    public double getValue(PlayerEntity player) {
+    public double getValue(final PlayerEntity player) {
         return player
             .getCapability(CAPABILITY)
                 .map((cap) -> cap.getValue(getName()))
@@ -86,14 +86,14 @@ public class CustomNeed extends Need {
     }
 
     @Override
-    public void setValue(PlayerEntity player, double newValue) {
+    public void setValue(final PlayerEntity player, final double newValue) {
         player
             .getCapability(CAPABILITY)
             .ifPresent((cap) -> cap.setValue(getName(), newValue));
     }
 
     @Override
-    public boolean isValueInitialized(PlayerEntity player) {
+    public boolean isValueInitialized(final PlayerEntity player) {
         return player
             .getCapability(CAPABILITY)
                 .map((cap) -> cap.isInitialized(getName()))
@@ -101,14 +101,14 @@ public class CustomNeed extends Need {
     }
 
     @SubscribeEvent
-    protected void onDeath(LivingDeathEvent event) {
+    protected void onDeath(final LivingDeathEvent event) {
         if (event.isCanceled() || !isResetOnDeath() || !(event.getEntity() instanceof PlayerEntity)) return;
 
         setValue((PlayerEntity) event.getEntity(), getInitial());
     }
 
     @SubscribeEvent
-    protected void onClone(PlayerEvent.Clone event) {
+    protected void onClone(final PlayerEvent.Clone event) {
         if (!event.isWasDeath()) return;
 
         // Oof

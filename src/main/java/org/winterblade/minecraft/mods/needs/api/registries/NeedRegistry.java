@@ -58,7 +58,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
     }
 
     @Override
-    public Need deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public Need deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
         return INSTANCE.doDeserialize(json, typeOfT, context);
     }
 
@@ -68,7 +68,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @return     True if the need can be registered, false otherwise
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean isValid(Need need) {
+    public boolean isValid(final Need need) {
         Predicate<Need> predicate = (n) -> n.getName().equals(need.getName());
 
         if (!need.allowMultiple()) {
@@ -78,7 +78,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
         return loaded.stream().noneMatch(predicate);
     }
 
-    public void registerDependentNeed(String name) {
+    public void registerDependentNeed(final String name) {
         dependencies.add(name);
     }
 
@@ -87,7 +87,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param need The need to register
      * @throws IllegalArgumentException If the need could not be registered because it isn't valid
      */
-    public void register(Need need) throws IllegalArgumentException {
+    public void register(final Need need) throws IllegalArgumentException {
         if (!isValid(need)) throw new IllegalArgumentException("Tried to register need of same name or singleton with same class.");
         loaded.add(need);
     }
@@ -99,7 +99,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param digest  The digest of the file
      * @param content The file content, if on the server
      */
-    public void register(Need need, String id, byte[] digest, @Nullable String content) {
+    public void register(final Need need, final String id, final byte[] digest, @Nullable final String content) {
         register(need);
         cachedConfigHashes.put(id, digest);
         if (content != null) cachedConfigs.put(id, content);
@@ -110,7 +110,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
             if (loaded.stream().anyMatch((n) -> n.getName().equals(d))) return;
 
             // Check if the name is a type:
-            Class<? extends Need> type = getType(d);
+            final Class<? extends Need> type = getType(d);
             if (type != null) {
                 if (loaded.stream().anyMatch((l) -> type.isAssignableFrom(l.getClass()))) {
                     NeedsMod.LOGGER.error("Dependency '" + d + "' would have loaded a type of the same name, but one is already registered.");
@@ -118,11 +118,11 @@ public class NeedRegistry extends TypedRegistry<Need> {
                 }
 
                 try {
-                    Need need = type.newInstance();
+                    final Need need = type.newInstance();
                     loaded.add(need);
                     need.finalizeDeserialization();
                     return;
-                } catch (InstantiationException | IllegalAccessException e) {
+                } catch (final InstantiationException | IllegalAccessException e) {
                     NeedsMod.LOGGER.error("Unable to load dependency " + d, e);
                 }
             }
@@ -137,7 +137,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @return      The need matching that name or type.
      */
     @Nullable
-    public Need getByName(String need) {
+    public Need getByName(final String need) {
         return loaded
                 .stream()
                 .filter((n) -> n.getName().equals(need))
@@ -160,7 +160,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param need   The need to register
      * @param action The action to call
      */
-    public void requestPlayerTickUpdate(Need need, Consumer<PlayerEntity> action) {
+    public void requestPlayerTickUpdate(final Need need, final Consumer<PlayerEntity> action) {
         // Register us on the first event added:
         if (perPlayerTick.size() <= 0) MinecraftForge.EVENT_BUS.addListener(this::onTick);
 
@@ -215,8 +215,8 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * Called on the client side to validate config hashes
      * @param configHashes The map of ID to file hash
      */
-    public void validateConfig(Map<String, byte[]> configHashes) {
-        Map<String, ConfigDesyncPacket.DesyncTypes> desyncs = configHashes
+    public void validateConfig(final Map<String, byte[]> configHashes) {
+        final Map<String, ConfigDesyncPacket.DesyncTypes> desyncs = configHashes
                 .entrySet()
                 .stream()
                 .map((kv) -> {
@@ -279,7 +279,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * the player tick to avoid %5'ing in every player
      * @param event The tick event
      */
-    private void onTick(TickEvent.WorldTickEvent event) {
+    private void onTick(final TickEvent.WorldTickEvent event) {
         if (event.world.isRemote || event.phase != TickEvent.Phase.END || (event.world.getGameTime() % 5) != 0) return;
 
         event.world

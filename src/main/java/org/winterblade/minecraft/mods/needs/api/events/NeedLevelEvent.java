@@ -14,7 +14,7 @@ public abstract class NeedLevelEvent extends Event {
     private final PlayerEntity player;
     private final NeedLevel level;
 
-    public NeedLevelEvent(Need need, PlayerEntity player, NeedLevel level) {
+    public NeedLevelEvent(final Need need, final PlayerEntity player, final NeedLevel level) {
         this.level = level;
         this.need = need;
         this.player = player;
@@ -42,7 +42,7 @@ public abstract class NeedLevelEvent extends Event {
         private final double newValue;
         private final NeedLevel previousLevel;
 
-        public Changed(Need need, PlayerEntity player, IManipulator source, double prevValue, double newValue, NeedLevel prevLevel, NeedLevel newLevel) {
+        public Changed(final Need need, final PlayerEntity player, final IManipulator source, final double prevValue, final double newValue, final NeedLevel prevLevel, final NeedLevel newLevel) {
             super(need, player, newLevel);
             this.source = source;
             this.previousValue = prevValue;

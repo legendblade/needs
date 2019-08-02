@@ -12,7 +12,7 @@ public class OnDeathManipulator extends BaseManipulator {
     private NeedExpressionContext amount;
 
     @SubscribeEvent
-    protected void onDeath(LivingDeathEvent event) {
+    protected void onDeath(final LivingDeathEvent event) {
         if (event.getEntity().world.isRemote) return;
 
         amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue((PlayerEntity) event.getEntity()));

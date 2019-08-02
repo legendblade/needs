@@ -10,7 +10,7 @@ public class WindowComponent extends TexturedComponent {
         super(texture, bounds);
     }
 
-    public WindowComponent(Texture texture, int width, int height) {
+    public WindowComponent(final Texture texture, final int width, final int height) {
         this(texture, new Rectangle2d(0, 0, width, height));
     }
 

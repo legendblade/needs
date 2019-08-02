@@ -17,7 +17,7 @@ public class MixinRegistry extends TypedRegistry<IMixin> {
     }
 
     @Override
-    public IMixin deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public IMixin deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
         return INSTANCE.doDeserialize(json, typeOfT, context);
     }
 }

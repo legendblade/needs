@@ -6,7 +6,7 @@ import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 
 public class ChatMixin extends BaseMixin {
     @SubscribeEvent
-    public void onAdjusted(NeedAdjustmentEvent.Post evt) {
+    public void onAdjusted(final NeedAdjustmentEvent.Post evt) {
         if (evt.getNeed() != need) return;
 
         // Send a message about it:

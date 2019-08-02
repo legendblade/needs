@@ -10,7 +10,7 @@ public class ChatLevelMixin extends BaseMixin {
     private boolean actionBar;
 
     @SubscribeEvent
-    public void onAdjusted(NeedLevelEvent.Changed evt) {
+    public void onAdjusted(final NeedLevelEvent.Changed evt) {
         if (evt.getNeed() != need) return;
 
         // Send a message about it:

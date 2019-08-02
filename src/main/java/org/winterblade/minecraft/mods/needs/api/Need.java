@@ -42,6 +42,7 @@ public abstract class Need {
     @Expose
     private List<IMixin> mixins = Collections.emptyList();
 
+    @SuppressWarnings("FieldMayBeFinal")
     @Expose
     @SerializedName("levels")
     private List<NeedLevel> levelList = Collections.emptyList();
@@ -64,8 +65,8 @@ public abstract class Need {
         mixins = ImmutableList.copyOf(mixins);
 
         // Ensure our levels are properly defined and don't overlap:
-        for (NeedLevel l : levelList) {
-            RangeMap<Double, NeedLevel> subRange = levels.subRangeMap(l.getRange());
+        for (final NeedLevel l : levelList) {
+            final RangeMap<Double, NeedLevel> subRange = levels.subRangeMap(l.getRange());
             if (0 < subRange.asMapOfRanges().size()) {
                 throw new JsonParseException("This need has overlapping levels; ensure that min/max ranges do not overlap");
             }
@@ -86,8 +87,8 @@ public abstract class Need {
         });
 
         boolean hasTickingActions = false;
-        for (Map.Entry<Range<Double>,NeedLevel> kv : getLevels().entrySet()) {
-            NeedLevel v = kv.getValue();
+        for (final Map.Entry<Range<Double>,NeedLevel> kv : getLevels().entrySet()) {
+            final NeedLevel v = kv.getValue();
             v.onCreated(this);
             MinecraftForge.EVENT_BUS.register(v);
             hasTickingActions = hasTickingActions || v.hasTickingActions();
@@ -111,7 +112,7 @@ public abstract class Need {
      * @param adjust    The amount to adjust by
      * @param source    The source of the adjustment
      */
-    public final void adjustValue(Entity entity, double adjust, IManipulator source) {
+    public final void adjustValue(final Entity entity, final double adjust, final IManipulator source) {
         if (!(entity instanceof PlayerEntity)) return;
         adjustValue((PlayerEntity) entity, adjust, source);
     }
@@ -122,7 +123,7 @@ public abstract class Need {
      * @param adjust      The amount to adjust by
      * @param source      The source of the adjustment
      */
-    public final void adjustValue(PlayerEntity player, double adjust, IManipulator source) {
+    public final void adjustValue(final PlayerEntity player, final double adjust, final IManipulator source) {
         if (player == null || adjust == 0 || player.world.isRemote) return;
 
         // Check if we need to initialize the value for the player, or if we should bail entirely
@@ -136,8 +137,8 @@ public abstract class Need {
         if (MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Pre(this, player, source))) return;
 
         // Get our current and clamped values:
-        double current = getValue(player);
-        double newValue = Math.max(getMin(player), Math.min(getMax(player), current + adjust));
+        final double current = getValue(player);
+        final double newValue = Math.max(getMin(player), Math.min(getMax(player), current + adjust));
 
         // If the new value is the same as the current because we've hit the max/min, don't do anything
         if (newValue == current) return;
@@ -241,7 +242,7 @@ public abstract class Need {
      * @return       The level, or NeedLevel.UNDEFINED if there isn't one
      */
     @Nonnull
-    public NeedLevel getLevel(PlayerEntity player) {
+    public NeedLevel getLevel(final PlayerEntity player) {
         return getLevel(getValue(player));
     }
 
@@ -251,8 +252,8 @@ public abstract class Need {
      * @return       The level, or NeedLevel.UNDEFINED if there isn't one
      */
     @Nonnull
-    public NeedLevel getLevel(double value) {
-        NeedLevel level = levels.get(value);
+    public NeedLevel getLevel(final double value) {
+        final NeedLevel level = levels.get(value);
         return level != null ? level : NeedLevel.UNDEFINED;
     }
 
@@ -292,10 +293,10 @@ public abstract class Need {
      * Called when a player is respawning
      * @param event The event
      */
-    private void onRespawned(PlayerEvent.Clone event) {
+    private void onRespawned(final PlayerEvent.Clone event) {
         if (event.isCanceled() || !event.isWasDeath()) return;
 
-        NeedLevel level = getLevel(event.getEntityPlayer());
+        final NeedLevel level = getLevel(event.getEntityPlayer());
         level.onRespawned(event.getEntityPlayer(), event.getOriginal());
     }
 
@@ -303,8 +304,8 @@ public abstract class Need {
      * Called when an entity has joined the world
      * @param event The event
      */
-    private void onPlayerJoined(PlayerLoggedInEvent event) {
-        NeedLevel level = getLevel(event.getPlayer());
+    private void onPlayerJoined(final PlayerLoggedInEvent event) {
+        final NeedLevel level = getLevel(event.getPlayer());
         level.onPlayerJoined(event.getPlayer());
     }
 

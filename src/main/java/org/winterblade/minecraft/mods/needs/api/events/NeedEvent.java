@@ -8,7 +8,7 @@ public class NeedEvent extends Event {
     protected final Need need;
     protected final PlayerEntity player;
 
-    public NeedEvent(Need need, PlayerEntity player) {
+    public NeedEvent(final Need need, final PlayerEntity player) {
         this.need = need;
         this.player = player;
     }

@@ -37,45 +37,45 @@ public class NeedInitializer {
         CoreRegistration.register();
 
         try {
-            Path jsonDir = Paths.get(FMLPaths.CONFIGDIR.get().toString(), "needs");
+            final Path jsonDir = Paths.get(FMLPaths.CONFIGDIR.get().toString(), "needs");
 
             if (!Files.isDirectory(jsonDir)) {
                 try {
                     Files.createDirectory(jsonDir);
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     NeedsMod.LOGGER.warn("Unable to create default config directory.");
                 }
                 return;
             }
 
-            Stream<Path> files = Files.walk(jsonDir)
+            final Stream<Path> files = Files.walk(jsonDir)
                     .filter(file -> Files.isRegularFile(file) && file.toString().endsWith(".json"));
 
-            for (Path file : (Iterable<Path>)files::iterator) {
+            for (final Path file : (Iterable<Path>)files::iterator) {
                 try {
-                    MessageDigest md = MessageDigest.getInstance("MD5");
-                    DigestInputStream dis = new DigestInputStream(Files.newInputStream(file), md);
-                    InputStreamReader reader = new InputStreamReader(dis);
+                    final MessageDigest md = MessageDigest.getInstance("MD5");
+                    final DigestInputStream dis = new DigestInputStream(Files.newInputStream(file), md);
+                    final InputStreamReader reader = new InputStreamReader(dis);
 
                     // If we're on the client, don't bother with the extra step to store content
                     DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
-                        Need need = GetGson().fromJson(reader, Need.class);
+                        final Need need = GetGson().fromJson(reader, Need.class);
                         register(file, md, need, null);
                     });
 
                     // Otherwise, do.
                     DistExecutor.runWhenOn(Dist.DEDICATED_SERVER, () -> () -> {
-                        BufferedReader buf = new BufferedReader(reader);
-                        String content = buf.lines().collect(Collectors.joining());
+                        final BufferedReader buf = new BufferedReader(reader);
+                        final String content = buf.lines().collect(Collectors.joining());
 
-                        Need need = GetGson().fromJson(content, Need.class);
+                        final Need need = GetGson().fromJson(content, Need.class);
                         register(file, md, need, content);
                     });
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     NeedsMod.LOGGER.warn("Error reading needs file '" + file.toString() + "': " + e.toString());
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             NeedsMod.LOGGER.warn("Error reading needs directory: " + e.toString());
         }
 
@@ -89,7 +89,7 @@ public class NeedInitializer {
      * @param need    The need itself
      * @param content The file content if on the server side
      */
-    private void register(Path file, MessageDigest md, Need need, @Nullable String content) {
+    private void register(final Path file, final MessageDigest md, final Need need, @Nullable final String content) {
         if (need instanceof CustomNeed && (need.getName() == null || need.getName().isEmpty())) {
             ((CustomNeed)need).setName(FilenameUtils.getBaseName(file.toString()));
         }

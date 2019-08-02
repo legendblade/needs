@@ -10,27 +10,27 @@ public class HealthNeed extends CachedTickingNeed {
     }
 
     @Override
-    public double getMin(PlayerEntity player) {
+    public double getMin(final PlayerEntity player) {
         return 0;
     }
 
     @Override
-    public double getMax(PlayerEntity player) {
+    public double getMax(final PlayerEntity player) {
         return Math.round(player.getMaxHealth());
     }
 
     @Override
-    public double getValue(PlayerEntity player) {
+    public double getValue(final PlayerEntity player) {
         return Math.round(player.getHealth());
     }
 
     @Override
-    public boolean isValueInitialized(PlayerEntity player) {
+    public boolean isValueInitialized(final PlayerEntity player) {
         return true;
     }
 
     @Override
-    protected void setValue(PlayerEntity player, double newValue) {
+    protected void setValue(final PlayerEntity player, final double newValue) {
         player.setHealth((float) newValue);
     }
 

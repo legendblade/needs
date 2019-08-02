@@ -11,7 +11,7 @@ public abstract class TickingLevelAction extends LevelAction {
      * @param level  The need level this is part of
      * @param player The player involved
      */
-    public void onContinuousTick(Need need, NeedLevel level, PlayerEntity player) {
+    public void onContinuousTick(final Need need, final NeedLevel level, final PlayerEntity player) {
 
     }
 }

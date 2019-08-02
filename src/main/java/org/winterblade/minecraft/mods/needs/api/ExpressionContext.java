@@ -26,13 +26,13 @@ public abstract class ExpressionContext implements IExpression {
     }
 
     @Override
-    public void setIfRequired(String arg, Supplier<Double> value) {
+    public void setIfRequired(final String arg, final Supplier<Double> value) {
         expression.setIfRequired(arg, value);
     }
 
     protected abstract List<String> getElements();
 
-    private IExpression deserializeExpression(JsonElement json, List<String> elements) {
+    private IExpression deserializeExpression(final JsonElement json, final List<String> elements) {
         return deserializeExpression(
             json,
             elements
@@ -42,18 +42,18 @@ public abstract class ExpressionContext implements IExpression {
         );
     }
 
-    private IExpression deserializeExpression(JsonElement json, Argument[] elements) {
+    private IExpression deserializeExpression(final JsonElement json, final Argument[] elements) {
         if (!json.isJsonPrimitive()) throw new JsonParseException("Expression must be a string or an integer");
 
-        JsonPrimitive primitive = json.getAsJsonPrimitive();
+        final JsonPrimitive primitive = json.getAsJsonPrimitive();
 
         if(primitive.isNumber()) {
             return new ConstantAdjustmentWrappedExpression(primitive.getAsDouble());
         }
 
         // Going to a primitive then a string avoids string builder'ing it all
-        String exp = json.getAsJsonPrimitive().getAsString().trim();
-        Expression expression = new Expression(exp, elements);
+        final String exp = json.getAsJsonPrimitive().getAsString().trim();
+        final Expression expression = new Expression(exp, elements);
 
         if (!expression.checkSyntax()) {
             throw new JsonParseException(
@@ -76,13 +76,13 @@ public abstract class ExpressionContext implements IExpression {
     public static class Deserializer implements JsonDeserializer<ExpressionContext> {
 
         @Override
-        public ExpressionContext deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            ExpressionContext output;
-            Class<?> clazz = TypeToken.of(typeOfT).getRawType();
+        public ExpressionContext deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
+            final ExpressionContext output;
+            final Class<?> clazz = TypeToken.of(typeOfT).getRawType();
 
             try {
                 output = (ExpressionContext) clazz.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (final InstantiationException | IllegalAccessException e) {
                 throw new JsonParseException("Unable to instantiate " + typeOfT.getTypeName());
             }
 
@@ -95,7 +95,7 @@ public abstract class ExpressionContext implements IExpression {
     private static class ConstantAdjustmentWrappedExpression implements IExpression {
         final double adjust;
 
-        ConstantAdjustmentWrappedExpression(double adjust) {
+        ConstantAdjustmentWrappedExpression(final double adjust) {
             this.adjust = adjust;
         }
 
@@ -105,7 +105,7 @@ public abstract class ExpressionContext implements IExpression {
         }
 
         @Override
-        public void setIfRequired(String arg, Supplier<Double> value) {
+        public void setIfRequired(final String arg, final Supplier<Double> value) {
             // No-op
         }
     }
@@ -113,7 +113,7 @@ public abstract class ExpressionContext implements IExpression {
     private static class ParameterlessParsedWrappedExpression implements IExpression {
         final Expression expression;
 
-        ParameterlessParsedWrappedExpression(Expression expression) {
+        ParameterlessParsedWrappedExpression(final Expression expression) {
             this.expression = expression;
         }
 
@@ -123,7 +123,7 @@ public abstract class ExpressionContext implements IExpression {
         }
 
         @Override
-        public void setIfRequired(String arg, Supplier<Double> value) {
+        public void setIfRequired(final String arg, final Supplier<Double> value) {
             // No-op
         }
     }
@@ -131,12 +131,12 @@ public abstract class ExpressionContext implements IExpression {
     private static class ParsedWrappedExpression extends ParameterlessParsedWrappedExpression {
         final Map<String, Argument> elements;
 
-        ParsedWrappedExpression(Expression expression, Argument[] elements) {
+        ParsedWrappedExpression(final Expression expression, final Argument[] elements) {
             super(expression);
 
             // TODO: This doesn't handle argument names that are part of a longer one
             // ie: "current" and "currentOther"
-            String expr = expression.getExpressionString();
+            final String expr = expression.getExpressionString();
             this.elements = Arrays
                 .stream(elements)
                 .filter((a) -> expr.contains(a.getArgumentName()))
@@ -152,8 +152,8 @@ public abstract class ExpressionContext implements IExpression {
         }
 
         @Override
-        public void setIfRequired(String argName, Supplier<Double> value) {
-            Argument arg = elements.get(argName);
+        public void setIfRequired(final String argName, final Supplier<Double> value) {
+            final Argument arg = elements.get(argName);
             if(arg == null) return;
 
             arg.setArgumentValue(value.get());

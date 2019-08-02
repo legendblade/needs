@@ -5,13 +5,13 @@ import net.minecraft.item.ItemStack;
 public class ItemIngredient implements IIngredient {
     private final ItemStack target;
 
-    public ItemIngredient(ItemStack target) {
+    public ItemIngredient(final ItemStack target) {
         this.target = target;
     }
 
 
     @Override
-    public boolean isMatch(ItemStack stack) {
+    public boolean isMatch(final ItemStack stack) {
         return target.isItemEqualIgnoreDurability(stack);
     }
 }

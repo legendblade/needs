@@ -17,7 +17,7 @@ public abstract class BaseManipulator implements IManipulator {
     protected String messageFormat;
 
     @Override
-    public final void onCreated(Need need) {
+    public final void onCreated(final Need need) {
         parent = need;
         onCreated();
     }
@@ -28,7 +28,7 @@ public abstract class BaseManipulator implements IManipulator {
     public void onCreated() {}
 
     @Override
-    public String formatMessage(String needName, double amount, double newValue, NeedLevel level) {
+    public String formatMessage(final String needName, final double amount, final double newValue, final NeedLevel level) {
         return String.format(
                 messageFormat != null ? messageFormat : "Your %s has %s by %.2f to %.2f; you're now %s.",
                 needName.toLowerCase(),

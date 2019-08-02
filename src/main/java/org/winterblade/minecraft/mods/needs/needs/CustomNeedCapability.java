@@ -26,17 +26,17 @@ class CustomNeedCapability implements ICustomNeedCapability {
     protected Map<String, Double> values = new HashMap<>();
 
     @Override
-    public double getValue(String id) {
+    public double getValue(final String id) {
         return values.computeIfAbsent(id, k -> 0d);
     }
 
     @Override
-    public void setValue(String id, double value) {
+    public void setValue(final String id, final double value) {
         values.put(id, value);
     }
 
     @Override
-    public boolean isInitialized(String id) {
+    public boolean isInitialized(final String id) {
         return values.containsKey(id);
     }
 
@@ -48,7 +48,7 @@ class CustomNeedCapability implements ICustomNeedCapability {
     }
 
     @SubscribeEvent
-    public static void attach(AttachCapabilitiesEvent<Entity> evt) {
+    public static void attach(final AttachCapabilitiesEvent<Entity> evt) {
         if (!(evt.getObject() instanceof PlayerEntity)) return;
 
         evt.addCapability(new ResourceLocation("needs:custom_needs"), new Provider());
@@ -59,20 +59,20 @@ class CustomNeedCapability implements ICustomNeedCapability {
 
         @Nullable
         @Override
-        public CompoundNBT writeNBT(Capability<ICustomNeedCapability> capability, ICustomNeedCapability instance, Direction side) {
-            CompoundNBT nbt = new CompoundNBT();
+        public CompoundNBT writeNBT(final Capability<ICustomNeedCapability> capability, final ICustomNeedCapability instance, final Direction side) {
+            final CompoundNBT nbt = new CompoundNBT();
             instance.getValues().forEach(nbt::putDouble);
             return nbt;
         }
 
         @Override
-        public void readNBT(Capability<ICustomNeedCapability> capability, ICustomNeedCapability instance, Direction side, INBT nbt) {
+        public void readNBT(final Capability<ICustomNeedCapability> capability, final ICustomNeedCapability instance, final Direction side, final INBT nbt) {
             if (!(nbt instanceof CompoundNBT)) {
                 NeedsMod.LOGGER.error("Unable to deserialize custom need storage; nbt data is not a compound tag");
                 return;
             }
 
-            CompoundNBT nbtCompound = (CompoundNBT) nbt;
+            final CompoundNBT nbtCompound = (CompoundNBT) nbt;
             nbtCompound.keySet().forEach((k) -> instance.getValues().put(k, nbtCompound.getDouble(k)));
         }
     }
@@ -87,7 +87,7 @@ class CustomNeedCapability implements ICustomNeedCapability {
 
         @Nonnull
         @Override
-        public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+        public <T> LazyOptional<T> getCapability(@Nonnull final Capability<T> cap, @Nullable final Direction side) {
             return cap == CustomNeed.CAPABILITY ? capability.cast() : super.getCapability(cap, side);
         }
 
@@ -97,7 +97,7 @@ class CustomNeedCapability implements ICustomNeedCapability {
         }
 
         @Override
-        public void deserializeNBT(CompoundNBT nbt) {
+        public void deserializeNBT(final CompoundNBT nbt) {
             Storage.INSTANCE.readNBT(CustomNeed.CAPABILITY, theActualBloodyCap, null, nbt);
         }
     }

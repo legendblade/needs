@@ -6,7 +6,7 @@ import org.winterblade.minecraft.mods.needs.api.Need;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class NeedInitializationEvent extends NeedEvent {
-    public NeedInitializationEvent(Need need, PlayerEntity player) {
+    public NeedInitializationEvent(final Need need, final PlayerEntity player) {
         super(need, player);
     }
 
@@ -18,7 +18,7 @@ public class NeedInitializationEvent extends NeedEvent {
      */
     @Cancelable
     public static class Pre extends NeedInitializationEvent {
-        public Pre(Need need, PlayerEntity player) {
+        public Pre(final Need need, final PlayerEntity player) {
             super(need, player);
         }
     }
@@ -27,7 +27,7 @@ public class NeedInitializationEvent extends NeedEvent {
      * Called after a need has been initialized; you may adjust the amount during this event.
      */
     public static class Post extends NeedInitializationEvent {
-        public Post(Need need, PlayerEntity player) {
+        public Post(final Need need, final PlayerEntity player) {
             super(need, player);
         }
     }

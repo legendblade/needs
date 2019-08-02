@@ -13,7 +13,7 @@ public abstract class LevelAction implements ILevelAction {
      * @param player The player involved
      */
     @Override
-    public void onEntered(Need need, NeedLevel level, PlayerEntity player) {
+    public void onEntered(final Need need, final NeedLevel level, final PlayerEntity player) {
 
     }
 
@@ -24,7 +24,7 @@ public abstract class LevelAction implements ILevelAction {
      * @param player The player involved
      */
     @Override
-    public void onExited(Need need, NeedLevel level, PlayerEntity player) {
+    public void onExited(final Need need, final NeedLevel level, final PlayerEntity player) {
 
     }
 
@@ -35,7 +35,7 @@ public abstract class LevelAction implements ILevelAction {
      * @param player The player involved
      */
     @Override
-    public void onContinuousStart(Need need, NeedLevel level, PlayerEntity player) {
+    public void onContinuousStart(final Need need, final NeedLevel level, final PlayerEntity player) {
 
     }
 
@@ -46,7 +46,7 @@ public abstract class LevelAction implements ILevelAction {
      * @param player The player involved
      */
     @Override
-    public void onContinuousEnd(Need need, NeedLevel level, PlayerEntity player) {
+    public void onContinuousEnd(final Need need, final NeedLevel level, final PlayerEntity player) {
 
     }
 }

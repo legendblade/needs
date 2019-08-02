@@ -18,7 +18,7 @@ public class ManipulatorRegistry extends TypedRegistry<IManipulator> {
 
 
     @Override
-    public IManipulator deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public IManipulator deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
         return INSTANCE.doDeserialize(json, typeOfT, context);
     }
 }

@@ -48,47 +48,47 @@ public class PotionEffectLevelAction extends LevelAction implements IReappliedOn
     }
 
     @Override
-    public void onEntered(Need need, NeedLevel level, PlayerEntity player) {
-        Effect eff = getTheEffect();
+    public void onEntered(final Need need, final NeedLevel level, final PlayerEntity player) {
+        final Effect eff = getTheEffect();
         if (eff == null) return;
 
         player.addPotionEffect(new EffectInstance(eff, duration, amplifier));
     }
 
     @Override
-    public void onExited(Need need, NeedLevel level, PlayerEntity player) {
+    public void onExited(final Need need, final NeedLevel level, final PlayerEntity player) {
         onEntered(need, level, player);
     }
 
     @Override
-    public void onContinuousStart(Need need, NeedLevel level, PlayerEntity player) {
-        Effect eff = getTheEffect();
+    public void onContinuousStart(final Need need, final NeedLevel level, final PlayerEntity player) {
+        final Effect eff = getTheEffect();
         if (eff == null) return;
 
         player.addPotionEffect(new EffectInstance(eff, Integer.MAX_VALUE, amplifier));
     }
 
     @Override
-    public void onContinuousEnd(Need need, NeedLevel level, PlayerEntity player) {
-        Effect eff = getTheEffect();
+    public void onContinuousEnd(final Need need, final NeedLevel level, final PlayerEntity player) {
+        final Effect eff = getTheEffect();
         if (eff == null) return;
 
         player.removePotionEffect(eff);
     }
 
     @Override
-    public void onRespawned(Need need, NeedLevel level, PlayerEntity player, PlayerEntity oldPlayer) {
+    public void onRespawned(final Need need, final NeedLevel level, final PlayerEntity player, final PlayerEntity oldPlayer) {
         if (!persistOnDeath) return;
 
-        Effect eff = getTheEffect();
+        final Effect eff = getTheEffect();
         if (eff == null) return;
 
-        EffectInstance effectInstance = oldPlayer.getActivePotionEffect(eff);
+        final EffectInstance effectInstance = oldPlayer.getActivePotionEffect(eff);
         if (effectInstance != null) player.addPotionEffect(effectInstance);
     }
 
     @Override
-    public void onRespawnedWhenContinuous(Need need, NeedLevel level, PlayerEntity player, PlayerEntity oldPlayer) {
+    public void onRespawnedWhenContinuous(final Need need, final NeedLevel level, final PlayerEntity player, final PlayerEntity oldPlayer) {
         onContinuousStart(need, level, player);
     }
 }

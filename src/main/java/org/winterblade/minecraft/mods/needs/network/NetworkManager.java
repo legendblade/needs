@@ -6,7 +6,7 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 
 public class NetworkManager {
-    private static String PROTOCOL_VERSION = NeedsMod.VERSION;
+    private static final String PROTOCOL_VERSION = NeedsMod.VERSION;
 
     public static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(NeedsMod.MODID, "main"),

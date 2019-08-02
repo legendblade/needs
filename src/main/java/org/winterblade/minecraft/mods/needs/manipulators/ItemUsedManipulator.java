@@ -44,10 +44,10 @@ public class ItemUsedManipulator extends BaseManipulator {
 
     private int capacity = 0;
 
-    private Map<IIngredient, Double> itemValues = new HashMap<>();
+    private final Map<IIngredient, Double> itemValues = new HashMap<>();
 
-    private WeakHashMap<ItemStack, String> itemCache = new WeakHashMap<>();
-    private RangeMap<Double, String> formatting = TreeRangeMap.create();
+    private final WeakHashMap<ItemStack, String> itemCache = new WeakHashMap<>();
+    private final RangeMap<Double, String> formatting = TreeRangeMap.create();
 
     @Override
     public void onCreated() {
@@ -60,10 +60,10 @@ public class ItemUsedManipulator extends BaseManipulator {
     }
 
     @SubscribeEvent
-    public void OnItemUsed(LivingEntityUseItemEvent.Finish evt) {
+    public void OnItemUsed(final LivingEntityUseItemEvent.Finish evt) {
         if (evt.getEntity().world.isRemote) return;
 
-        for (Map.Entry<IIngredient, Double> item : itemValues.entrySet()) {
+        for (final Map.Entry<IIngredient, Double> item : itemValues.entrySet()) {
             if (!item.getKey().isMatch(evt.getItem())) continue;
 
             parent.adjustValue(evt.getEntityLiving(), item.getValue(), this);
@@ -75,15 +75,15 @@ public class ItemUsedManipulator extends BaseManipulator {
      * Called on the client when Minecraft wants to render the tooltip
      * @param event The tooltip event
      */
-    private void onTooltip(ItemTooltipEvent event) {
+    private void onTooltip(final ItemTooltipEvent event) {
         // TODO: Consider better way of caching values:
-        String msg;
+        final String msg;
         if (itemCache.containsKey(event.getItemStack())) {
             msg = itemCache.get(event.getItemStack());
         } else {
             double value = 0;
             boolean found = false;
-            for (Map.Entry<IIngredient, Double> item : itemValues.entrySet()) {
+            for (final Map.Entry<IIngredient, Double> item : itemValues.entrySet()) {
                 if (!item.getKey().isMatch(event.getItemStack())) continue;
 
                 value = item.getValue();
@@ -95,9 +95,9 @@ public class ItemUsedManipulator extends BaseManipulator {
                 itemCache.put(event.getItemStack(), "");
                 return;
             }
-            StringBuilder theLine = new StringBuilder(capacity);
+            final StringBuilder theLine = new StringBuilder(capacity);
 
-            String color = formatting.get(value);
+            final String color = formatting.get(value);
             theLine.append(color != null ? color : TextFormatting.AQUA.toString());
 
             theLine.append(parent.getName());
@@ -111,7 +111,7 @@ public class ItemUsedManipulator extends BaseManipulator {
             itemCache.put(event.getItemStack(), msg);
         }
 
-        List<ITextComponent> toolTip = event.getToolTip();
+        final List<ITextComponent> toolTip = event.getToolTip();
         if (msg.isEmpty() || isThisValuePresent(toolTip)) return;
         toolTip.add(new StringTextComponent(msg));
     }
@@ -121,12 +121,12 @@ public class ItemUsedManipulator extends BaseManipulator {
      * @param tooltip The tooltip
      * @return True if we have, false otherwise
      */
-    private boolean isThisValuePresent(List<ITextComponent> tooltip) {
+    private boolean isThisValuePresent(final List<ITextComponent> tooltip) {
         if (tooltip.size() <= 1) return false;
 
-        for (ITextComponent line : tooltip) {
-            String lineString = line.getString();
-            String withoutFormatting = TextFormatting.getTextWithoutFormattingCodes(lineString);
+        for (final ITextComponent line : tooltip) {
+            final String lineString = line.getString();
+            final String withoutFormatting = TextFormatting.getTextWithoutFormattingCodes(lineString);
             if (withoutFormatting == null) continue;
 
             if (withoutFormatting.startsWith(parent.getName())) return true;
@@ -136,13 +136,13 @@ public class ItemUsedManipulator extends BaseManipulator {
 
     class Deserializer implements JsonDeserializer<ItemUsedManipulator> {
         @Override
-        public ItemUsedManipulator deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public ItemUsedManipulator deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
             if (!json.isJsonObject()) throw new JsonParseException("ItemUsed must be an object");
 
             // TODO: Get gson to heavy-lift the base class
-            ItemUsedManipulator output = new ItemUsedManipulator();
+            final ItemUsedManipulator output = new ItemUsedManipulator();
 
-            JsonObject obj = json.getAsJsonObject();
+            final JsonObject obj = json.getAsJsonObject();
             if (!obj.has("items")) throw new JsonParseException("ItemUsed must have an items array");
 
             if (obj.has("defaultAmount")) output.defaultAmount = obj.get("defaultAmount").getAsInt();
@@ -152,11 +152,11 @@ public class ItemUsedManipulator extends BaseManipulator {
 
             // Get formatting ranges:
             if (obj.has("formatting")) {
-                JsonObject formattingEl = obj.getAsJsonObject("formatting");
+                final JsonObject formattingEl = obj.getAsJsonObject("formatting");
                 formattingEl.entrySet().forEach((kv) -> {
-                    Range<Double> range;
+                    final Range<Double> range;
                     if (kv.getValue().isJsonPrimitive()) {
-                        String rangeStr = kv.getValue().getAsJsonPrimitive().getAsString();
+                        final String rangeStr = kv.getValue().getAsJsonPrimitive().getAsString();
                         range = RangeHelper.parseStringAsRange(rangeStr);
                     } else if (kv.getValue().isJsonObject()) {
                         range = RangeHelper.parseObjectToRange(kv.getValue().getAsJsonObject());
@@ -164,7 +164,7 @@ public class ItemUsedManipulator extends BaseManipulator {
                         throw new JsonParseException("Format range must be an object with min/max or a string.");
                     }
 
-                    TextFormatting format = TextFormatting.getValueByName(kv.getKey());
+                    final TextFormatting format = TextFormatting.getValueByName(kv.getKey());
                     if (format == null) throw new JsonParseException("Unknown format color: " + kv.getKey());
                     output.formatting.put(range, format.toString());
                 });
@@ -174,13 +174,13 @@ public class ItemUsedManipulator extends BaseManipulator {
             }
 
             // Now actually deal with the items:
-            JsonElement itemsEl = obj.get("items");
+            final JsonElement itemsEl = obj.get("items");
 
             // Handle if it's a key/value pair:
             if (itemsEl.isJsonObject()) {
-                JsonObject itemsObj = itemsEl.getAsJsonObject();
+                final JsonObject itemsObj = itemsEl.getAsJsonObject();
                 itemsObj.entrySet().forEach((pair) -> {
-                    IIngredient ingredient = getIngredient(pair.getKey());
+                    final IIngredient ingredient = getIngredient(pair.getKey());
                     if(ingredient == null) return;
 
                     output.itemValues.put(ingredient, pair.getValue().getAsDouble());
@@ -191,7 +191,7 @@ public class ItemUsedManipulator extends BaseManipulator {
             if (!itemsEl.isJsonArray()) throw new JsonParseException("ItemUsed must have an items array or object");
 
             // Handle if it's an array:
-            JsonArray itemArray = obj.getAsJsonArray("items");
+            final JsonArray itemArray = obj.getAsJsonArray("items");
             if (itemArray == null || itemArray.size() <= 0) throw new JsonParseException("ItemUsed must have an items array");
 
             itemArray.forEach((el) -> populateFromElement(output, el));
@@ -204,16 +204,16 @@ public class ItemUsedManipulator extends BaseManipulator {
          * @param output    The output to add to
          * @param el        The element to parse
          */
-        private void populateFromElement(ItemUsedManipulator output, JsonElement el) {
+        private void populateFromElement(final ItemUsedManipulator output, final JsonElement el) {
             double amount = output.defaultAmount;
-            String entry;
+            final String entry;
             IIngredient ingredient = null;
 
             if(el.isJsonPrimitive()) {
                 entry = el.getAsString();
                 ingredient = getIngredient(entry);
             } else if(el.isJsonObject()) {
-                JsonObject elObj = el.getAsJsonObject();
+                final JsonObject elObj = el.getAsJsonObject();
 
                 if (elObj.has("predicate")) {
                     ingredient = getIngredient(elObj.getAsJsonPrimitive("predicate").getAsString());
@@ -236,11 +236,11 @@ public class ItemUsedManipulator extends BaseManipulator {
          * @param input     The string to parse
          * @return          The parsed ingredient, or null if parsing failed.
          */
-        private IIngredient getIngredient(String input) {
+        private IIngredient getIngredient(final String input) {
             if(input == null || input.isEmpty()) return null;
 
             if (input.startsWith("tag:")) {
-                Tag<Item> tag = ItemTags.getCollection().get(new ResourceLocation(input.substring(4)));
+                final Tag<Item> tag = ItemTags.getCollection().get(new ResourceLocation(input.substring(4)));
 
                 if (tag == null) {
                     NeedsMod.LOGGER.warn("Unknown tag " + input);
@@ -250,7 +250,7 @@ public class ItemUsedManipulator extends BaseManipulator {
                 return new TagIngredient(tag);
             }
 
-            Item item = RegistryManager.ACTIVE.getRegistry(Item.class).getValue(new ResourceLocation(input));
+            final Item item = RegistryManager.ACTIVE.getRegistry(Item.class).getValue(new ResourceLocation(input));
             if (item == null) {
                 NeedsMod.LOGGER.warn("Unknown item " + input);
                 return null;

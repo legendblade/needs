@@ -9,16 +9,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class CachedTickingNeed extends Need {
-    private Map<String, Double> cache = new HashMap<>();
+    private final Map<String, Double> cache = new HashMap<>();
 
     @Override
     public void onCreated() {
         NeedRegistry.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
     }
 
-    private void onTick(PlayerEntity p) {
-        double current = getValue(p);
-        double prev = cache.computeIfAbsent(p.getCachedUniqueIdString(), (p2) -> current);
+    private void onTick(final PlayerEntity p) {
+        final double current = getValue(p);
+        final double prev = cache.computeIfAbsent(p.getCachedUniqueIdString(), (p2) -> current);
         if (current == prev) return;
 
         sendUpdates(p, BaseManipulator.EXTERNAL, prev, current);

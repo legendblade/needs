@@ -13,7 +13,7 @@ public class TestingTickLevelAction extends TickingLevelAction {
     }
 
     @Override
-    public void onContinuousTick(Need need, NeedLevel level, PlayerEntity player) {
+    public void onContinuousTick(final Need need, final NeedLevel level, final PlayerEntity player) {
         NeedsMod.LOGGER.debug(player.getDisplayName().getString() + " ticked at " + player.ticksExisted);
     }
 }

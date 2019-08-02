@@ -11,32 +11,32 @@ public class FoodNeed extends CachedTickingNeed {
     }
 
     @Override
-    public double getMin(PlayerEntity player) {
+    public double getMin(final PlayerEntity player) {
         return 0;
     }
 
     @Override
-    public double getMax(PlayerEntity player) {
+    public double getMax(final PlayerEntity player) {
         return 20;
     }
 
     @Override
-    public void initialize(PlayerEntity player) {
+    public void initialize(final PlayerEntity player) {
         // Do nothing.
     }
 
     @Override
-    public double getValue(PlayerEntity player) {
+    public double getValue(final PlayerEntity player) {
         return player.getFoodStats().getFoodLevel();
     }
 
     @Override
-    public boolean isValueInitialized(PlayerEntity player) {
+    public boolean isValueInitialized(final PlayerEntity player) {
         return true;
     }
 
     @Override
-    protected void setValue(PlayerEntity player, double newValue) {
+    protected void setValue(final PlayerEntity player, final double newValue) {
         player.getFoodStats().setFoodLevel((int) Math.round(newValue));
     }
 

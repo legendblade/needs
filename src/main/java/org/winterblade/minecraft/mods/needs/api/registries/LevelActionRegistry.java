@@ -17,7 +17,7 @@ public class LevelActionRegistry extends TypedRegistry<ILevelAction> {
     }
 
     @Override
-    public ILevelAction deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public ILevelAction deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
         return INSTANCE.doDeserialize(json, typeOfT, context);
     }
 }

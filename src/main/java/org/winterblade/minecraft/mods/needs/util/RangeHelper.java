@@ -17,15 +17,15 @@ public class RangeHelper {
      */
     public static Range<Double> parseStringAsRange(String rangeStr) {
         rangeStr = rangeStr.trim();
-        String withoutBoundTypes = rangeStr.replaceAll("[^\\-0-9.,]+", "");
+        final String withoutBoundTypes = rangeStr.replaceAll("[^\\-0-9.,]+", "");
         Range<Double> range;
-        String[] split = withoutBoundTypes.split(",");
+        final String[] split = withoutBoundTypes.split(",");
 
         if (split.length <= 0) return Range.all(); // Why?
 
         // Check if we have bounds; by default they will be '[x,y)'
-        BoundType lowerBoundType = rangeStr.startsWith("(") ? BoundType.OPEN : BoundType.CLOSED;
-        BoundType upperBoundType = rangeStr.endsWith("]") ? BoundType.CLOSED : BoundType.OPEN;
+        final BoundType lowerBoundType = rangeStr.startsWith("(") ? BoundType.OPEN : BoundType.CLOSED;
+        final BoundType upperBoundType = rangeStr.endsWith("]") ? BoundType.CLOSED : BoundType.OPEN;
 
         // If we omitted one side:
         if (split.length <= 1) {
@@ -53,7 +53,7 @@ public class RangeHelper {
      * @param max The max value
      * @return  The new range
      */
-    public static Range<Double> parseMinMaxAsRange(double min, double max) {
+    public static Range<Double> parseMinMaxAsRange(final double min, final double max) {
         if (min == Double.MIN_VALUE && max == Double.MAX_VALUE) return Range.all();
         if(min == Double.MIN_VALUE) return Range.lessThan(max);
         if(max == Double.MAX_VALUE) return Range.atLeast(min);
@@ -65,14 +65,14 @@ public class RangeHelper {
      * @param obj The object to parse
      * @return  The range
      */
-    public static Range<Double> parseObjectToRange(JsonObject obj) throws JsonParseException {
+    public static Range<Double> parseObjectToRange(final JsonObject obj) throws JsonParseException {
         double min = Double.MIN_VALUE;
         double max = Double.MAX_VALUE;
 
         if (obj.has("min")) min = obj.getAsJsonPrimitive("min").getAsDouble();
         if (obj.has("max")) max = obj.getAsJsonPrimitive("max").getAsDouble();
 
-        Range<Double> range = RangeHelper.parseMinMaxAsRange(min, max);
+        final Range<Double> range = RangeHelper.parseMinMaxAsRange(min, max);
         if (range.isEmpty()) throw new JsonParseException("Invalid range specified: [" + min + "," + max + ")");
 
         return range;

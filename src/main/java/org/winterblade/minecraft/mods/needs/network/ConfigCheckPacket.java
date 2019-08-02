@@ -11,11 +11,11 @@ import java.util.function.Supplier;
 public class ConfigCheckPacket {
     private final Map<String, byte[]> configHashes;
 
-    public ConfigCheckPacket(Map<String, byte[]> configHashes) {
+    public ConfigCheckPacket(final Map<String, byte[]> configHashes) {
         this.configHashes = configHashes;
     }
 
-    public void encode(PacketBuffer packetBuffer) {
+    public void encode(final PacketBuffer packetBuffer) {
         packetBuffer.writeInt(configHashes.size());
         configHashes.forEach((k, v) -> {
             packetBuffer.writeString(k);
@@ -23,10 +23,10 @@ public class ConfigCheckPacket {
         });
     }
 
-    public static ConfigCheckPacket decode(PacketBuffer packetBuffer) {
-        Map<String, byte[]> output = new HashMap<>();
+    public static ConfigCheckPacket decode(final PacketBuffer packetBuffer) {
+        final Map<String, byte[]> output = new HashMap<>();
 
-        int count = packetBuffer.readInt();
+        final int count = packetBuffer.readInt();
         for (int i = 0; i < count; i++) {
             output.put(packetBuffer.readString(), packetBuffer.readByteArray());
         }
@@ -34,7 +34,7 @@ public class ConfigCheckPacket {
         return new ConfigCheckPacket(output);
     }
 
-    public static void handle(ConfigCheckPacket msg, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(final ConfigCheckPacket msg, final Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             NeedRegistry.INSTANCE.validateConfig(msg.configHashes);
         });

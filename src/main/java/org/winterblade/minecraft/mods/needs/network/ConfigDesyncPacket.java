@@ -13,11 +13,11 @@ public class ConfigDesyncPacket {
     private final static DesyncTypes[] desyncTypeCache = DesyncTypes.values();
     private final Map<String, DesyncTypes> desyncs;
 
-    public ConfigDesyncPacket(Map<String,DesyncTypes> desyncs) {
+    public ConfigDesyncPacket(final Map<String,DesyncTypes> desyncs) {
         this.desyncs = desyncs;
     }
 
-    public void encode(PacketBuffer packetBuffer) {
+    public void encode(final PacketBuffer packetBuffer) {
         packetBuffer.writeInt(desyncs.size());
         desyncs.forEach((k, v) -> {
             packetBuffer.writeString(k);
@@ -25,9 +25,9 @@ public class ConfigDesyncPacket {
         });
     }
 
-    public static ConfigDesyncPacket decode(PacketBuffer packetBuffer) {
-        int count = packetBuffer.readInt();
-        Map<String, DesyncTypes> output = new HashMap<>();
+    public static ConfigDesyncPacket decode(final PacketBuffer packetBuffer) {
+        final int count = packetBuffer.readInt();
+        final Map<String, DesyncTypes> output = new HashMap<>();
 
         for (int i = 0; i < count; i++) {
             output.put(packetBuffer.readString(), desyncTypeCache[packetBuffer.readInt()]);
@@ -36,9 +36,9 @@ public class ConfigDesyncPacket {
         return new ConfigDesyncPacket(output);
     }
 
-    public static void handle(ConfigDesyncPacket msg, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(final ConfigDesyncPacket msg, final Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ServerPlayerEntity thePlayer = ctx.get().getSender();
+            final ServerPlayerEntity thePlayer = ctx.get().getSender();
 
             if (thePlayer == null) return;
 

@@ -9,7 +9,7 @@ import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
 public class NeedAdjustmentEvent extends NeedEvent {
     protected final IManipulator source;
 
-    public NeedAdjustmentEvent(Need need, PlayerEntity player, IManipulator source) {
+    public NeedAdjustmentEvent(final Need need, final PlayerEntity player, final IManipulator source) {
         super(need, player);
         this.source = source;
     }
@@ -25,7 +25,7 @@ public class NeedAdjustmentEvent extends NeedEvent {
     @Cancelable
     public static class Pre extends NeedAdjustmentEvent {
 
-        public Pre(Need need, PlayerEntity player, IManipulator source) {
+        public Pre(final Need need, final PlayerEntity player, final IManipulator source) {
             super(need, player, source);
         }
     }
@@ -37,7 +37,7 @@ public class NeedAdjustmentEvent extends NeedEvent {
         private final double previous;
         private final double current;
 
-        public Post(Need need, PlayerEntity player, IManipulator source, double previous, double current) {
+        public Post(final Need need, final PlayerEntity player, final IManipulator source, final double previous, final double current) {
             super(need, player, source);
             this.previous = previous;
             this.current = current;
