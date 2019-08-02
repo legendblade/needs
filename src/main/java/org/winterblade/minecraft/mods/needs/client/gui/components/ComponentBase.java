@@ -67,7 +67,7 @@ public abstract class ComponentBase extends BoundedComponent implements IMouseDr
     public boolean mouseDragged(final double x, final double y, final ComponentScreen.MouseButtons button, final double dragX, final double dragY) {
         for (final IMouseDragListener subcomponent : dragListeners) {
             if (!subcomponent.isVisible()) continue;
-            if (isInBounds(x, y, subcomponent) && isInBounds(dragX, dragY, subcomponent)) {
+            if (isInBounds(x, y, subcomponent)) {
                 final Rectangle2d sb = subcomponent.getBounds();
                 return subcomponent.mouseDragged(x - sb.getX(), y - sb.getY(), button, dragX - sb.getX(), dragY - sb.getY());
             }

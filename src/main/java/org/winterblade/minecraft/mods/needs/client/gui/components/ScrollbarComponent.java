@@ -7,7 +7,7 @@ import org.winterblade.minecraft.mods.needs.client.gui.screens.ComponentScreen;
 import java.util.function.Supplier;
 
 @SuppressWarnings("WeakerAccess")
-public class ScrollbarComponent extends BoundedComponent implements IMouseScrollListener, IMouseClickListener {
+public class ScrollbarComponent extends BoundedComponent implements IMouseScrollListener, IMouseDragListener {
     private static final int SCROLL_SPEED = 15;
 
     private final Texture active;
@@ -75,5 +75,11 @@ public class ScrollbarComponent extends BoundedComponent implements IMouseScroll
     @Override
     public boolean mouseReleased(final double x, final double y, final ComponentScreen.MouseButtons button) {
         return true;
+    }
+
+
+    @Override
+    public boolean mouseDragged(final double x, final double y, final ComponentScreen.MouseButtons button, final double dragX, final double dragY) {
+        return mouseClicked(x, y + dragY, button);
     }
 }
