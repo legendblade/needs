@@ -54,9 +54,9 @@ public class RangeHelper {
      * @return  The new range
      */
     public static Range<Double> parseMinMaxAsRange(final double min, final double max) {
-        if (min == Double.MIN_VALUE && max == Double.MAX_VALUE) return Range.all();
-        if(min == Double.MIN_VALUE) return Range.lessThan(max);
-        if(max == Double.MAX_VALUE) return Range.atLeast(min);
+        if (min == Double.NEGATIVE_INFINITY && max == Double.POSITIVE_INFINITY) return Range.all();
+        if(min == Double.NEGATIVE_INFINITY) return Range.lessThan(max);
+        if(max == Double.POSITIVE_INFINITY) return Range.atLeast(min);
         return Range.closedOpen(min, max);
     }
 
@@ -66,8 +66,8 @@ public class RangeHelper {
      * @return  The range
      */
     public static Range<Double> parseObjectToRange(final JsonObject obj) throws JsonParseException {
-        double min = Double.MIN_VALUE;
-        double max = Double.MAX_VALUE;
+        double min = Double.NEGATIVE_INFINITY;
+        double max = Double.POSITIVE_INFINITY;
 
         if (obj.has("min")) min = obj.getAsJsonPrimitive("min").getAsDouble();
         if (obj.has("max")) max = obj.getAsJsonPrimitive("max").getAsDouble();

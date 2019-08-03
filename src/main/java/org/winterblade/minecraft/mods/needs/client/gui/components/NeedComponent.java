@@ -81,7 +81,7 @@ public class NeedComponent extends TexturedComponent {
         minText.setText(Double.toString(min));
         maxText.setText(Double.toString(max));
 
-        if ((lower == Double.MIN_VALUE || lower < min) && (upper == Double.MAX_VALUE || max < upper)) {
+        if ((lower < min) && (max < upper)) {
             currentBounds.setVisible(false);
             lowerBound.setVisible(false);
             return;
@@ -89,7 +89,7 @@ public class NeedComponent extends TexturedComponent {
 
         currentBounds.setVisible(true);
         final double range = max - min;
-        if (lower == Double.MIN_VALUE || lower <= min) {
+        if (lower <= min) {
             lowerBound.setVisible(false);
             currentBounds.setLeft(0);
         } else {
@@ -98,7 +98,7 @@ public class NeedComponent extends TexturedComponent {
             currentBounds.setLeft((int) (((lower - min) / range) * BAR_WIDTH));
         }
 
-        if (upper == Double.MAX_VALUE || max <= upper) {
+        if (max <= upper) {
             upperBound.setVisible(false);
             currentBounds.setRight(BAR_WIDTH);
         } else {

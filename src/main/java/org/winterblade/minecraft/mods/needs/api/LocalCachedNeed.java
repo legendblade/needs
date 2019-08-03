@@ -72,8 +72,8 @@ public class LocalCachedNeed {
                 final Iterator<Range<Double>> iter = levels.keySet().iterator();
                 this.hasLevels = true;
 
-                double low = Double.MIN_VALUE;
-                double high = Double.MAX_VALUE;
+                double low = Double.NEGATIVE_INFINITY;
+                double high = Double.POSITIVE_INFINITY;
                 while (iter.hasNext()) {
                     final Range<Double> r = iter.next();
                     if (r.hasUpperBound() && r.upperEndpoint() <= value) low = r.upperEndpoint();
@@ -88,14 +88,14 @@ public class LocalCachedNeed {
                 this.lower = low;
                 this.upper = high;
             } else {
-                this.lower = Double.MIN_VALUE;
-                this.upper = Double.MAX_VALUE;
+                this.lower = Double.NEGATIVE_INFINITY;
+                this.upper = Double.POSITIVE_INFINITY;
                 this.hasLevels = false;
             }
         } else {
             final Range<Double> range = level.getRange();
-            this.lower = range.hasLowerBound() ? range.lowerEndpoint() : Double.MIN_VALUE;
-            this.upper = range.hasUpperBound() ? range.upperEndpoint() : Double.MAX_VALUE;
+            this.lower = range.hasLowerBound() ? range.lowerEndpoint() : Double.NEGATIVE_INFINITY;
+            this.upper = range.hasUpperBound() ? range.upperEndpoint() : Double.POSITIVE_INFINITY;
             this.hasLevels = true;
         }
     }
