@@ -74,7 +74,7 @@ public class CustomNeed extends Need {
 
     @Override
     public void initialize(final PlayerEntity player) {
-        setValue(player, getInitial());
+        setValue(player, getInitial(), getInitial());
     }
 
     @Override
@@ -86,10 +86,11 @@ public class CustomNeed extends Need {
     }
 
     @Override
-    public void setValue(final PlayerEntity player, final double newValue) {
+    public double setValue(final PlayerEntity player, final double newValue, final double adjustAmount) {
         player
             .getCapability(CAPABILITY)
             .ifPresent((cap) -> cap.setValue(getName(), newValue));
+        return newValue;
     }
 
     @Override
@@ -104,7 +105,8 @@ public class CustomNeed extends Need {
     protected void onDeath(final LivingDeathEvent event) {
         if (event.isCanceled() || !isResetOnDeath() || !(event.getEntity() instanceof PlayerEntity)) return;
 
-        setValue((PlayerEntity) event.getEntity(), getInitial());
+        final PlayerEntity entity = (PlayerEntity) event.getEntity();
+        setValue(entity, getInitial(), getValue(entity) - getInitial());
     }
 
     @SubscribeEvent

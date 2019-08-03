@@ -5,6 +5,7 @@ import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
@@ -20,7 +21,7 @@ import java.util.List;
 public class UiMixin extends BaseMixin {
     public static final UiMixin NONE;
     public static final Texture GENERIC_ICON = new Texture(new ResourceLocation(NeedsMod.MODID, "gui/generic_need.png"), 34, 34);
-    private static List<Need.Local> sortedLocalCache;
+    private static List<LocalCachedNeed> sortedLocalCache;
 
     static {
         NONE = new UiMixin();
@@ -141,7 +142,7 @@ public class UiMixin extends BaseMixin {
      * @return  The cache
      */
     @Nonnull
-    public static List<Need.Local> getLocalNeeds() {
+    public static List<LocalCachedNeed> getLocalNeeds() {
         if (sortedLocalCache != null) return sortedLocalCache;
 
         // Iterate the map, pulling out any now invalid needs
@@ -159,7 +160,7 @@ public class UiMixin extends BaseMixin {
         });
 
         // Finally, sort it by name
-        sortedLocalCache.sort(Comparator.comparing(Need.Local::getName));
+        sortedLocalCache.sort(Comparator.comparing(LocalCachedNeed::getName));
         return sortedLocalCache;
     }
 

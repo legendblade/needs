@@ -14,9 +14,9 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
-import org.winterblade.minecraft.mods.needs.client.gui.screens.NeedDisplayScreen;
 import org.winterblade.minecraft.mods.needs.network.ConfigCheckPacket;
 import org.winterblade.minecraft.mods.needs.network.ConfigDesyncPacket;
 import org.winterblade.minecraft.mods.needs.network.ConfigSyncedPacket;
@@ -44,7 +44,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
     /**
      * Client-side cache
      */
-    private final Map<String, Need.Local> localCache = new ConcurrentHashMap<>();
+    private final Map<String, LocalCachedNeed> localCache = new ConcurrentHashMap<>();
 
     /**
      * Config storage; client and server both have hashes, server has full configs
@@ -199,7 +199,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
             final Need need = getByName(name);
             if (need == null) return null;
 
-            return new Need.Local(need, value, min, max);
+            return new LocalCachedNeed(need, value, min, max);
         });
     }
 
@@ -207,7 +207,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * Gets an immutable copy of the local cahce
      * @return The cache
      */
-    public Map<String, Need.Local> getLocalCache() {
+    public Map<String, LocalCachedNeed> getLocalCache() {
         return ImmutableMap.copyOf(localCache);
     }
 

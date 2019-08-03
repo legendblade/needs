@@ -20,19 +20,21 @@ import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
 import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
-import org.winterblade.minecraft.mods.needs.mixins.UiMixin;
 import org.winterblade.minecraft.mods.needs.network.NeedUpdatePacket;
 import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 
 import javax.annotation.Nonnull;
-import java.lang.ref.WeakReference;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
+/**
+ * The base implementation of a need; values should only be read/written to this on the server; clients will have
+ * a local copy of the need values in a LocalCachedNeed.
+ *
+ * If you need to access the need on the client side, be sure to call {@link Need#enableSyncing()} to tell the
+ * registry to send update events to the client.
+ */
 @SuppressWarnings({"unused", "WeakerAccess"})
 @JsonAdapter(NeedRegistry.class)
 public abstract class Need {
@@ -138,13 +140,16 @@ public abstract class Need {
 
         // Get our current and clamped values:
         final double current = getValue(player);
-        final double newValue = Math.max(getMin(player), Math.min(getMax(player), current + adjust));
+        double newValue = Math.max(getMin(player), Math.min(getMax(player), current + adjust));
 
         // If the new value is the same as the current because we've hit the max/min, don't do anything
         if (newValue == current) return;
 
-        // Finally, set the value and let our listeners know
-        setValue(player, newValue);
+        // Finally, set the value...
+        newValue = setValue(player, newValue, adjust);
+        if (newValue == current) return; // If we didn't _really_ change, bail
+
+        // ... and let our listeners know
         sendUpdates(player, source, current, newValue);
     }
 
@@ -169,7 +174,7 @@ public abstract class Need {
         }
 
         // Make really, really, really sure we're on the server side before sending a packet to the player:
-        if (!shouldSync || !(player instanceof ServerPlayerEntity)) return;
+        if (!shouldSync() || !(player instanceof ServerPlayerEntity)) return;
         NetworkManager.INSTANCE.send(
             PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
             new NeedUpdatePacket(getName(), newValue, getMin(player), getMax(player))
@@ -286,8 +291,9 @@ public abstract class Need {
      * Sets the value of the need
      * @param player    The player to set the value for
      * @param newValue  The new value to set
+     * @param adjustAmount  The amount to adjust by
      */
-    protected abstract void setValue(PlayerEntity player, double newValue);
+    protected abstract double setValue(final PlayerEntity player, final double newValue, final double adjustAmount);
 
     /**
      * Called when a player is respawning
@@ -309,132 +315,4 @@ public abstract class Need {
         level.onPlayerJoined(event.getPlayer());
     }
 
-    public static class Local {
-        private final WeakReference<Need> need;
-        private double value;
-        private double min;
-        private double max;
-        private final String name;
-
-        private boolean hasLevels;
-        private String level;
-        private double lower;
-        private double upper;
-
-        public Local(@Nonnull final Need need, final double value, final double min, final double max) {
-            this.name = need.getName();
-            this.need = new WeakReference<>(need);
-
-            setValue(value);
-            setMax(min);
-            setMax(max);
-        }
-
-        /**
-         * The local cached need; this need is not guaranteed to remain valid through configuration reloads
-         * and the direct value should not be held onto itself.
-         * @return  A weak reference to the need
-         */
-        public WeakReference<Need> getNeed() {
-            return need;
-        }
-
-        /**
-         * Gets the local cached value of the need
-         * @return The local cached value
-         */
-        public double getValue() {
-            return value;
-        }
-
-        /**
-         * Sets the local cached value of the need
-         * @param value The value
-         */
-        public void setValue(final double value) {
-            this.value = value;
-
-            final Need need = getNeed().get();
-            if (need == null) return;
-
-            // Cache this too:
-            final NeedLevel level = need.getLevel(value);
-            this.level = level.getName();
-
-            if (level == NeedLevel.UNDEFINED) {
-                // We need to get the next bound in another way
-                final Map<Range<Double>, NeedLevel> levels = need.getLevels();
-
-                if (0 < levels.size()) {
-                    final Iterator<Range<Double>> iter = levels.keySet().iterator();
-                    this.hasLevels = true;
-
-                    double low = Double.MIN_VALUE;
-                    double high = Double.MAX_VALUE;
-                    while (iter.hasNext()) {
-                        final Range<Double> r = iter.next();
-                        if (r.hasUpperBound() && r.upperEndpoint() <= value) low = r.upperEndpoint();
-
-                        if (r.hasLowerBound() && value <= r.lowerEndpoint()) {
-                            // Once we've found the upper bound, that's guaranteed to be the value we need
-                            high = r.lowerEndpoint();
-                            break;
-                        }
-                    }
-
-                    this.lower = low;
-                    this.upper = high;
-                } else {
-                    this.lower = Double.MIN_VALUE;
-                    this.upper = Double.MAX_VALUE;
-                    this.hasLevels = false;
-                }
-            } else {
-                final Range<Double> range = level.getRange();
-                this.lower = range.hasLowerBound() ? range.lowerEndpoint() : Double.MIN_VALUE;
-                this.upper = range.hasUpperBound() ? range.upperEndpoint() : Double.MAX_VALUE;
-                this.hasLevels = true;
-            }
-        }
-
-        /**
-         * Gets the name of this need
-         * @return The name of the need
-         */
-        public String getName() {
-            return name;
-        }
-
-        public double getMin() {
-            return min;
-        }
-
-        public void setMin(final double min) {
-            this.min = min;
-        }
-
-        public double getMax() {
-           return max;
-        }
-
-        public void setMax(final double max) {
-            this.max = max;
-        }
-
-        public String getLevel() {
-            return level;
-        }
-
-        public double getLower() {
-            return lower;
-        }
-
-        public double getUpper() {
-            return upper;
-        }
-
-        public boolean hasLevels() {
-            return hasLevels;
-        }
-    }
 }

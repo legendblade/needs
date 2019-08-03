@@ -15,8 +15,7 @@ import org.winterblade.minecraft.mods.needs.mixins.ChatMixin;
 import org.winterblade.minecraft.mods.needs.mixins.ScoreboardMixin;
 import org.winterblade.minecraft.mods.needs.mixins.UiMixin;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
-import org.winterblade.minecraft.mods.needs.needs.vanilla.FoodNeed;
-import org.winterblade.minecraft.mods.needs.needs.vanilla.HealthNeed;
+import org.winterblade.minecraft.mods.needs.needs.vanilla.*;
 import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 
 public class CoreRegistration {
@@ -35,6 +34,11 @@ public class CoreRegistration {
         NeedRegistry.INSTANCE.register("custom", CustomNeed.class);
         NeedRegistry.INSTANCE.register("food", FoodNeed.class, "hunger");
         NeedRegistry.INSTANCE.register("health", HealthNeed.class, "hp");
+        NeedRegistry.INSTANCE.register("saturation", SaturationNeed.class);
+        NeedRegistry.INSTANCE.register("ylevel", YLevelNeed.class, "y", "depth");
+        NeedRegistry.INSTANCE.register("maxhealth", MaxHealthNeed.class, "maxhp");
+        NeedRegistry.INSTANCE.register("light", LightLevelNeed.class, "lightlevel");
+        NeedRegistry.INSTANCE.register("breath", BreathNeed.class, "air");
     }
 
     private static void registerMixins() {

@@ -1,13 +1,12 @@
 package org.winterblade.minecraft.mods.needs.needs.vanilla;
 
 import net.minecraft.entity.player.PlayerEntity;
-import org.winterblade.minecraft.mods.needs.needs.CachedTickingNeed;
+import org.winterblade.minecraft.mods.needs.api.Need;
 
-public class FoodNeed extends CachedTickingNeed {
-
+public class BreathNeed extends Need {
     @Override
     public String getName() {
-        return "Food";
+        return "Breath";
     }
 
     @Override
@@ -17,17 +16,12 @@ public class FoodNeed extends CachedTickingNeed {
 
     @Override
     public double getMax(final PlayerEntity player) {
-        return 20;
-    }
-
-    @Override
-    public void initialize(final PlayerEntity player) {
-        // Do nothing.
+        return player.getMaxAir();
     }
 
     @Override
     public double getValue(final PlayerEntity player) {
-        return player.getFoodStats().getFoodLevel();
+        return player.getAir();
     }
 
     @Override
@@ -37,8 +31,7 @@ public class FoodNeed extends CachedTickingNeed {
 
     @Override
     protected double setValue(final PlayerEntity player, final double newValue, final double adjustAmount) {
-        player.getFoodStats().setFoodLevel((int) Math.round(newValue));
+        player.setAir((int) newValue);
         return newValue;
     }
-
 }

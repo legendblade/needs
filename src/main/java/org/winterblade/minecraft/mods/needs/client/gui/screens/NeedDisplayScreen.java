@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screen.inventory.InventoryScreen;
 import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraft.util.text.StringTextComponent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.client.gui.Texture;
 import org.winterblade.minecraft.mods.needs.client.gui.components.*;
@@ -39,13 +40,13 @@ public class NeedDisplayScreen extends ComponentScreen {
                 (i) -> new NeedComponent(texture.getSubtexture(284, ITEM_HEIGHT, 0, 222), new Rectangle2d(0, 0, 284, ITEM_HEIGHT)),
                 ITEM_HEIGHT,
                 (c, i) -> {
-                    final List<Need.Local> localNeeds = UiMixin.getLocalNeeds();
+                    final List<LocalCachedNeed> localNeeds = UiMixin.getLocalNeeds();
                     if (localNeeds.size() <= i) {
                         c.setVisible(false);
                         return;
                     }
 
-                    final Need.Local localNeed = localNeeds.get(i);
+                    final LocalCachedNeed localNeed = localNeeds.get(i);
                     final Need need = localNeed.getNeed().get();
                     if (need == null) {
                         c.setVisible(false);

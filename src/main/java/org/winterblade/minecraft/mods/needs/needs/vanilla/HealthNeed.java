@@ -30,8 +30,9 @@ public class HealthNeed extends CachedTickingNeed {
     }
 
     @Override
-    protected void setValue(final PlayerEntity player, final double newValue) {
+    protected double setValue(final PlayerEntity player, final double newValue, final double adjustAmount) {
         player.setHealth((float) newValue);
+        return getValue(player);
     }
 
 }
