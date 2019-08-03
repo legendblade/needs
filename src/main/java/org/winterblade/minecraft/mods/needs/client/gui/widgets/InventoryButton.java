@@ -6,6 +6,7 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
 import net.minecraft.util.ResourceLocation;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.client.gui.screens.NeedDisplayScreen;
 
 import javax.annotation.Nonnull;
 
@@ -33,7 +34,7 @@ public class InventoryButton extends ImageButton {
     private static class Action implements IPressable {
         @Override
         public void onPress(@Nonnull final Button btn) {
-            Minecraft.getInstance().displayGuiScreen(new InventoryScreen(Minecraft.getInstance().player));
+            NeedDisplayScreen.returnToInventory();
         }
     }
 }

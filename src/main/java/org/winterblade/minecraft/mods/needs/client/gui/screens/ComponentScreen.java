@@ -117,7 +117,7 @@ public abstract class ComponentScreen extends Screen {
         return window.mouseScrolled(x - guiLeft, y - guiTop, lines) || super.mouseScrolled(x, y, lines);
     }
 
-    private static MouseButtons mapButton(final int button) {
+    protected static MouseButtons mapButton(final int button) {
         return button < 5 ? buttons[button] : MouseButtons.UNKNOWN;
     }
 

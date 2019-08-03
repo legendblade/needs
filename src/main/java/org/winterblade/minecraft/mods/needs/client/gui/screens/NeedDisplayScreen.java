@@ -1,6 +1,7 @@
 package org.winterblade.minecraft.mods.needs.client.gui.screens;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.inventory.InventoryScreen;
 import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraft.util.text.StringTextComponent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
@@ -71,15 +72,36 @@ public class NeedDisplayScreen extends ComponentScreen {
         ));
     }
 
+    public static void open() {
+        Minecraft.getInstance().displayGuiScreen(new NeedDisplayScreen());
+    }
+
+    public static void returnToInventory() {
+        Minecraft.getInstance().displayGuiScreen(new InventoryScreen(Minecraft.getInstance().player));
+    }
+
+    @Override
+    public boolean mouseClicked(final double x, final double y, final int button) {
+        if (mapButton(button) != MouseButtons.BACK) return super.mouseClicked(x, y, button);
+
+        returnToInventory();
+        return true;
+    }
+
+    @Override
+    public boolean keyPressed(final int key, final int scanCode, final int modifiers) {
+        // Allow backspace to also back out
+        if (key != 259 && !Minecraft.getInstance().gameSettings.keyBindInventory.matchesKey(key, scanCode)) return super.keyPressed(key, scanCode, modifiers);
+
+        returnToInventory();
+        return true;
+    }
+
     @Override
     protected void init() {
         super.init();
 
         // Add a button to go back to the inventory:
         addButton(new InventoryButton(guiLeft + 319,guiTop + 1));
-    }
-
-    public static void open() {
-        Minecraft.getInstance().displayGuiScreen(new NeedDisplayScreen());
     }
 }
