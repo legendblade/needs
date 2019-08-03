@@ -5,6 +5,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.Need;
@@ -22,10 +23,16 @@ public class OnNeedChangedManipulator extends BaseManipulator {
     protected String need;
 
     @Expose
-    protected int min;
+    protected double minChange;
 
     @Expose
-    protected int max;
+    protected double maxChange;
+
+    @Expose
+    protected double minValue;
+
+    @Expose
+    protected double maxValue;
 
     @Expose
     protected OtherNeedChangedExpressionContext amount;
@@ -33,10 +40,14 @@ public class OnNeedChangedManipulator extends BaseManipulator {
     protected Need otherNeed;
 
     protected boolean isListening;
+    protected boolean checkValue;
 
     public OnNeedChangedManipulator() {
-        min = Integer.MIN_VALUE;
-        max = Integer.MAX_VALUE;
+        minChange = Double.NEGATIVE_INFINITY;
+        minValue = Double.NEGATIVE_INFINITY;
+
+        maxChange = Double.POSITIVE_INFINITY;
+        maxValue = Double.POSITIVE_INFINITY;
     }
 
     @Override
@@ -44,6 +55,8 @@ public class OnNeedChangedManipulator extends BaseManipulator {
         if (need == null) throw new JsonParseException("onNeedChanged requires a 'need' property.");
         NeedRegistry.INSTANCE.registerDependentNeed(need);
         isListening = true;
+
+        checkValue = (minValue != Double.NEGATIVE_INFINITY || maxValue != Double.POSITIVE_INFINITY);
     }
 
     @Nullable
@@ -70,9 +83,17 @@ public class OnNeedChangedManipulator extends BaseManipulator {
         if(!event.getNeed().equals(getOtherNeed())) return;
 
         final double diff = event.getCurrent() - event.getPrevious();
-        if (diff < min || max < diff) return;
+        if (diff < minChange || maxChange < diff) return;
 
-        amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue(event.getPlayer()));
+        if (checkValue) {
+            final double value = event.getNeed().getValue(event.getPlayer());
+            if (value < minValue || maxValue < value) return;
+
+            amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> value);
+        } else {
+            amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue(event.getPlayer()));
+        }
+
         amount.setIfRequired("other", event::getCurrent);
         amount.setIfRequired("previous", event::getPrevious);
         amount.setIfRequired("change", () -> diff);
