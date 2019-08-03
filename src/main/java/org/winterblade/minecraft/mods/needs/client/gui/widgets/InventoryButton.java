@@ -5,10 +5,7 @@ import net.minecraft.client.gui.screen.inventory.InventoryScreen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.GuiScreenEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.client.gui.screens.NeedDisplayScreen;
-import org.winterblade.minecraft.mods.needs.mixins.UiMixin;
 
 import javax.annotation.Nonnull;
 
@@ -23,7 +20,7 @@ public class InventoryButton extends ImageButton {
             20, // Height
             20, // Width
             305, // xTexStart
-            227, // yTexStart
+            222, // yTexStart
             20, // Hover state yOffset
             new ResourceLocation(NeedsMod.MODID, "textures/gui/need_ui.png"),
             384, // Texture width

@@ -38,11 +38,11 @@ public class UiMixin extends BaseMixin {
 
     @Expose
     @SuppressWarnings("FieldMayBeFinal")
-    private int iconWidth = 34;
+    private int iconWidth = 32;
 
     @Expose
     @SuppressWarnings("FieldMayBeFinal")
-    private int iconHeight = 34;
+    private int iconHeight = 32;
 
     @Expose
     @SuppressWarnings("FieldMayBeFinal")
@@ -67,6 +67,11 @@ public class UiMixin extends BaseMixin {
     private boolean shouldDisplay = true;
     private Texture iconTexture;
 
+    public UiMixin() {
+        iconOffsetX = (32 - iconWidth) / 2;
+        iconOffsetY = (32 - iconHeight) / 2;
+    }
+
     @Override
     public void onCreated(final Need need) {
         super.onCreated(need);
@@ -78,7 +83,7 @@ public class UiMixin extends BaseMixin {
 
             if (split.length <= 0) iconTexture = GENERIC_ICON;
             else if (split.length <= 1) {
-                iconTexture = new Texture(new ResourceLocation(NeedsMod.MODID, "textures/gui/needs/" + icon),34,34);
+                iconTexture = new Texture(new ResourceLocation(NeedsMod.MODID, "textures/gui/needs/" + icon),32,32);
             } else {
                 iconTexture = new Texture(
                     new ResourceLocation(split[0], split[1]),

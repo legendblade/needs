@@ -13,8 +13,11 @@ import org.winterblade.minecraft.mods.needs.mixins.UiMixin;
 import java.util.List;
 
 public class NeedDisplayScreen extends ComponentScreen {
+    @SuppressWarnings("WeakerAccess")
+    public static final int ITEM_HEIGHT = 38;
+
     private NeedDisplayScreen() {
-        super(new StringTextComponent(""), 318, 227);
+        super(new StringTextComponent(""), 318, 222);
 
         texture = new Texture(NeedsMod.MODID, "need_ui", 384, 384);
         window = new WindowComponent(texture.getSubtexture(guiWidth, guiHeight), guiWidth, guiHeight);
@@ -22,19 +25,18 @@ public class NeedDisplayScreen extends ComponentScreen {
         // Components
         window.addComponent(new TextComponent("Needs, Wants, and Desires", 7, 7, 0xFFFFFF, true));
 
-        final int itemHeight = 39;
         final ScrollbarComponent bar = new ScrollbarComponent(
             new Rectangle2d(298, 24, 12, 195),
             texture.getSubtexture(12, 15, 318, 0),
             texture.getSubtexture(12, 15, 330, 0),
-            () -> (UiMixin.getLocalNeeds().size() * itemHeight) - 195
+            () -> (UiMixin.getLocalNeeds().size() * ITEM_HEIGHT) - 195
         );
         window.addComponent(bar);
         window.addComponent(new ScrollpaneComponent<>(
                 bar,
                 new Rectangle2d(8, 24, 284, 195),
-                (i) -> new NeedComponent(texture.getSubtexture(284, itemHeight, 0, 227), new Rectangle2d(0, 0, 284, itemHeight)),
-                itemHeight,
+                (i) -> new NeedComponent(texture.getSubtexture(284, ITEM_HEIGHT, 0, 222), new Rectangle2d(0, 0, 284, ITEM_HEIGHT)),
+                ITEM_HEIGHT,
                 (c, i) -> {
                     final List<Need.Local> localNeeds = UiMixin.getLocalNeeds();
                     if (localNeeds.size() <= i) {

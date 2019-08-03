@@ -5,7 +5,7 @@ import net.minecraftforge.common.util.TextTable;
 import org.winterblade.minecraft.mods.needs.client.gui.Texture;
 
 public class NeedComponent extends TexturedComponent {
-    private static final int BAR_WIDTH = 241;
+    private static final int BAR_WIDTH = 242;
 
     private final TextComponent title;
     private final ProgressBarComponent progress;
@@ -25,26 +25,26 @@ public class NeedComponent extends TexturedComponent {
         title = new TextComponent("", 38, 4, 0xFFFFFF, true);
         addComponent(title);
 
-        final Rectangle2d barBounds = new Rectangle2d(39, 15, BAR_WIDTH, 10);
+        final Rectangle2d barBounds = new Rectangle2d(38, 15, BAR_WIDTH, 10);
         progress = new ProgressBarComponent(barBounds);
         addComponent(progress);
 
-        minText = new TextComponent("", 38, 28, 0xFFFFFF);
+        minText = new TextComponent("", 37, 28, 0xFFFFFF);
         addComponent(minText);
 
-        maxText = new TextComponent("", 279, 28, 0xFFFFFF, TextTable.Alignment.RIGHT);
+        maxText = new TextComponent("", 281, 28, 0xFFFFFF, TextTable.Alignment.RIGHT);
         addComponent(maxText);
 
         level = new TextComponent("", 281, 4, 0xFFFFFF, true, TextTable.Alignment.RIGHT);
         addComponent(level);
 
-        currentBounds = new ColorBarComponent(new Rectangle2d(39, barBounds.getY() + 2, BAR_WIDTH, barBounds.getHeight() - 4));
+        currentBounds = new ColorBarComponent(new Rectangle2d(38, barBounds.getY() + 2, BAR_WIDTH, barBounds.getHeight() - 4));
         currentBounds.setColor(0x77333333); // Transparent dark gray
         addComponent(currentBounds);
 
-        final Texture boundsTexture = texture.getSubtexture(1, 14, 284, 227);
-        lowerBound = new MovableTextureComponent(boundsTexture, new Rectangle2d(39, 13, 1, 14));
-        upperBound = new MovableTextureComponent(boundsTexture, new Rectangle2d(39, 13, 1, 14));
+        final Texture boundsTexture = texture.getSubtexture(1, 14, 284, 222);
+        lowerBound = new MovableTextureComponent(boundsTexture, new Rectangle2d(38, 13, 1, 14));
+        upperBound = new MovableTextureComponent(boundsTexture, new Rectangle2d(38, 13, 1, 14));
         addComponent(lowerBound);
         addComponent(upperBound);
 
