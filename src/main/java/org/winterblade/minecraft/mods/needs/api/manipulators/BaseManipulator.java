@@ -16,6 +16,12 @@ public abstract class BaseManipulator implements IManipulator {
     @Expose
     protected String messageFormat;
 
+    @Expose
+    protected double downTo = Double.NEGATIVE_INFINITY;
+
+    @Expose
+    protected double upTo = Double.POSITIVE_INFINITY;
+
     @Override
     public final void onCreated(final Need need) {
         parent = need;
@@ -41,5 +47,15 @@ public abstract class BaseManipulator implements IManipulator {
 
     private static class ExternalManipulator extends BaseManipulator {
 
+    }
+
+    @Override
+    public double getLowestToSetNeed() {
+        return downTo;
+    }
+
+    @Override
+    public double getHighestToSetNeed() {
+        return upTo;
     }
 }

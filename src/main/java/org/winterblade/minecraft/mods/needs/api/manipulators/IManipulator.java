@@ -10,4 +10,8 @@ public interface IManipulator {
     void onCreated(Need need);
 
     String formatMessage(String needName, double amount, double newValue, NeedLevel level);
+
+    double getLowestToSetNeed();
+
+    double getHighestToSetNeed();
 }

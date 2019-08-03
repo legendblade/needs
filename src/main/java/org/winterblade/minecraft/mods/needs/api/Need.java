@@ -22,6 +22,7 @@ import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.network.NeedUpdatePacket;
 import org.winterblade.minecraft.mods.needs.network.NetworkManager;
+import org.winterblade.minecraft.mods.needs.util.MathLib;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -140,7 +141,7 @@ public abstract class Need {
 
         // Get our current and clamped values:
         final double current = getValue(player);
-        double newValue = Math.max(getMin(player), Math.min(getMax(player), current + adjust));
+        double newValue = MathLib.clamp(current + adjust, getMin(player), getMax(player), source.getLowestToSetNeed(), source.getHighestToSetNeed());
 
         // If the new value is the same as the current because we've hit the max/min, don't do anything
         if (newValue == current) return;
