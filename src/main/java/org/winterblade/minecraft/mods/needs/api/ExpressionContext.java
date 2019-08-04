@@ -18,11 +18,28 @@ public abstract class ExpressionContext implements IExpression {
     // Ensure default constructor?
     protected ExpressionContext() {}
 
-    private IExpression expression;
+    IExpression expression;
+
+    /**
+     * Generates an expression context that always returns the given value
+     * @param ctx    The context to make constant
+     * @param amount The value to return
+     * @param <T>    The type of the context
+     * @return  The updated context
+     */
+    public static <T extends ExpressionContext> T makeConstant(final T ctx, final double amount) {
+        ctx.expression = new ConstantAdjustmentWrappedExpression(amount);
+        return ctx;
+    }
+
 
     @Override
     public Double get() {
         return expression.get();
+    }
+
+    public boolean isRequired(final String arg) {
+        return expression.isRequired(arg);
     }
 
     @Override
@@ -72,7 +89,6 @@ public abstract class ExpressionContext implements IExpression {
                 : new ParsedWrappedExpression(expression, elements);
     }
 
-
     public static class Deserializer implements JsonDeserializer<ExpressionContext> {
 
         @Override
@@ -108,6 +124,11 @@ public abstract class ExpressionContext implements IExpression {
         public void setIfRequired(final String arg, final Supplier<Double> value) {
             // No-op
         }
+
+        @Override
+        public boolean isRequired(final String arg) {
+            return false;
+        }
     }
 
     private static class ParameterlessParsedWrappedExpression implements IExpression {
@@ -125,6 +146,11 @@ public abstract class ExpressionContext implements IExpression {
         @Override
         public void setIfRequired(final String arg, final Supplier<Double> value) {
             // No-op
+        }
+
+        @Override
+        public boolean isRequired(final String arg) {
+            return false;
         }
     }
 
@@ -157,6 +183,11 @@ public abstract class ExpressionContext implements IExpression {
             if(arg == null) return;
 
             arg.setArgumentValue(value.get());
+        }
+
+        @Override
+        public boolean isRequired(final String arg) {
+            return elements.containsKey(arg);
         }
     }
 }

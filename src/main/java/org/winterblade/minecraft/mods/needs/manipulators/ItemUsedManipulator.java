@@ -6,6 +6,8 @@ import com.google.common.collect.TreeRangeMap;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Food;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tags.ItemTags;
@@ -22,8 +24,12 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.util.RangeHelper;
+import org.winterblade.minecraft.mods.needs.util.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 import org.winterblade.minecraft.mods.needs.util.items.ItemIngredient;
 import org.winterblade.minecraft.mods.needs.util.items.TagIngredient;
@@ -33,21 +39,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.function.Supplier;
 
+@SuppressWarnings("WeakerAccess")
 @JsonAdapter(ItemUsedManipulator.Deserializer.class)
 public class ItemUsedManipulator extends BaseManipulator {
+    private static final Supplier<String> emptySupplier = () -> "";
+
     @Expose
-    private double defaultAmount;
+    private FoodExpressionContext defaultAmount;
 
     @Expose
     private boolean showTooltip;
 
+    @SuppressWarnings("FieldMayBeFinal")
+    @Expose
+    private int precision = 1;
+
     private int capacity = 0;
 
-    private final Map<IIngredient, Double> itemValues = new HashMap<>();
+    private final Map<IIngredient, FoodExpressionContext> itemValues = new HashMap<>();
 
-    private final WeakHashMap<ItemStack, String> itemCache = new WeakHashMap<>();
+    private final WeakHashMap<ItemStack, Supplier<String>> itemCache = new WeakHashMap<>();
     private final RangeMap<Double, String> formatting = TreeRangeMap.create();
+
+    private LocalCachedNeed localCachedNeed;
+    private String precisionFormat;
 
     @Override
     public void onCreated() {
@@ -57,17 +74,41 @@ public class ItemUsedManipulator extends BaseManipulator {
 
         // Rough string capacity for tooltips:
         capacity = parent.getName().length() + 12;
+        precisionFormat = "%." + precision + "f";
     }
 
     @SubscribeEvent
     public void OnItemUsed(final LivingEntityUseItemEvent.Finish evt) {
-        if (evt.getEntity().world.isRemote) return;
+        if (evt.getEntity().world.isRemote || !(evt.getEntityLiving() instanceof PlayerEntity)) return;
+        final PlayerEntity player = (PlayerEntity) evt.getEntityLiving();
 
-        for (final Map.Entry<IIngredient, Double> item : itemValues.entrySet()) {
-            if (!item.getKey().isMatch(evt.getItem())) continue;
+        for (final Map.Entry<IIngredient, FoodExpressionContext> entry : itemValues.entrySet()) {
+            final ItemStack item = evt.getItem();
+            if (!entry.getKey().isMatch(item)) continue;
 
-            parent.adjustValue(evt.getEntityLiving(), item.getValue(), this);
+            final FoodExpressionContext expr = entry.getValue();
+           setupFoodExpression(player, item, expr);
+
+            parent.adjustValue(player, expr.get(), this);
             return;
+        }
+    }
+
+    /**
+     * Sets up the food expression
+     * @param player The player
+     * @param item   The item
+     * @param expr   The expression
+     */
+    protected void setupFoodExpression(final PlayerEntity player, final ItemStack item, final FoodExpressionContext expr) {
+        expr.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue(player));
+
+        if (item.isFood()) {
+            final Food food = item.getItem().getFood();
+            if (food != null) {
+                expr.setIfRequired("hunger", () -> (double) food.getHealing());
+                expr.setIfRequired("saturation", () -> (double) food.getSaturation());
+            }
         }
     }
 
@@ -79,41 +120,59 @@ public class ItemUsedManipulator extends BaseManipulator {
         // TODO: Consider better way of caching values:
         final String msg;
         if (itemCache.containsKey(event.getItemStack())) {
-            msg = itemCache.get(event.getItemStack());
+            msg = itemCache.get(event.getItemStack()).get();
         } else {
-            double value = 0;
+            FoodExpressionContext valueExpr = null;
             boolean found = false;
-            for (final Map.Entry<IIngredient, Double> item : itemValues.entrySet()) {
+            for (final Map.Entry<IIngredient, FoodExpressionContext> item : itemValues.entrySet()) {
                 if (!item.getKey().isMatch(event.getItemStack())) continue;
 
-                value = item.getValue();
+                valueExpr = item.getValue();
+                setupFoodExpression(event.getEntityPlayer(), event.getItemStack(), valueExpr);
+
                 found = true;
                 break;
             }
 
-            if (!found || value == 0) {
-                itemCache.put(event.getItemStack(), "");
+            if (!found) {
+                itemCache.put(event.getItemStack(), emptySupplier);
                 return;
             }
-            final StringBuilder theLine = new StringBuilder(capacity);
 
-            final String color = formatting.get(value);
-            theLine.append(color != null ? color : TextFormatting.AQUA.toString());
+            // If we need to update and recalculate continuously because the need might have changed:
+            if (valueExpr.isRequired(NeedExpressionContext.CURRENT_NEED_VALUE)) {
+                final FoodExpressionContext expr = valueExpr;
+                final Supplier<String> msgGetter = () -> {
+                    expr.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> getLocalCachedNeed().getValue());
+                    return formatOutput(expr.get());
+                };
 
-            theLine.append(parent.getName());
-            theLine.append(": ");
-            theLine.append(value < 0 ? '-' : '+');
-            theLine.append(Math.abs(value));
-            theLine.append("  ");
-            theLine.append(value < 0 ? '\u25bc' : '\u25b2'); // Up or down arrows
-
-            msg = theLine.toString();
-            itemCache.put(event.getItemStack(), msg);
+                itemCache.put(event.getItemStack(), msgGetter);
+                msg = msgGetter.get();
+            } else {
+                msg = formatOutput(valueExpr.get());
+                itemCache.put(event.getItemStack(), () -> msg);
+            }
         }
 
         final List<ITextComponent> toolTip = event.getToolTip();
         if (msg.isEmpty() || isThisValuePresent(toolTip)) return;
         toolTip.add(new StringTextComponent(msg));
+    }
+
+    private String formatOutput(final double value) {
+        final StringBuilder theLine = new StringBuilder(capacity);
+        final String color = formatting.get(value);
+        theLine.append(color != null ? color : TextFormatting.AQUA.toString());
+
+        theLine.append(parent.getName());
+        theLine.append(": ");
+        theLine.append(value < 0 ? '-' : '+');
+        theLine.append(String.format(precisionFormat, Math.abs(value)));
+        theLine.append("  ");
+        theLine.append(value < 0 ? '\u25bc' : '\u25b2'); // Up or down arrows
+
+        return theLine.toString();
     }
 
     /**
@@ -134,6 +193,17 @@ public class ItemUsedManipulator extends BaseManipulator {
         return false;
     }
 
+    /**
+     * Gets the local cached need on the client
+     * @return The local cached need
+     */
+    private LocalCachedNeed getLocalCachedNeed() {
+        if (localCachedNeed != null) return localCachedNeed;
+
+        localCachedNeed = NeedRegistry.INSTANCE.getLocalCache().get(parent.getName());
+        return localCachedNeed;
+    }
+
     class Deserializer implements JsonDeserializer<ItemUsedManipulator> {
         @Override
         public ItemUsedManipulator deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
@@ -145,8 +215,8 @@ public class ItemUsedManipulator extends BaseManipulator {
             final JsonObject obj = json.getAsJsonObject();
             if (!obj.has("items")) throw new JsonParseException("ItemUsed must have an items array");
 
-            if (obj.has("defaultAmount")) output.defaultAmount = obj.get("defaultAmount").getAsInt();
-            else output.defaultAmount = 1;
+            if (obj.has("defaultAmount")) output.defaultAmount = context.deserialize(obj.get("defaultAmount"), FoodExpressionContext.class);
+            else output.defaultAmount = ExpressionContext.makeConstant(new FoodExpressionContext(),1);
 
             if (obj.has("showTooltip")) output.showTooltip = obj.get("showTooltip").getAsBoolean();
 
@@ -183,7 +253,10 @@ public class ItemUsedManipulator extends BaseManipulator {
                     final IIngredient ingredient = getIngredient(pair.getKey());
                     if(ingredient == null) return;
 
-                    output.itemValues.put(ingredient, pair.getValue().getAsDouble());
+                    final JsonElement value = pair.getValue();
+                    output.itemValues.put(ingredient, !value.isJsonNull()
+                            ? context.deserialize(value, FoodExpressionContext.class)
+                            : output.defaultAmount);
                 });
                 return output;
             }
@@ -194,41 +267,34 @@ public class ItemUsedManipulator extends BaseManipulator {
             final JsonArray itemArray = obj.getAsJsonArray("items");
             if (itemArray == null || itemArray.size() <= 0) throw new JsonParseException("ItemUsed must have an items array");
 
-            itemArray.forEach((el) -> populateFromElement(output, el));
+            itemArray.forEach((el) -> {
+                FoodExpressionContext amount = output.defaultAmount;
+                final String entry;
+                IIngredient ingredient = null;
+
+                if(el.isJsonPrimitive()) {
+                    entry = el.getAsString();
+                    ingredient = getIngredient(entry);
+                } else if(el.isJsonObject()) {
+                    final JsonObject elObj = el.getAsJsonObject();
+
+                    if (elObj.has("predicate")) {
+                        ingredient = getIngredient(elObj.getAsJsonPrimitive("predicate").getAsString());
+                    }
+
+                    if (elObj.has("amount")) {
+                        amount = context.deserialize(obj.get("defaultAmount"), FoodExpressionContext.class);
+                    }
+                } else {
+                    throw new JsonParseException("Unknown item format: " + el.toString());
+                }
+
+                if(ingredient == null) return;
+
+                output.itemValues.put(ingredient, amount);
+            });
 
             return output;
-        }
-
-        /**
-         * Populate the item from a single element
-         * @param output    The output to add to
-         * @param el        The element to parse
-         */
-        private void populateFromElement(final ItemUsedManipulator output, final JsonElement el) {
-            double amount = output.defaultAmount;
-            final String entry;
-            IIngredient ingredient = null;
-
-            if(el.isJsonPrimitive()) {
-                entry = el.getAsString();
-                ingredient = getIngredient(entry);
-            } else if(el.isJsonObject()) {
-                final JsonObject elObj = el.getAsJsonObject();
-
-                if (elObj.has("predicate")) {
-                    ingredient = getIngredient(elObj.getAsJsonPrimitive("predicate").getAsString());
-                }
-
-                if (elObj.has("amount")) {
-                    amount = elObj.getAsJsonPrimitive("amount").getAsDouble();
-                }
-            } else {
-                throw new JsonParseException("Unknown item format: " + el.toString());
-            }
-
-            if(ingredient == null) return;
-
-            output.itemValues.put(ingredient, amount);
         }
 
         /**
@@ -257,6 +323,20 @@ public class ItemUsedManipulator extends BaseManipulator {
             }
 
             return new ItemIngredient(new ItemStack(item));
+        }
+    }
+
+    @JsonAdapter(ExpressionContext.Deserializer.class)
+    public static class FoodExpressionContext extends NeedExpressionContext {
+        public FoodExpressionContext() {
+        }
+
+        @Override
+        protected List<String> getElements() {
+            final List<String> elements = super.getElements();
+            elements.add("hunger");
+            elements.add("saturation");
+            return elements;
         }
     }
 }
