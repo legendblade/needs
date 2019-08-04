@@ -6,10 +6,7 @@ import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
-import org.winterblade.minecraft.mods.needs.manipulators.ItemUsedManipulator;
-import org.winterblade.minecraft.mods.needs.manipulators.OnDeathManipulator;
-import org.winterblade.minecraft.mods.needs.manipulators.OnNeedChangedManipulator;
-import org.winterblade.minecraft.mods.needs.manipulators.PerHourManipulator;
+import org.winterblade.minecraft.mods.needs.manipulators.*;
 import org.winterblade.minecraft.mods.needs.mixins.ChatLevelMixin;
 import org.winterblade.minecraft.mods.needs.mixins.ChatMixin;
 import org.winterblade.minecraft.mods.needs.mixins.ScoreboardMixin;
@@ -55,6 +52,7 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register("perHour", PerHourManipulator.class);
         ManipulatorRegistry.INSTANCE.register("onDeath", OnDeathManipulator.class);
         ManipulatorRegistry.INSTANCE.register("onNeedChanged", OnNeedChangedManipulator.class);
+        ManipulatorRegistry.INSTANCE.register("onBlock", NearBlockManipulator.class, "block", "nearBlock", "aroundBlock");
     }
 
     private static void registerActions() {

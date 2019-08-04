@@ -13,7 +13,7 @@ public abstract class CachedTickingNeed extends Need {
 
     @Override
     public void onCreated() {
-        NeedRegistry.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
+        NeedRegistry.INSTANCE.requestPlayerTickUpdate(this::onTick);
     }
 
     private void onTick(final PlayerEntity p) {

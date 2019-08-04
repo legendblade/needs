@@ -38,7 +38,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
     private final Queue<String> dependencies = new LinkedList<>();
     private final Set<Need> loaded = new HashSet<>();
-    private final WeakHashMap<Need, Consumer<PlayerEntity>> perPlayerTick = new WeakHashMap<>();
+    private final List<Consumer<PlayerEntity>> perPlayerTick = new ArrayList<>();
 
     /**
      * Client-side cache
@@ -157,14 +157,13 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
     /**
      * Sets an action to get called for this need, every 5 ticks, per player
-     * @param need   The need to register
      * @param action The action to call
      */
-    public void requestPlayerTickUpdate(final Need need, final Consumer<PlayerEntity> action) {
+    public void requestPlayerTickUpdate(final Consumer<PlayerEntity> action) {
         // Register us on the first event added:
         if (perPlayerTick.size() <= 0) MinecraftForge.EVENT_BUS.addListener(this::onTick);
 
-        perPlayerTick.put(need, action);
+        perPlayerTick.add(action);
     }
 
     /**
@@ -283,6 +282,6 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
         event.world
             .getPlayers()
-            .forEach((p) -> perPlayerTick.forEach((key, value) -> value.accept(p)));
+            .forEach((p) -> perPlayerTick.forEach((value) -> value.accept(p)));
     }
 }

@@ -1,6 +1,7 @@
 package org.winterblade.minecraft.mods.needs.api;
 
 import com.google.gson.annotations.JsonAdapter;
+import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
 
 import java.util.ArrayList;
@@ -12,6 +13,10 @@ public class NeedExpressionContext extends ExpressionContext {
     public static final String CURRENT_NEED_VALUE = "current";
 
     public NeedExpressionContext() {
+    }
+
+    public void setCurrentNeedValue(final Need need, final PlayerEntity player) {
+        setIfRequired(CURRENT_NEED_VALUE, () -> need.getValue(player));
     }
 
     @Override

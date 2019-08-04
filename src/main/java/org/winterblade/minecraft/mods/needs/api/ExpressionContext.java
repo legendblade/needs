@@ -47,6 +47,10 @@ public abstract class ExpressionContext implements IExpression {
         expression.setIfRequired(arg, value);
     }
 
+    public boolean isConstant() {
+        return expression instanceof ConstantAdjustmentWrappedExpression;
+    }
+
     protected abstract List<String> getElements();
 
     private IExpression deserializeExpression(final JsonElement json, final List<String> elements) {
@@ -84,9 +88,20 @@ public abstract class ExpressionContext implements IExpression {
             );
         }
 
-        return elements.length <= 0
-                ? new ParameterlessParsedWrappedExpression(expression)
-                : new ParsedWrappedExpression(expression, elements);
+        if (elements.length <= 0) return new ConstantAdjustmentWrappedExpression(expression.calculate());
+
+        final String expr = expression.getExpressionString();
+        final Map<String, Argument> elemMap = Arrays
+                .stream(elements)
+                .filter((a) -> expr.contains(a.getArgumentName()))
+                .collect(
+                        Collectors
+                                .toMap(Argument::getArgumentName, (a) -> a)
+                );
+
+        return elemMap.isEmpty()
+            ? new ConstantAdjustmentWrappedExpression(expression.calculate())
+            : new ParsedWrappedExpression(expression, elemMap);
     }
 
     public static class Deserializer implements JsonDeserializer<ExpressionContext> {
@@ -131,45 +146,13 @@ public abstract class ExpressionContext implements IExpression {
         }
     }
 
-    private static class ParameterlessParsedWrappedExpression implements IExpression {
+    private static class ParsedWrappedExpression implements IExpression {
         final Expression expression;
-
-        ParameterlessParsedWrappedExpression(final Expression expression) {
-            this.expression = expression;
-        }
-
-        @Override
-        public Double get() {
-            return expression.calculate();
-        }
-
-        @Override
-        public void setIfRequired(final String arg, final Supplier<Double> value) {
-            // No-op
-        }
-
-        @Override
-        public boolean isRequired(final String arg) {
-            return false;
-        }
-    }
-
-    private static class ParsedWrappedExpression extends ParameterlessParsedWrappedExpression {
         final Map<String, Argument> elements;
 
-        ParsedWrappedExpression(final Expression expression, final Argument[] elements) {
-            super(expression);
-
-            // TODO: This doesn't handle argument names that are part of a longer one
-            // ie: "current" and "currentOther"
-            final String expr = expression.getExpressionString();
-            this.elements = Arrays
-                .stream(elements)
-                .filter((a) -> expr.contains(a.getArgumentName()))
-                .collect(
-                    Collectors
-                        .toMap(Argument::getArgumentName, (a) -> a)
-                );
+        ParsedWrappedExpression(final Expression expression, final Map<String, Argument> elements) {
+            this.expression = expression;
+            this.elements = elements;
         }
 
         @Override
