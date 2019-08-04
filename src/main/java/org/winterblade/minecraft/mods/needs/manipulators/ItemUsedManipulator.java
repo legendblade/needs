@@ -22,8 +22,11 @@ import org.winterblade.minecraft.mods.needs.util.items.ItemIngredient;
 import org.winterblade.minecraft.mods.needs.util.items.TagIngredient;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @SuppressWarnings("WeakerAccess")
 @JsonAdapter(ItemUsedManipulator.Deserializer.class)
@@ -31,8 +34,10 @@ public class ItemUsedManipulator extends TooltipManipulator {
     @Expose
     private FoodExpressionContext defaultAmount;
 
+    protected final Map<Predicate<ItemStack>, ExpressionContext> itemValues = new HashMap<>();
+
     public ItemUsedManipulator() {
-        postFormat = (sb) -> sb.append("  (Use)").toString();
+        postFormat = (sb, player) -> sb.append("  (Use)").toString();
     }
 
     @SubscribeEvent
@@ -40,16 +45,24 @@ public class ItemUsedManipulator extends TooltipManipulator {
         if (evt.getEntity().world.isRemote || !(evt.getEntityLiving() instanceof PlayerEntity)) return;
         final PlayerEntity player = (PlayerEntity) evt.getEntityLiving();
 
-        for (final Map.Entry<IIngredient, ExpressionContext> entry : itemValues.entrySet()) {
+        for (final Map.Entry<Predicate<ItemStack>, ExpressionContext> entry : itemValues.entrySet()) {
             final ItemStack item = evt.getItem();
             if (!entry.getKey().test(item)) continue;
 
             final ExpressionContext expr = entry.getValue();
-           setupExpression(player, item, expr);
+            setupExpression(() -> parent.getValue(player), player, item, expr);
 
             parent.adjustValue(player, expr.get(), this);
             return;
         }
+    }
+
+    @Override
+    protected ExpressionContext getItemTooltipExpression(final ItemStack item) {
+        for (final Map.Entry<Predicate<ItemStack>, ExpressionContext> entry : itemValues.entrySet()) {
+            if (entry.getKey().test(item)) return entry.getValue();
+        }
+        return null;
     }
 
     /**
@@ -58,8 +71,8 @@ public class ItemUsedManipulator extends TooltipManipulator {
      * @param item   The item
      * @param expr   The expression
      */
-    protected void setupExpression(final PlayerEntity player, final ItemStack item, final ExpressionContext expr) {
-        expr.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue(player));
+    protected void setupExpression(final Supplier<Double> currentValue, final PlayerEntity player, final ItemStack item, final ExpressionContext expr) {
+        super.setupExpression(currentValue, player, item, expr);
 
         if (item.isFood()) {
             final Food food = item.getItem().getFood();

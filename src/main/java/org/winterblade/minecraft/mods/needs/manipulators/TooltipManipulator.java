@@ -17,12 +17,11 @@ import org.winterblade.minecraft.mods.needs.api.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
-import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 
+import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 @SuppressWarnings("WeakerAccess")
@@ -34,10 +33,14 @@ public abstract class TooltipManipulator extends BaseManipulator {
     @Expose
     protected int precision = 1;
 
+    @Expose
+    protected String tooltip;
+
     protected final RangeMap<Double, String> formatting = TreeRangeMap.create();
+
     protected int capacity = 0;
     protected String precisionFormat;
-    protected Function<StringBuilder, String> postFormat;
+    protected BiFunction<StringBuilder, PlayerEntity, String> postFormat;
 
     private static final Supplier<String> emptySupplier = () -> "";
 
@@ -65,37 +68,22 @@ public abstract class TooltipManipulator extends BaseManipulator {
         if (itemCache.containsKey(event.getItemStack())) {
             msg = itemCache.get(event.getItemStack()).get();
         } else {
-            ExpressionContext valueExpr = null;
-            boolean found = false;
-            for (final Map.Entry<IIngredient, ExpressionContext> item : itemValues.entrySet()) {
-                if (!item.getKey().test(event.getItemStack())) continue;
+            final ExpressionContext valueExpr = getItemTooltipExpression(event.getItemStack());
 
-                valueExpr = item.getValue();
-                setupExpression(event.getEntityPlayer(), event.getItemStack(), valueExpr);
-
-                found = true;
-                break;
-            }
-
-            if (!found) {
+            if (valueExpr == null) {
                 itemCache.put(event.getItemStack(), emptySupplier);
                 return;
             }
 
-            // If we need to update and recalculate continuously because the need might have changed:
-            if (valueExpr.isRequired(NeedExpressionContext.CURRENT_NEED_VALUE)) {
-                final ExpressionContext expr = valueExpr;
-                final Supplier<String> msgGetter = () -> {
-                    expr.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> getLocalCachedNeed().getValue());
-                    return formatOutput(expr.get());
-                };
 
-                itemCache.put(event.getItemStack(), msgGetter);
-                msg = msgGetter.get();
-            } else {
-                msg = formatOutput(valueExpr.get());
-                itemCache.put(event.getItemStack(), () -> msg);
-            }
+            // If we need to update and recalculate continuously because the need might have changed:
+            final Supplier<String> msgGetter = () -> {
+                setupExpression(() -> getLocalCachedNeed().getValue(), event.getEntityPlayer(), event.getItemStack(), valueExpr);
+                return formatOutput(valueExpr.get(), event.getEntityPlayer());
+            };
+            itemCache.put(event.getItemStack(), msgGetter);
+
+            msg = msgGetter.get();
         }
 
         final List<ITextComponent> toolTip = event.getToolTip();
@@ -103,7 +91,23 @@ public abstract class TooltipManipulator extends BaseManipulator {
         toolTip.add(new StringTextComponent(msg));
     }
 
-    protected abstract void setupExpression(final PlayerEntity player, final ItemStack item, final ExpressionContext expr);
+    /**
+     * Gets the expression for the given item stack or null if it doesn't match
+     * @param item The item stack to test
+     * @return The expression, or null if none exists
+     */
+    @Nullable
+    protected abstract ExpressionContext getItemTooltipExpression(ItemStack item);
+
+    /**
+     * Sets up the expression
+     * @param player The player
+     * @param item   The item
+     * @param expr   The expression
+     */
+    protected void setupExpression(final Supplier<Double> currentValue, final PlayerEntity player, final ItemStack item, final ExpressionContext expr) {
+        expr.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, currentValue);
+    }
 
     /**
      * Determines if we've already added info about this need to the tooltip
@@ -123,21 +127,25 @@ public abstract class TooltipManipulator extends BaseManipulator {
     /**
      * Format the output
      * @param value The value to format
+     * @param player The player to check
      * @return The formatted string
      */
-    private String formatOutput(final double value) {
+    private String formatOutput(final double value, final PlayerEntity player) {
         final StringBuilder theLine = new StringBuilder(capacity);
         final String color = formatting.get(value);
         theLine.append(color != null ? color : TextFormatting.AQUA.toString());
 
         theLine.append(parent.getName());
         theLine.append(": ");
+
+        if (tooltip != null && !tooltip.isEmpty()) return theLine.append(tooltip).toString();
+
         theLine.append(value < 0 ? '-' : '+');
         theLine.append(String.format(precisionFormat, Math.abs(value)));
         theLine.append("  ");
         theLine.append(value < 0 ? '\u25bc' : '\u25b2'); // Up or down arrows
 
-        return postFormat != null ? postFormat.apply(theLine) : theLine.toString();
+        return postFormat != null ? postFormat.apply(theLine, player) : theLine.toString();
     }
 
     /**

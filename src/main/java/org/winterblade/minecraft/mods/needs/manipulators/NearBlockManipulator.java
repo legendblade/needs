@@ -7,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -15,18 +16,19 @@ import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
-import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.util.blocks.BlockStatePredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.IBlockPredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.TagBlockPredicate;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-public class NearBlockManipulator extends BaseManipulator {
+public class NearBlockManipulator extends TooltipManipulator {
     @Expose
     protected NearBlockExpressionContext amount;
 
@@ -69,7 +71,9 @@ public class NearBlockManipulator extends BaseManipulator {
                 if (matches) break;
             }
 
-            if (matches) continue;
+            if (matches) {
+                continue;
+            }
 
             NeedsMod.LOGGER.info("Predicate will match no blocks; it will be removed");
             iter.remove();
@@ -101,21 +105,32 @@ public class NearBlockManipulator extends BaseManipulator {
         }
 
         // Predetermine the most expedient function to use:
+        final String amountType = amount.isConstant() ? "" : ", Per";
         if (radius.isConstant()) {
             final long radius = Math.round(Math.abs(this.radius.get()));
 
             // Much precompile, very wow
-            onTickFn = radius <= 0
-                ? amount.isConstant()
-                    ? this::constantAmountZeroRadius
-                    : this::variableAmountZeroRadius
-                : amount.isConstant()
-                    ? (p) -> constantAmountConstantRadius(p, radius)
-                    : (p) -> variableAmountConstantRadius(p, radius);
+            if (radius <= 0) {
+                onTickFn = amount.isConstant()
+                        ? this::constantAmountZeroRadius
+                        : this::variableAmountZeroRadius;
+                postFormat = (sb, player) -> sb.append("  (Standing On)").toString();
+            } else {
+                onTickFn = amount.isConstant()
+                        ? (p) -> constantAmountConstantRadius(p, radius)
+                        : (p) -> variableAmountConstantRadius(p, radius);
+                final String range = "  (Within " + radius + " Block" + (radius == 1 ? "" : "s") + amountType + ")";
+                postFormat = (sb, player) -> sb.append(range).toString();
+            }
         } else {
             onTickFn = amount.isConstant()
                 ? this::constantAmountVariableRadius
                 : this::variableAmountVariableRadius;
+            postFormat = (sb, player) -> {
+                radius.setCurrentNeedValue(parent, player);
+                final int radius = (int)Math.floor(this.radius.get());
+                return sb.append("  (Within ").append(this.radius).append(" Block").append(radius == 1 ? "" : "s").append(amountType).append(")").toString();
+            };
         }
 
         /*
@@ -126,6 +141,29 @@ public class NearBlockManipulator extends BaseManipulator {
         */
 
         TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
+        super.onCreated();
+    }
+
+    @Nullable
+    @Override
+    protected ExpressionContext getItemTooltipExpression(final ItemStack item) {
+        final Block block = Block.getBlockFromItem(item.getItem());
+
+        for (final IBlockPredicate predicate : blocks) {
+            if(predicate instanceof BlockStatePredicate) {
+                if (block.getStateContainer().getValidStates().stream().anyMatch(predicate)) return amount;
+            } else {
+                if (predicate.test(block.getDefaultState())) return amount;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    protected void setupExpression(final Supplier<Double> currentValue, final PlayerEntity player, final ItemStack item, final ExpressionContext expr) {
+        super.setupExpression(currentValue, player, item, expr);
+        amount.setIfRequired("count", () -> 1d);
     }
 
     /**
