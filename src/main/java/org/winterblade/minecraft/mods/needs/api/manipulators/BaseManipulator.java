@@ -1,8 +1,13 @@
 package org.winterblade.minecraft.mods.needs.api.manipulators;
 
 import com.google.gson.annotations.Expose;
+import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
+import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings("WeakerAccess")
 public abstract class BaseManipulator implements IManipulator {
@@ -10,6 +15,7 @@ public abstract class BaseManipulator implements IManipulator {
      * Used in events anytime a Need is changed by an external source.
      */
     public static IManipulator EXTERNAL = new ExternalManipulator();
+    protected final Map<IIngredient, ExpressionContext> itemValues = new HashMap<>();
 
     protected Need parent;
 

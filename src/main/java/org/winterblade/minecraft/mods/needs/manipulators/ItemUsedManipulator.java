@@ -1,8 +1,6 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
 import com.google.common.collect.Range;
-import com.google.common.collect.RangeMap;
-import com.google.common.collect.TreeRangeMap;
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
@@ -11,68 +9,30 @@ import net.minecraft.item.Food;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.util.RangeHelper;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 import org.winterblade.minecraft.mods.needs.util.items.ItemIngredient;
 import org.winterblade.minecraft.mods.needs.util.items.TagIngredient;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.function.Supplier;
 
 @SuppressWarnings("WeakerAccess")
 @JsonAdapter(ItemUsedManipulator.Deserializer.class)
-public class ItemUsedManipulator extends BaseManipulator {
-    private static final Supplier<String> emptySupplier = () -> "";
-
+public class ItemUsedManipulator extends TooltipManipulator {
     @Expose
     private FoodExpressionContext defaultAmount;
 
-    @Expose
-    private boolean showTooltip;
-
-    @SuppressWarnings("FieldMayBeFinal")
-    @Expose
-    private int precision = 1;
-
-    private int capacity = 0;
-
-    private final Map<IIngredient, FoodExpressionContext> itemValues = new HashMap<>();
-
-    private final WeakHashMap<ItemStack, Supplier<String>> itemCache = new WeakHashMap<>();
-    private final RangeMap<Double, String> formatting = TreeRangeMap.create();
-
-    private LocalCachedNeed localCachedNeed;
-    private String precisionFormat;
-
-    @Override
-    public void onCreated() {
-        if (showTooltip) {
-            DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.addListener(this::onTooltip));
-        }
-
-        // Rough string capacity for tooltips:
-        capacity = parent.getName().length() + 12;
-        precisionFormat = "%." + precision + "f";
+    public ItemUsedManipulator() {
+        postFormat = (sb) -> sb.append("  (Use)").toString();
     }
 
     @SubscribeEvent
@@ -80,12 +40,12 @@ public class ItemUsedManipulator extends BaseManipulator {
         if (evt.getEntity().world.isRemote || !(evt.getEntityLiving() instanceof PlayerEntity)) return;
         final PlayerEntity player = (PlayerEntity) evt.getEntityLiving();
 
-        for (final Map.Entry<IIngredient, FoodExpressionContext> entry : itemValues.entrySet()) {
+        for (final Map.Entry<IIngredient, ExpressionContext> entry : itemValues.entrySet()) {
             final ItemStack item = evt.getItem();
             if (!entry.getKey().test(item)) continue;
 
-            final FoodExpressionContext expr = entry.getValue();
-           setupFoodExpression(player, item, expr);
+            final ExpressionContext expr = entry.getValue();
+           setupExpression(player, item, expr);
 
             parent.adjustValue(player, expr.get(), this);
             return;
@@ -93,12 +53,12 @@ public class ItemUsedManipulator extends BaseManipulator {
     }
 
     /**
-     * Sets up the food expression
+     * Sets up the expression
      * @param player The player
      * @param item   The item
      * @param expr   The expression
      */
-    protected void setupFoodExpression(final PlayerEntity player, final ItemStack item, final FoodExpressionContext expr) {
+    protected void setupExpression(final PlayerEntity player, final ItemStack item, final ExpressionContext expr) {
         expr.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue(player));
 
         if (item.isFood()) {
@@ -108,98 +68,6 @@ public class ItemUsedManipulator extends BaseManipulator {
                 expr.setIfRequired("saturation", () -> (double) food.getSaturation());
             }
         }
-    }
-
-    /**
-     * Called on the client when Minecraft wants to render the tooltip
-     * @param event The tooltip event
-     */
-    private void onTooltip(final ItemTooltipEvent event) {
-        // TODO: Consider better way of caching values:
-        final String msg;
-        if (itemCache.containsKey(event.getItemStack())) {
-            msg = itemCache.get(event.getItemStack()).get();
-        } else {
-            FoodExpressionContext valueExpr = null;
-            boolean found = false;
-            for (final Map.Entry<IIngredient, FoodExpressionContext> item : itemValues.entrySet()) {
-                if (!item.getKey().test(event.getItemStack())) continue;
-
-                valueExpr = item.getValue();
-                setupFoodExpression(event.getEntityPlayer(), event.getItemStack(), valueExpr);
-
-                found = true;
-                break;
-            }
-
-            if (!found) {
-                itemCache.put(event.getItemStack(), emptySupplier);
-                return;
-            }
-
-            // If we need to update and recalculate continuously because the need might have changed:
-            if (valueExpr.isRequired(NeedExpressionContext.CURRENT_NEED_VALUE)) {
-                final FoodExpressionContext expr = valueExpr;
-                final Supplier<String> msgGetter = () -> {
-                    expr.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> getLocalCachedNeed().getValue());
-                    return formatOutput(expr.get());
-                };
-
-                itemCache.put(event.getItemStack(), msgGetter);
-                msg = msgGetter.get();
-            } else {
-                msg = formatOutput(valueExpr.get());
-                itemCache.put(event.getItemStack(), () -> msg);
-            }
-        }
-
-        final List<ITextComponent> toolTip = event.getToolTip();
-        if (msg.isEmpty() || isThisValuePresent(toolTip)) return;
-        toolTip.add(new StringTextComponent(msg));
-    }
-
-    private String formatOutput(final double value) {
-        final StringBuilder theLine = new StringBuilder(capacity);
-        final String color = formatting.get(value);
-        theLine.append(color != null ? color : TextFormatting.AQUA.toString());
-
-        theLine.append(parent.getName());
-        theLine.append(": ");
-        theLine.append(value < 0 ? '-' : '+');
-        theLine.append(String.format(precisionFormat, Math.abs(value)));
-        theLine.append("  ");
-        theLine.append(value < 0 ? '\u25bc' : '\u25b2'); // Up or down arrows
-
-        return theLine.toString();
-    }
-
-    /**
-     * Determines if we've already added info about this need to the tooltip
-     * @param tooltip The tooltip
-     * @return True if we have, false otherwise
-     */
-    private boolean isThisValuePresent(final List<ITextComponent> tooltip) {
-        if (tooltip.size() <= 1) return false;
-
-        for (final ITextComponent line : tooltip) {
-            final String lineString = line.getString();
-            final String withoutFormatting = TextFormatting.getTextWithoutFormattingCodes(lineString);
-            if (withoutFormatting == null) continue;
-
-            if (withoutFormatting.startsWith(parent.getName())) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Gets the local cached need on the client
-     * @return The local cached need
-     */
-    private LocalCachedNeed getLocalCachedNeed() {
-        if (localCachedNeed != null) return localCachedNeed;
-
-        localCachedNeed = NeedRegistry.INSTANCE.getLocalCache().get(parent.getName());
-        return localCachedNeed;
     }
 
     class Deserializer implements JsonDeserializer<ItemUsedManipulator> {
