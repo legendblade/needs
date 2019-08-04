@@ -11,7 +11,7 @@ public class ItemIngredient implements IIngredient {
 
 
     @Override
-    public boolean isMatch(final ItemStack stack) {
+    public boolean test(final ItemStack stack) {
         return target.isItemEqualIgnoreDurability(stack);
     }
 }

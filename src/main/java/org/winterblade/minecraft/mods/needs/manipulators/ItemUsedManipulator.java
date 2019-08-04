@@ -84,7 +84,7 @@ public class ItemUsedManipulator extends BaseManipulator {
 
         for (final Map.Entry<IIngredient, FoodExpressionContext> entry : itemValues.entrySet()) {
             final ItemStack item = evt.getItem();
-            if (!entry.getKey().isMatch(item)) continue;
+            if (!entry.getKey().test(item)) continue;
 
             final FoodExpressionContext expr = entry.getValue();
            setupFoodExpression(player, item, expr);
@@ -125,7 +125,7 @@ public class ItemUsedManipulator extends BaseManipulator {
             FoodExpressionContext valueExpr = null;
             boolean found = false;
             for (final Map.Entry<IIngredient, FoodExpressionContext> item : itemValues.entrySet()) {
-                if (!item.getKey().isMatch(event.getItemStack())) continue;
+                if (!item.getKey().test(event.getItemStack())) continue;
 
                 valueExpr = item.getValue();
                 setupFoodExpression(event.getEntityPlayer(), event.getItemStack(), valueExpr);
