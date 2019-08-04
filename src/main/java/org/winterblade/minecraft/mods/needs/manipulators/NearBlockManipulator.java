@@ -14,14 +14,16 @@ import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.util.blocks.BlockStatePredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.IBlockPredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.TagBlockPredicate;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 
 public class NearBlockManipulator extends BaseManipulator {
@@ -123,7 +125,7 @@ public class NearBlockManipulator extends BaseManipulator {
             at various points (cos, sin, n - count, etc)
         */
 
-        NeedRegistry.INSTANCE.requestPlayerTickUpdate(this::onTick);
+        TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
     }
 
     /**

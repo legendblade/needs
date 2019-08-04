@@ -2,8 +2,8 @@ package org.winterblade.minecraft.mods.needs.needs;
 
 import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.api.Need;
+import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +13,7 @@ public abstract class CachedTickingNeed extends Need {
 
     @Override
     public void onCreated() {
-        NeedRegistry.INSTANCE.requestPlayerTickUpdate(this::onTick);
+        TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
     }
 
     private void onTick(final PlayerEntity p) {

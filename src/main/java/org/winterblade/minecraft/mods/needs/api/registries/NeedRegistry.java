@@ -11,7 +11,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.LocalCachedNeed;
@@ -28,7 +27,6 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -38,7 +36,6 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
     private final Queue<String> dependencies = new LinkedList<>();
     private final Set<Need> loaded = new HashSet<>();
-    private final List<Consumer<PlayerEntity>> perPlayerTick = new ArrayList<>();
 
     /**
      * Client-side cache
@@ -156,17 +153,6 @@ public class NeedRegistry extends TypedRegistry<Need> {
     }
 
     /**
-     * Sets an action to get called for this need, every 5 ticks, per player
-     * @param action The action to call
-     */
-    public void requestPlayerTickUpdate(final Consumer<PlayerEntity> action) {
-        // Register us on the first event added:
-        if (perPlayerTick.size() <= 0) MinecraftForge.EVENT_BUS.addListener(this::onTick);
-
-        perPlayerTick.add(action);
-    }
-
-    /**
      * Registers that a need needs to be synced down from the server to the client.
      *
      * Without at least one need being synced, the system will not transmit any update packets to the player.
@@ -270,18 +256,5 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
             callback.accept(n, n.getValue(player));
         });
-    }
-
-    /**
-     * Called when the world ticks, if we have a listener that needs it. This uses the world tick rather than
-     * the player tick to avoid %5'ing in every player
-     * @param event The tick event
-     */
-    private void onTick(final TickEvent.WorldTickEvent event) {
-        if (event.world.isRemote || event.phase != TickEvent.Phase.END || (event.world.getGameTime() % 5) != 0) return;
-
-        event.world
-            .getPlayers()
-            .forEach((p) -> perPlayerTick.forEach((value) -> value.accept(p)));
     }
 }
