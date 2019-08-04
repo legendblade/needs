@@ -36,10 +36,9 @@ import java.util.stream.Collectors;
 public class NeedRegistry extends TypedRegistry<Need> {
     public static final NeedRegistry INSTANCE = new NeedRegistry();
 
-    private final Set<String> dependencies = new HashSet<>();
+    private final Queue<String> dependencies = new LinkedList<>();
     private final Set<Need> loaded = new HashSet<>();
     private final WeakHashMap<Need, Consumer<PlayerEntity>> perPlayerTick = new WeakHashMap<>();
-    private boolean shouldSync = false;
 
     /**
      * Client-side cache
@@ -106,29 +105,30 @@ public class NeedRegistry extends TypedRegistry<Need> {
     }
 
     public void validateDependencies() {
-        dependencies.forEach((d) -> {
-            if (loaded.stream().anyMatch((n) -> n.getName().equals(d))) return;
+        while (!dependencies.isEmpty()) {
+            final String d = dependencies.remove();
+            if (loaded.stream().anyMatch((n) -> n.getName().equals(d))) continue;
 
             // Check if the name is a type:
             final Class<? extends Need> type = getType(d);
             if (type != null) {
                 if (loaded.stream().anyMatch((l) -> type.isAssignableFrom(l.getClass()))) {
                     NeedsMod.LOGGER.error("Dependency '" + d + "' would have loaded a type of the same name, but one is already registered.");
-                    return;
+                    continue;
                 }
 
                 try {
                     final Need need = type.newInstance();
                     loaded.add(need);
                     need.finalizeDeserialization();
-                    return;
+                    continue;
                 } catch (final InstantiationException | IllegalAccessException e) {
                     NeedsMod.LOGGER.error("Unable to load dependency " + d, e);
                 }
             }
 
             NeedsMod.LOGGER.error("A need of name '" + d + "' wasn't loaded while validating dependencies of other needs.");
-        });
+        }
     }
 
     /**
@@ -175,7 +175,6 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * If you do anything client side with a need, you should register it here and work with the standard sync process.
      */
     public void registerForSync() {
-        shouldSync = true;
     }
 
     /**
