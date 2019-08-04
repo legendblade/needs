@@ -29,7 +29,7 @@ import org.winterblade.minecraft.mods.needs.api.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.util.RangeHelper;
-import org.winterblade.minecraft.mods.needs.util.expressions.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 import org.winterblade.minecraft.mods.needs.util.items.ItemIngredient;
 import org.winterblade.minecraft.mods.needs.util.items.TagIngredient;

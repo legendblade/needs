@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.util.expressions;
+package org.winterblade.minecraft.mods.needs.api;
 
 import com.google.gson.annotations.JsonAdapter;
 import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
