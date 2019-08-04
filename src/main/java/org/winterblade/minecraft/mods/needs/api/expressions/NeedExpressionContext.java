@@ -1,8 +1,8 @@
-package org.winterblade.minecraft.mods.needs.api;
+package org.winterblade.minecraft.mods.needs.api.expressions;
 
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
-import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.Need;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -6,20 +6,14 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Food;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.RegistryManager;
-import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.util.RangeHelper;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
-import org.winterblade.minecraft.mods.needs.util.items.ItemIngredient;
-import org.winterblade.minecraft.mods.needs.util.items.TagIngredient;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -129,7 +123,7 @@ public class ItemUsedManipulator extends TooltipManipulator {
             if (itemsEl.isJsonObject()) {
                 final JsonObject itemsObj = itemsEl.getAsJsonObject();
                 itemsObj.entrySet().forEach((pair) -> {
-                    final IIngredient ingredient = getIngredient(pair.getKey());
+                    final IIngredient ingredient = IIngredient.getIngredient(pair.getKey());
                     if(ingredient == null) return;
 
                     final JsonElement value = pair.getValue();
@@ -148,17 +142,15 @@ public class ItemUsedManipulator extends TooltipManipulator {
 
             itemArray.forEach((el) -> {
                 FoodExpressionContext amount = output.defaultAmount;
-                final String entry;
                 IIngredient ingredient = null;
 
                 if(el.isJsonPrimitive()) {
-                    entry = el.getAsString();
-                    ingredient = getIngredient(entry);
+                    ingredient = context.deserialize(el, IIngredient.class);
                 } else if(el.isJsonObject()) {
                     final JsonObject elObj = el.getAsJsonObject();
 
                     if (elObj.has("predicate")) {
-                        ingredient = getIngredient(elObj.getAsJsonPrimitive("predicate").getAsString());
+                        ingredient = context.deserialize(elObj.getAsJsonPrimitive("predicate"), IIngredient.class);
                     }
 
                     if (elObj.has("amount")) {
@@ -174,27 +166,6 @@ public class ItemUsedManipulator extends TooltipManipulator {
             });
 
             return output;
-        }
-
-        /**
-         * Gets an ingredient from a string representation
-         * @param input     The string to parse
-         * @return          The parsed ingredient, or null if parsing failed.
-         */
-        private IIngredient getIngredient(final String input) {
-            if(input == null || input.isEmpty()) return null;
-
-            if (input.startsWith("tag:")) {
-                return new TagIngredient(new ResourceLocation(input.substring(4)));
-            }
-
-            final Item item = RegistryManager.ACTIVE.getRegistry(Item.class).getValue(new ResourceLocation(input));
-            if (item == null) {
-                NeedsMod.LOGGER.warn("Unknown item " + input);
-                return null;
-            }
-
-            return new ItemIngredient(new ItemStack(item));
         }
     }
 

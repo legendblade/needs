@@ -53,6 +53,7 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register("onDeath", OnDeathManipulator.class);
         ManipulatorRegistry.INSTANCE.register("onNeedChanged", OnNeedChangedManipulator.class);
         ManipulatorRegistry.INSTANCE.register("onBlock", NearBlockManipulator.class, "block", "nearBlock", "aroundBlock");
+        ManipulatorRegistry.INSTANCE.register("holding", HoldingManipulator.class);
     }
 
     private static void registerActions() {

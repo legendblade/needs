@@ -5,7 +5,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 
 public class OnDeathManipulator extends BaseManipulator {
     @Expose

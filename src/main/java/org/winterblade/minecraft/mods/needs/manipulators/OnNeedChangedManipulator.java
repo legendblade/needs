@@ -6,12 +6,12 @@ import com.google.gson.annotations.JsonAdapter;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
-import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 
 import javax.annotation.Nullable;
 import java.util.List;

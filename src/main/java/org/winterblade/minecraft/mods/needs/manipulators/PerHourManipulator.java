@@ -5,7 +5,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 
 public class PerHourManipulator extends BaseManipulator {
     @Expose

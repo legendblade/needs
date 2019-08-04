@@ -1,10 +1,11 @@
-package org.winterblade.minecraft.mods.needs.api;
+package org.winterblade.minecraft.mods.needs.api.expressions;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.*;
 import com.google.gson.annotations.JsonAdapter;
 import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
+import org.winterblade.minecraft.mods.needs.api.IExpression;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;

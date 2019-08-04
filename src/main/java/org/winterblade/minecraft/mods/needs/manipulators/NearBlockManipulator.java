@@ -2,7 +2,6 @@ package org.winterblade.minecraft.mods.needs.manipulators;
 
 import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -13,9 +12,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
+import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
 import org.winterblade.minecraft.mods.needs.util.blocks.BlockStatePredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.IBlockPredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.TagBlockPredicate;
@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 
 public class NearBlockManipulator extends TooltipManipulator {
     @Expose
-    protected NearBlockExpressionContext amount;
+    protected CountedExpressionContext amount;
 
     @Expose
     protected List<IBlockPredicate> blocks = Collections.emptyList();
@@ -105,7 +105,7 @@ public class NearBlockManipulator extends TooltipManipulator {
         }
 
         // Predetermine the most expedient function to use:
-        final String amountType = amount.isConstant() ? "" : ", Per";
+        final String amountType = amount.isConstant() || !amount.isRequired(CountedExpressionContext.COUNT) ? "" : ", Per";
         if (radius.isConstant()) {
             final long radius = Math.round(Math.abs(this.radius.get()));
 
@@ -252,7 +252,7 @@ public class NearBlockManipulator extends TooltipManipulator {
      */
     private double variableAmountVariableRadius(final PlayerEntity player) {
         radius.setCurrentNeedValue(parent, player);
-        amount.setIfRequired("count", () -> (double) getCountWithin(player.world, radius.get(), getBlockAtFeet(player)));
+        amount.setIfRequired(CountedExpressionContext.COUNT, () -> (double) getCountWithin(player.world, radius.get(), getBlockAtFeet(player)));
         return amount.get();
     }
 
@@ -323,16 +323,4 @@ public class NearBlockManipulator extends TooltipManipulator {
         return i;
     }
 
-    @JsonAdapter(ExpressionContext.Deserializer.class)
-    public static class NearBlockExpressionContext extends NeedExpressionContext {
-        public NearBlockExpressionContext() {
-        }
-
-        @Override
-        protected List<String> getElements() {
-            final List<String> elements = super.getElements();
-            elements.add("count");
-            return elements;
-        }
-    }
 }

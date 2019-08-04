@@ -12,6 +12,7 @@ import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
+import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -20,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
