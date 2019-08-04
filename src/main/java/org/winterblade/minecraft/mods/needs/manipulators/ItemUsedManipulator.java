@@ -10,8 +10,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Food;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -26,10 +24,10 @@ import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.LocalCachedNeed;
+import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.util.RangeHelper;
-import org.winterblade.minecraft.mods.needs.api.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 import org.winterblade.minecraft.mods.needs.util.items.ItemIngredient;
 import org.winterblade.minecraft.mods.needs.util.items.TagIngredient;
@@ -306,14 +304,7 @@ public class ItemUsedManipulator extends BaseManipulator {
             if(input == null || input.isEmpty()) return null;
 
             if (input.startsWith("tag:")) {
-                final Tag<Item> tag = ItemTags.getCollection().get(new ResourceLocation(input.substring(4)));
-
-                if (tag == null) {
-                    NeedsMod.LOGGER.warn("Unknown tag " + input);
-                    return null;
-                }
-
-                return new TagIngredient(tag);
+                return new TagIngredient(new ResourceLocation(input.substring(4)));
             }
 
             final Item item = RegistryManager.ACTIVE.getRegistry(Item.class).getValue(new ResourceLocation(input));
