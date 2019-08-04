@@ -18,6 +18,7 @@ import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.util.blocks.BlockStatePredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.IBlockPredicate;
+import org.winterblade.minecraft.mods.needs.util.blocks.TagBlockPredicate;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -53,6 +54,7 @@ public class NearBlockManipulator extends BaseManipulator {
         */
         while (iter.hasNext()) {
             final IBlockPredicate predicate = iter.next();
+            if (predicate instanceof TagBlockPredicate) continue; // Tags aren't registered yet
             boolean matches = false;
 
             for (final Block block : blockReg.getValues()) {
