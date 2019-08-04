@@ -72,14 +72,15 @@ public class NeedComponent extends TexturedComponent {
      * @param color The color of the bar
      * @param lower The lower bound
      * @param upper The upper bound
+     * @param precision The amount of digits to display
      */
-    public void setBarValues(final double min, final double max, final double value, final int color, final double lower, final double upper) {
+    public void setBarValues(final double min, final double max, final double value, final int color, final double lower, final double upper, final String precision) {
         progress.setMinMax(min, max);
-        progress.setValue(value);
+        progress.setValue(value, String.format(precision, value));
         progress.setColor(color);
 
-        minText.setText(Double.toString(min));
-        maxText.setText(Double.toString(max));
+        minText.setText(String.format(precision, min));
+        maxText.setText(String.format(precision, max));
 
         if ((lower < min) && (max < upper)) {
             currentBounds.setVisible(false);

@@ -28,10 +28,10 @@ public class ProgressBarComponent extends ColorBarComponent {
         return value;
     }
 
-    public void setValue(final double value) {
+    public void setValue(final double value, final String valueText) {
         this.value = value;
         if (showText) {
-            valueText = Double.toString(value);
+            this.valueText = valueText;
             valueWidth = fontRenderer.getStringWidth(valueText);
         }
     }

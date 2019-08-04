@@ -64,7 +64,8 @@ public class NeedDisplayScreen extends ComponentScreen {
                         localNeed.getValue(),
                         mixin.getColor(),
                         localNeed.getLower(),
-                        localNeed.getUpper()
+                        localNeed.getUpper(),
+                        mixin.getPrecision()
                     );
 
                     c.setLevel(localNeed.getLevel(), localNeed.hasLevels());

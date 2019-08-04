@@ -62,11 +62,16 @@ public class UiMixin extends BaseMixin {
     private int iconOffsetY = 0;
 
     @Expose
+    @SuppressWarnings("FieldMayBeFinal")
+    private int precision = 0;
+
+    @Expose
     @JsonAdapter(ColorAdapter.class)
     private int color;
 
     private boolean shouldDisplay = true;
     private Texture iconTexture;
+    private String precisionFormat;
 
     public UiMixin() {
         iconOffsetX = (32 - iconWidth) / 2;
@@ -99,6 +104,7 @@ public class UiMixin extends BaseMixin {
         } else {
             iconTexture = GENERIC_ICON;
         }
+        precisionFormat = "%." + precision + "f";
     }
 
     public boolean shouldDisplay() {
@@ -125,6 +131,10 @@ public class UiMixin extends BaseMixin {
 
     public int getColor() {
         return color;
+    }
+
+    public String getPrecision() {
+        return precisionFormat;
     }
 
     /**
