@@ -15,11 +15,10 @@ import org.winterblade.minecraft.mods.needs.api.needs.Need;
 public class CustomNeed extends Need {
     static {
         CAPABILITY = null;
-        CapabilityManager.INSTANCE.register(ICustomNeedCapability.class, CustomNeedCapability.Storage.INSTANCE, CustomNeedCapability::new);
     }
 
-    @CapabilityInject(ICustomNeedCapability.class)
-    public static final Capability<ICustomNeedCapability> CAPABILITY;
+    @CapabilityInject(INeedCapability.class)
+    public static final Capability<INeedCapability> CAPABILITY;
 
     @Expose
     protected String name;
@@ -117,7 +116,7 @@ public class CustomNeed extends Need {
         event
             .getOriginal()
                 .getCapability(CAPABILITY)
-                .map(ICustomNeedCapability::getValues)
+                .map(INeedCapability::getValues)
                 .ifPresent((values) ->
                         event
                             .getEntityPlayer()

@@ -30,6 +30,15 @@ public class LazyNeed {
     }
 
     /**
+     * Creates a LazyNeed that always returns the given need
+     * @param need The need
+     * @return The lazy need
+     */
+    public static LazyNeed of(final Need need) {
+        return new UnlazyNeed(need);
+    }
+
+    /**
      * Gets the need, calling the first method with the need if it exists, and the second if it doesn't
      * @param present The consumer to call with the need if the need exists
      * @param invalid The function to call if it doesn't exist
@@ -66,6 +75,11 @@ public class LazyNeed {
         else invalid.accept(t);
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
     private void getInstance() {
         instance = NeedRegistry.INSTANCE.getByName(name);
         checked = true;
@@ -81,6 +95,30 @@ public class LazyNeed {
             if (!primitive.isString()) throw new JsonParseException("Need must be a string");
 
             return new LazyNeed(primitive.getAsString());
+        }
+    }
+
+    private static class UnlazyNeed extends LazyNeed {
+        private final Need need;
+
+        public UnlazyNeed(final Need need) {
+            super(need.getName());
+            this.need = need;
+        }
+
+        @Override
+        public void get(final Consumer<Need> present, final Runnable invalid) {
+            present.accept(need);
+        }
+
+        @Override
+        public <T> void get(final T t, final BiConsumer<Need, T> present, final Runnable invalid) {
+            present.accept(need, t);
+        }
+
+        @Override
+        public <T> void get(final T t, final BiConsumer<Need, T> present, final Consumer<T> invalid) {
+            present.accept(need, t);
         }
     }
 }

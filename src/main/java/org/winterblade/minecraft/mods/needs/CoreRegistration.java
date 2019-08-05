@@ -1,5 +1,7 @@
 package org.winterblade.minecraft.mods.needs;
 
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import org.winterblade.minecraft.mods.needs.actions.AdjustNeedLevelAction;
 import org.winterblade.minecraft.mods.needs.actions.PotionEffectLevelAction;
 import org.winterblade.minecraft.mods.needs.actions.TestingTickLevelAction;
 import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
@@ -12,11 +14,15 @@ import org.winterblade.minecraft.mods.needs.mixins.ChatMixin;
 import org.winterblade.minecraft.mods.needs.mixins.ScoreboardMixin;
 import org.winterblade.minecraft.mods.needs.mixins.UiMixin;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
+import org.winterblade.minecraft.mods.needs.needs.INeedCapability;
+import org.winterblade.minecraft.mods.needs.needs.NeedCapability;
 import org.winterblade.minecraft.mods.needs.needs.vanilla.*;
 import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 
 public class CoreRegistration {
     public static void register() {
+        CapabilityManager.INSTANCE.register(INeedCapability.class, NeedCapability.Storage.INSTANCE, NeedCapability::new);
+
         registerNeeds();
         registerManipulators();
         registerMixins();
@@ -66,6 +72,7 @@ public class CoreRegistration {
     private static void registerActions() {
         // Actions
         LevelActionRegistry.INSTANCE.register("potionEffect", PotionEffectLevelAction.class);
+        LevelActionRegistry.INSTANCE.register("adjustNeed", AdjustNeedLevelAction.class);
     }
 
     private static void registerDebug() {

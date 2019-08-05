@@ -3,7 +3,7 @@ package org.winterblade.minecraft.mods.needs.needs;
 import javax.annotation.Nonnull;
 import java.util.Map;
 
-interface ICustomNeedCapability {
+public interface INeedCapability {
     double getValue(String id);
 
     void setValue(String id, double value);
@@ -12,4 +12,10 @@ interface ICustomNeedCapability {
 
     @Nonnull
     Map<String, Double> getValues();
+
+    void storeLevelAdjustment(String needName, String levelName, double adjustment);
+
+    double getLevelAdjustment(String needName, String levelName);
+
+    Map<String,Map<String,Double>> getLevelAdjustments();
 }

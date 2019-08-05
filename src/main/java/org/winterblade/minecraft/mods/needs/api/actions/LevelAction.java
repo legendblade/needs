@@ -5,6 +5,14 @@ import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 
 public abstract class LevelAction implements ILevelAction {
+    private Need parentNeed;
+    private NeedLevel parentLevel;
+
+    @Override
+    public void onCreated(final Need parentNeed, final NeedLevel parentLevel) {
+        this.parentNeed = parentNeed;
+        this.parentLevel = parentLevel;
+    }
 
     /**
      * Called when declared as an entry action and the level is entered

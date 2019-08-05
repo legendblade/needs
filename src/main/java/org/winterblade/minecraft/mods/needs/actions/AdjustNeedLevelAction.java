@@ -1,0 +1,89 @@
+package org.winterblade.minecraft.mods.needs.actions;
+
+import com.google.gson.annotations.Expose;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
+import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
+import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
+import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
+import org.winterblade.minecraft.mods.needs.needs.INeedCapability;
+
+@SuppressWarnings("WeakerAccess")
+public class AdjustNeedLevelAction extends LevelAction {
+    static {
+        CAPABILITY = null;
+    }
+
+    @CapabilityInject(INeedCapability.class)
+    public static final Capability<INeedCapability> CAPABILITY;
+
+    @Expose
+    protected LazyNeed need;
+
+    @Expose
+    protected NeedExpressionContext amount;
+
+    @Override
+    public String getName() {
+        return "Adjust Need";
+    }
+
+    @Override
+    public void onCreated(final Need parentNeed, final NeedLevel parentLevel) {
+        super.onCreated(parentNeed, parentLevel);
+
+        // If there wasn't a need specified, assume they want the parent need.
+        if (need == null) need = LazyNeed.of(parentNeed);
+    }
+
+    @Override
+    public void onEntered(final Need need, final NeedLevel level, final PlayerEntity player) {
+        this.need.get(player, this::adjust, this::onError);
+    }
+
+    @Override
+    public void onExited(final Need need, final NeedLevel level, final PlayerEntity player) {
+        this.need.get(player, this::adjust, this::onError);
+    }
+
+    @Override
+    public void onContinuousStart(final Need need, final NeedLevel level, final PlayerEntity player) {
+        this.need.get(player, (n, p) -> {
+            final double adjustment = adjust(n, p);
+
+            if (adjustment == 0d) return;
+            player.getCapability(CAPABILITY).ifPresent((c) -> c.storeLevelAdjustment(need.getName(), level.getName(), adjustment));
+        }, this::onError);
+    }
+
+    @Override
+    public void onContinuousEnd(final Need need, final NeedLevel level, final PlayerEntity player) {
+        this.need.get((o) -> {
+            final double amount = player
+                    .getCapability(CAPABILITY)
+                        .map((c) -> c.getLevelAdjustment(need.getName(), level.getName()))
+                        .orElse(0d);
+
+            if (amount == 0d) return;
+            o.adjustValue(player, 0 - amount, BaseManipulator.EXTERNAL);
+        }, this::onError);
+    }
+
+    protected double adjust(final Need other, final PlayerEntity player) {
+        amount.setCurrentNeedValue(other, player);
+
+        final double output = amount.get();
+        other.adjustValue(player, output, BaseManipulator.EXTERNAL);
+
+        return output;
+    }
+
+    private void onError() {
+        NeedsMod.LOGGER.warn("Invalid need " + need + " for need adjustment level action.");
+    }
+}

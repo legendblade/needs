@@ -102,12 +102,17 @@ public class NeedLevel {
         reappliedContinuousActions = new ArrayList<>();
 
         entryActions.forEach((ea) -> {
+            ea.onCreated(parent, this);
             if (!(ea instanceof IReappliedOnDeathLevelAction)) return;
             reappliedActions.add((IReappliedOnDeathLevelAction)ea);
         });
 
+        exitActions.forEach((ea) -> ea.onCreated(parent, this));
+
         // Build up our consumer
         for (final ILevelAction ca : continuousActions) {
+            ca.onCreated(parent, this);
+
             if ((ca instanceof IReappliedOnDeathLevelAction)) {
                 reappliedContinuousActions.add((IReappliedOnDeathLevelAction) ca);
             }
