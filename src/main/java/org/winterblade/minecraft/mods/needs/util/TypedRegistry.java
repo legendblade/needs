@@ -11,12 +11,13 @@ public abstract class TypedRegistry<T> implements JsonDeserializer<T> {
 
     public abstract String getName();
 
-    public void register(final String type, final Class<? extends T> registrant, final String... aliases) throws IllegalArgumentException {
+    public void register(String type, final Class<? extends T> registrant, final String... aliases) throws IllegalArgumentException {
+        type = type.toLowerCase();
         if (registry.containsKey(type)) {
             throw new IllegalArgumentException(getName() + " key " + type + " is already in use by " + registrant.getCanonicalName());
         }
 
-        registry.put(type.toLowerCase(), registrant);
+        registry.put(type, registrant);
 
         for (final String alias : aliases) {
             register(alias, registrant);

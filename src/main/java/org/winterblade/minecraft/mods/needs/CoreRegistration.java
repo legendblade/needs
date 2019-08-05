@@ -54,6 +54,9 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register("onNeedChanged", OnNeedChangedManipulator.class);
         ManipulatorRegistry.INSTANCE.register("onBlock", NearBlockManipulator.class, "block", "nearBlock", "aroundBlock");
         ManipulatorRegistry.INSTANCE.register("holding", HoldingManipulator.class);
+        ManipulatorRegistry.INSTANCE.register("attacking", AttackingManipulator.class, "onAttack", "attack");
+        ManipulatorRegistry.INSTANCE.register("hurt", HurtManipulator.class, "damaged", "attacked");
+        ManipulatorRegistry.INSTANCE.register("heal", HealManipulator.class, "healed");
     }
 
     private static void registerActions() {
