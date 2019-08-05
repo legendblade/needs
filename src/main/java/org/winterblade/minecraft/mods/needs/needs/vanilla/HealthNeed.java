@@ -1,7 +1,7 @@
 package org.winterblade.minecraft.mods.needs.needs.vanilla;
 
 import net.minecraft.entity.player.PlayerEntity;
-import org.winterblade.minecraft.mods.needs.needs.CachedTickingNeed;
+import org.winterblade.minecraft.mods.needs.api.CachedTickingNeed;
 
 public class HealthNeed extends CachedTickingNeed {
     @Override

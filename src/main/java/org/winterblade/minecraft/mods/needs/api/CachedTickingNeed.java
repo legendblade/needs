@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.needs;
+package org.winterblade.minecraft.mods.needs.api;
 
 import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.api.Need;

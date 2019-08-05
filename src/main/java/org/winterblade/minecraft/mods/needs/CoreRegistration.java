@@ -37,6 +37,8 @@ public class CoreRegistration {
         NeedRegistry.INSTANCE.register("light", LightLevelNeed.class, "lightlevel");
         NeedRegistry.INSTANCE.register("breath", BreathNeed.class, "air");
         NeedRegistry.INSTANCE.register("temperature", TemperatureNeed.class);
+        NeedRegistry.INSTANCE.register("sunlight", SunlightNeed.class);
+        NeedRegistry.INSTANCE.register("moonPhase", SunlightNeed.class, "moon");
     }
 
     private static void registerMixins() {

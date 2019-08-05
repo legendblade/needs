@@ -3,10 +3,11 @@ package org.winterblade.minecraft.mods.needs.api;
 import com.google.gson.JsonParseException;
 import net.minecraft.entity.player.PlayerEntity;
 
-public abstract class ReadOnlyNeed extends Need {
+public abstract class ReadOnlyNeed extends CachedTickingNeed {
     @Override
     public void onCreated() {
         if (0 < getManipulators().size()) throw new JsonParseException("Read-only need " + getName() + " cannot have manipulators.");
+        super.onCreated();
     }
 
     @Override
