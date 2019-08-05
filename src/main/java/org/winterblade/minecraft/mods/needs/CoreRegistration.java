@@ -36,6 +36,7 @@ public class CoreRegistration {
         NeedRegistry.INSTANCE.register("maxhealth", MaxHealthNeed.class, "maxhp");
         NeedRegistry.INSTANCE.register("light", LightLevelNeed.class, "lightlevel");
         NeedRegistry.INSTANCE.register("breath", BreathNeed.class, "air");
+        NeedRegistry.INSTANCE.register("temperature", TemperatureNeed.class);
     }
 
     private static void registerMixins() {
