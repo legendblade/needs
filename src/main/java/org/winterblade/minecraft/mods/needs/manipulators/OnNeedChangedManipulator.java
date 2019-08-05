@@ -6,20 +6,19 @@ import com.google.gson.annotations.JsonAdapter;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
-import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
+import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
 public class OnNeedChangedManipulator extends BaseManipulator {
     @Expose
-    protected String need;
+    protected LazyNeed need;
 
     @Expose
     protected double minChange;
@@ -36,8 +35,6 @@ public class OnNeedChangedManipulator extends BaseManipulator {
     @Expose
     protected OtherNeedChangedExpressionContext amount;
 
-    protected Need otherNeed;
-
     protected boolean isListening;
     protected boolean checkValue;
 
@@ -52,34 +49,18 @@ public class OnNeedChangedManipulator extends BaseManipulator {
     @Override
     public void onCreated() {
         if (need == null) throw new JsonParseException("onNeedChanged requires a 'need' property.");
-        NeedRegistry.INSTANCE.registerDependentNeed(need);
         isListening = true;
 
         checkValue = (minValue != Double.NEGATIVE_INFINITY || maxValue != Double.POSITIVE_INFINITY);
     }
 
-    @Nullable
-    public Need getOtherNeed() {
-        if (otherNeed != null) return otherNeed;
-
-        otherNeed = NeedRegistry.INSTANCE.getByName(need);
-
-        if (otherNeed == null && isListening) {
-            NeedsMod.LOGGER.error(
-                "Unable to get need '" + need + "' for onNeedChanged in '" +
-                parent.getName() + "'; updates will not be checked after this."
-            );
-
-            MinecraftForge.EVENT_BUS.unregister(this);
-            isListening = false;
-        }
-
-        return otherNeed;
-    }
-
     @SubscribeEvent
     protected void onOtherNeedChanged(final NeedAdjustmentEvent.Post event) {
-        if(!event.getNeed().equals(getOtherNeed())) return;
+        need.get(event, this::onNeedExists, this::onNonexistentNeed);
+    }
+
+    protected void onNeedExists(final Need other, final NeedAdjustmentEvent.Post event) {
+        if(!event.getNeed().equals(other)) return;
 
         final double diff = event.getCurrent() - event.getPrevious();
         if (diff < minChange || maxChange < diff) return;
@@ -99,6 +80,18 @@ public class OnNeedChangedManipulator extends BaseManipulator {
 
         // TODO: Determine best way to prevent loops
         parent.adjustValue(event.getPlayer(), amount.get(), this);
+    }
+
+    public void onNonexistentNeed() {
+        if (!isListening) return;
+
+        NeedsMod.LOGGER.error(
+                "Unable to get need '" + need + "' for onNeedChanged in '" +
+                        parent.getName() + "'; updates will not be checked after this."
+        );
+
+        MinecraftForge.EVENT_BUS.unregister(this);
+        isListening = false;
     }
 
     @JsonAdapter(ExpressionContext.Deserializer.class)

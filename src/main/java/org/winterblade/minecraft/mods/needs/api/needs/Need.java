@@ -315,5 +315,4 @@ public abstract class Need {
         final NeedLevel level = getLevel(event.getPlayer());
         level.onPlayerJoined(event.getPlayer());
     }
-
 }

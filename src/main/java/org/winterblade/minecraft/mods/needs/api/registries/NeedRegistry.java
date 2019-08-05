@@ -13,6 +13,7 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
@@ -74,6 +75,11 @@ public class NeedRegistry extends TypedRegistry<Need> {
         return loaded.stream().noneMatch(predicate);
     }
 
+    /**
+     * Registers that a need is used as a dependency; these will get automatically resolved after all needs have
+     * been registered. This is automatically called when using a {@link LazyNeed}.
+     * @param name The name of the need
+     */
     public void registerDependentNeed(final String name) {
         dependencies.add(name);
     }
