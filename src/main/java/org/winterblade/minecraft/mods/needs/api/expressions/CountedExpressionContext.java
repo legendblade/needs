@@ -13,7 +13,6 @@ public class CountedExpressionContext extends NeedExpressionContext {
 
     @Override
     protected List<String> getElements() {
-        final List<String> elements = super.getElements();
         elements.add("count");
         return elements;
     }
