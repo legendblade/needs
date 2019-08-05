@@ -33,7 +33,7 @@ public class PerHourManipulator extends BaseManipulator {
 
         evt.world.getPlayers().forEach((p) -> {
             final double adjust;
-            amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue(p));
+            amount.setCurrentNeedValue(parent, p);
 
             try {
                 adjust = delta * amount.get();

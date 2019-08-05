@@ -90,7 +90,7 @@ public class OnNeedChangedManipulator extends BaseManipulator {
 
             amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> value);
         } else {
-            amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> parent.getValue(event.getPlayer()));
+            amount.setCurrentNeedValue(parent, event.getPlayer());
         }
 
         amount.setIfRequired("other", event::getCurrent);
