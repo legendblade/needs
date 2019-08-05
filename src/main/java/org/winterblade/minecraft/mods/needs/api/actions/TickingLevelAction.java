@@ -1,7 +1,7 @@
 package org.winterblade.minecraft.mods.needs.api.actions;
 
 import net.minecraft.entity.player.PlayerEntity;
-import org.winterblade.minecraft.mods.needs.api.Need;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 
 public abstract class TickingLevelAction extends LevelAction {

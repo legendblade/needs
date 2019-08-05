@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.api;
+package org.winterblade.minecraft.mods.needs.api.needs;
 
 import com.google.gson.JsonParseException;
 import net.minecraft.entity.player.PlayerEntity;

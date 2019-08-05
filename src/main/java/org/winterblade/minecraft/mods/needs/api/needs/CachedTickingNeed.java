@@ -1,7 +1,6 @@
-package org.winterblade.minecraft.mods.needs.api;
+package org.winterblade.minecraft.mods.needs.api.needs;
 
 import net.minecraft.entity.player.PlayerEntity;
-import org.winterblade.minecraft.mods.needs.api.Need;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 

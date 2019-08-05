@@ -2,7 +2,7 @@ package org.winterblade.minecraft.mods.needs.api.events;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.eventbus.api.Cancelable;
-import org.winterblade.minecraft.mods.needs.api.Need;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class NeedInitializationEvent extends NeedEvent {

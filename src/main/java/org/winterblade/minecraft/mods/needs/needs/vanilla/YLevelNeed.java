@@ -1,7 +1,7 @@
 package org.winterblade.minecraft.mods.needs.needs.vanilla;
 
 import net.minecraft.entity.player.PlayerEntity;
-import org.winterblade.minecraft.mods.needs.api.ReadOnlyNeed;
+import org.winterblade.minecraft.mods.needs.api.needs.ReadOnlyNeed;
 
 public class YLevelNeed extends ReadOnlyNeed {
     @Override

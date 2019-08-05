@@ -2,7 +2,7 @@ package org.winterblade.minecraft.mods.needs.needs.vanilla;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
-import org.winterblade.minecraft.mods.needs.api.ReadOnlyNeed;
+import org.winterblade.minecraft.mods.needs.api.needs.ReadOnlyNeed;
 
 public class TemperatureNeed extends ReadOnlyNeed {
     @Override

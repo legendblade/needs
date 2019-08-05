@@ -2,7 +2,7 @@ package org.winterblade.minecraft.mods.needs.actions;
 
 import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.Need;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.actions.TickingLevelAction;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 

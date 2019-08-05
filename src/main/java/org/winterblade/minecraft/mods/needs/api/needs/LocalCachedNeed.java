@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.api;
+package org.winterblade.minecraft.mods.needs.api.needs;
 
 import com.google.common.collect.Range;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;

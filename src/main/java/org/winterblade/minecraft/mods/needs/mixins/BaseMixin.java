@@ -1,7 +1,7 @@
 package org.winterblade.minecraft.mods.needs.mixins;
 
 import net.minecraftforge.fml.common.Mod;
-import org.winterblade.minecraft.mods.needs.api.Need;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
 
 @Mod.EventBusSubscriber
