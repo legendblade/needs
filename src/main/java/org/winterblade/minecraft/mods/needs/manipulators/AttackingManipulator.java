@@ -31,6 +31,7 @@ public class AttackingManipulator extends DamageBasedManipulator {
                         || target instanceof AmbientEntity
                         || target instanceof AbstractVillagerEntity))) return;
 
+        amount.setCurrentNeedValue(parent, player);
         amount.setIfRequired(DamageExpressionContext.AMOUNT, () -> (double)event.getAmount());
         parent.adjustValue(player, amount.get(), this);
     }

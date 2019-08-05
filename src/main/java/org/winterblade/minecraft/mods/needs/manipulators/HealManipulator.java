@@ -11,7 +11,10 @@ public class HealManipulator extends DamageBasedManipulator {
         if (!(event.getEntity() instanceof PlayerEntity)) return;
         if (event.getAmount() < minAmount || maxAmount < event.getAmount()) return;
 
+        final PlayerEntity player = (PlayerEntity) event.getEntity();
+
+        amount.setCurrentNeedValue(parent, player);
         amount.setIfRequired(DamageExpressionContext.AMOUNT, () -> (double)event.getAmount());
-        parent.adjustValue(event.getEntity(), amount.get(), this);
+        parent.adjustValue(player, amount.get(), this);
     }
 }

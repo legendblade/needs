@@ -89,6 +89,7 @@ public class HoldingManipulator extends TooltipManipulator {
             amount.setIfRequired(CountedExpressionContext.COUNT, () -> c);
         }
 
+        amount.setCurrentNeedValue(parent, player);
         parent.adjustValue(player, amount.get(), this);
     }
 }

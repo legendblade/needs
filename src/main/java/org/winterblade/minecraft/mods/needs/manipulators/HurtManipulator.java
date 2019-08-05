@@ -27,7 +27,10 @@ public class HurtManipulator extends DamageBasedManipulator {
         if (event.getAmount() < minAmount || maxAmount < event.getAmount()) return;
         if (shouldCheckSource && !sources.contains(event.getSource().damageType)) return;
 
+        final PlayerEntity player = (PlayerEntity) event.getEntity();
+
+        amount.setCurrentNeedValue(parent, player);
         amount.setIfRequired(DamageExpressionContext.AMOUNT, () -> (double)event.getAmount());
-        parent.adjustValue(event.getEntity(), amount.get(), this);
+        parent.adjustValue(player, amount.get(), this);
     }
 }
