@@ -1,5 +1,6 @@
 package org.winterblade.minecraft.mods.needs.util;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
@@ -22,6 +23,10 @@ public abstract class TypedRegistry<T> implements JsonDeserializer<T> {
         for (final String alias : aliases) {
             register(alias, registrant);
         }
+    }
+
+    public ImmutableMap<String, Class<? extends T>> getRegistry() {
+        return ImmutableMap.copyOf(registry);
     }
 
     @SuppressWarnings("WeakerAccess")
