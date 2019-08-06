@@ -1,7 +1,0 @@
-{{description}}
-
-##documentation.names##
-{{names}}
-
-##documentation.fields##
-{{fields}}
