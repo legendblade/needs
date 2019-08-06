@@ -67,6 +67,7 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register("hurt", HurtManipulator.class, "damaged", "attacked");
         ManipulatorRegistry.INSTANCE.register("heal", HealManipulator.class, "healed");
         ManipulatorRegistry.INSTANCE.register("biome", BiomeManipulator.class, "inBiome", "inBiomeType", "biomeType");
+        ManipulatorRegistry.INSTANCE.register("lookingAt", LookingAtManipulator.class, "lookingAtBlock");
     }
 
     private static void registerActions() {

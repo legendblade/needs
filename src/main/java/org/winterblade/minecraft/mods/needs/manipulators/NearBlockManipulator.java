@@ -12,29 +12,20 @@ import net.minecraft.world.World;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.util.blocks.BlockStatePredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.IBlockPredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.TagBlockPredicate;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class NearBlockManipulator extends TooltipManipulator {
-    @Expose
-    protected CountedExpressionContext amount;
-
-    @Expose
-    protected List<IBlockPredicate> blocks = Collections.emptyList();
-
+public class NearBlockManipulator extends BlockCheckingManipulator<CountedExpressionContext> {
     @Expose
     protected NeedExpressionContext radius = ExpressionContext.makeConstant(new NeedExpressionContext(), 0);
 
@@ -144,22 +135,6 @@ public class NearBlockManipulator extends TooltipManipulator {
         super.onCreated();
     }
 
-    @Nullable
-    @Override
-    protected ExpressionContext getItemTooltipExpression(final ItemStack item) {
-        final Block block = Block.getBlockFromItem(item.getItem());
-
-        for (final IBlockPredicate predicate : blocks) {
-            if(predicate instanceof BlockStatePredicate) {
-                if (block.getStateContainer().getValidStates().stream().anyMatch(predicate)) return amount;
-            } else {
-                if (predicate.test(block.getDefaultState())) return amount;
-            }
-        }
-
-        return null;
-    }
-
     @Override
     protected void setupExpression(final Supplier<Double> currentValue, final PlayerEntity player, final ItemStack item, final ExpressionContext expr) {
         super.setupExpression(currentValue, player, item, expr);
@@ -254,18 +229,6 @@ public class NearBlockManipulator extends TooltipManipulator {
         radius.setCurrentNeedValue(parent, player);
         amount.setIfRequired(CountedExpressionContext.COUNT, () -> (double) getCountWithin(player.world, radius.get(), getBlockAtFeet(player)));
         return amount.get();
-    }
-
-    /**
-     * Checks if the {@link BlockState} matches our predicates
-     * @param state The state
-     * @return True if it does, false otherwise
-     */
-    private boolean isMatch(final BlockState state) {
-        for (final IBlockPredicate predicate : blocks) {
-            if (predicate.test(state)) return true;
-        }
-        return false;
     }
 
     /**
