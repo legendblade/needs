@@ -16,6 +16,9 @@ import org.winterblade.minecraft.mods.needs.mixins.UiMixin;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 import org.winterblade.minecraft.mods.needs.needs.INeedCapability;
 import org.winterblade.minecraft.mods.needs.needs.NeedCapability;
+import org.winterblade.minecraft.mods.needs.needs.attributes.AttackDamageNeed;
+import org.winterblade.minecraft.mods.needs.needs.attributes.LuckNeed;
+import org.winterblade.minecraft.mods.needs.needs.attributes.MaxHealthNeed;
 import org.winterblade.minecraft.mods.needs.needs.vanilla.*;
 import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 
@@ -39,12 +42,16 @@ public class CoreRegistration {
         NeedRegistry.INSTANCE.register("health", HealthNeed.class, "hp");
         NeedRegistry.INSTANCE.register("saturation", SaturationNeed.class);
         NeedRegistry.INSTANCE.register("ylevel", YLevelNeed.class, "y", "depth");
-        NeedRegistry.INSTANCE.register("maxhealth", MaxHealthNeed.class, "maxhp");
         NeedRegistry.INSTANCE.register("light", LightLevelNeed.class, "lightlevel");
         NeedRegistry.INSTANCE.register("breath", BreathNeed.class, "air");
         NeedRegistry.INSTANCE.register("temperature", TemperatureNeed.class);
         NeedRegistry.INSTANCE.register("sunlight", SunlightNeed.class);
-        NeedRegistry.INSTANCE.register("moonPhase", SunlightNeed.class, "moon");
+        NeedRegistry.INSTANCE.register("moonPhase", MoonPhaseNeed.class, "moon");
+
+        // Attributes
+        NeedRegistry.INSTANCE.register("maxhealth", MaxHealthNeed.class, "maxhp");
+        NeedRegistry.INSTANCE.register("attackDamage", AttackDamageNeed.class, "attack");
+        NeedRegistry.INSTANCE.register("luck", LuckNeed.class);
     }
 
     private static void registerMixins() {
