@@ -2,8 +2,10 @@ package org.winterblade.minecraft.mods.needs.needs.vanilla;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.needs.ReadOnlyNeed;
 
+@Document(description = "Tracks the light level of the block the player's feet are in")
 public class LightLevelNeed extends ReadOnlyNeed {
     @Override
     public String getName() {

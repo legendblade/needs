@@ -11,13 +11,12 @@ import net.minecraft.util.Tuple;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.io.IOUtils;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.actions.ILevelAction;
 import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.documentation.IDocumentedContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
 import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
 import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
@@ -54,7 +53,7 @@ public class DocumentationBuilder {
             final DocumentationRoot root = new DocumentationRoot();
             root.needs = document("needs", NeedRegistry.INSTANCE, Need.class, null);
             root.mixins = document("mixins", MixinRegistry.INSTANCE, BaseMixin.class, IMixin.class);
-            root.manipulators = document("manipulators", ManipulatorRegistry.INSTANCE, BaseManipulator.class, IManipulator.class);
+            root.manipulators = document("manipulators", ManipulatorRegistry.INSTANCE, IManipulator.class, IManipulator.class);
             root.actions = document("levelActions", LevelActionRegistry.INSTANCE, LevelAction.class, ILevelAction.class);
 
             try (final PrintWriter wr = new PrintWriter(path.resolve("data.json").toString())) {
@@ -231,7 +230,7 @@ public class DocumentationBuilder {
             return;
         }
 
-        //noinspection unchecked - we have actually checked this.
+        // We have actually checked this.
         final Class<? extends T> sc = (Class<? extends T>) superclass;
         if (!entries.containsKey(sc)) {
             getEntry(registry, root, intf, null, sc, entries, docTag);

@@ -12,7 +12,7 @@ public class DamageExpressionContext extends NeedExpressionContext {
     }
 
     @Override
-    protected List<String> getElements() {
+    public List<String> getElements() {
         elements.add(AMOUNT);
         return elements;
     }

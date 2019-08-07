@@ -12,7 +12,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
@@ -25,8 +27,13 @@ import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@Document(description = "Checks the immediate surroundings of the player for the given block(s); will fire every " +
+        "5 ticks.")
 public class NearBlockManipulator extends BlockCheckingManipulator<CountedExpressionContext> {
     @Expose
+    @OptionalField(defaultValue = "0")
+    @Document(description = "The radius to check around the player; defaults to 0, which only targets the block " +
+            "the player is standing ontop of.")
     protected NeedExpressionContext radius = ExpressionContext.makeConstant(new NeedExpressionContext(), 0);
 
     private static final BlockState VOID_AIR = Blocks.VOID_AIR.getDefaultState();

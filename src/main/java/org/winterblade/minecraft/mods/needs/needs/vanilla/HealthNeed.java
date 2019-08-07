@@ -1,8 +1,10 @@
 package org.winterblade.minecraft.mods.needs.needs.vanilla;
 
 import net.minecraft.entity.player.PlayerEntity;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.needs.CachedTickingNeed;
 
+@Document(description = "Tracks the player's current health")
 public class HealthNeed extends CachedTickingNeed {
     @Override
     public String getName() {

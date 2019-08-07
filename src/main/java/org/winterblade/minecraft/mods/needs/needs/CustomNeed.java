@@ -5,13 +5,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @SuppressWarnings("WeakerAccess")
+@Document(description = "A completely custom need specified by you")
 public class CustomNeed extends Need {
     static {
         CAPABILITY = null;
@@ -21,14 +22,23 @@ public class CustomNeed extends Need {
     public static final Capability<INeedCapability> CAPABILITY;
 
     @Expose
+    @Document(description = "The name of the need; names should be unique")
     protected String name;
+
     @Expose
-    protected int min;
+    @Document(description = "The minimum allowed value the need can reach")
+    protected double min;
+
     @Expose
-    protected int max;
+    @Document(description = "The maximum allowed value the need can reach")
+    protected double max;
+
     @Expose
-    protected int initial;
+    @Document(description = "The initial value to set the need to when a player first gets it")
+    protected double initial;
+
     @Expose
+    @Document(description = "Should the need reset to the initial level upon death")
     protected boolean resetOnDeath;
 
     public CustomNeed() {

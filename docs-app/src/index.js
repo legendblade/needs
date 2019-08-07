@@ -34,7 +34,7 @@ function NavBar(props) {
 function AliasList(props) {
     if (props.aliases && 0 < props.aliases.length) {
         return (
-            <div>
+            <div class='mt-2'>
                 This can be created through the following type names:
                 <ul>
                     {props.aliases.map((a) => (<li key={a}>{a}</li>))}
@@ -66,14 +66,13 @@ function Field(props) {
 
 function FieldList(props) {
     if (!props || props.length <= 0) return ('');
-    return [
-        (<hr key="0" />),
-        (<table key="1" class='table table-striped table-borderless'>
+    return (
+        <table class='table table-striped table-borderless'>
             <tbody>
                 {props.map((f) => Field(f))}
             </tbody>
-        </table>)
-    ]
+        </table>
+    );
 }
 
 function Entry(props, parentFields) {

@@ -3,13 +3,14 @@ package org.winterblade.minecraft.mods.needs.needs.attributes;
 import com.google.gson.annotations.Expose;
 import net.minecraft.entity.ai.attributes.Attribute;
 import net.minecraft.entity.ai.attributes.IAttribute;
-import net.minecraft.entity.ai.attributes.RangedAttribute;
 import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 
 import java.util.UUID;
 
 @SuppressWarnings("WeakerAccess")
+@Document(description = "A collection of attribute-based needs that use custom modifiers to affect the given stat")
 public abstract class CustomAttributeNeed extends AttributeBasedNeed {
     @Expose
     protected double min = Double.NEGATIVE_INFINITY;

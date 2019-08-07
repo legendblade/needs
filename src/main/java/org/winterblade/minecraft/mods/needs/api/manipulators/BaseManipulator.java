@@ -1,10 +1,13 @@
 package org.winterblade.minecraft.mods.needs.api.manipulators;
 
 import com.google.gson.annotations.Expose;
+import org.winterblade.minecraft.mods.needs.api.OptionalField;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 
 @SuppressWarnings("WeakerAccess")
+@Document(description = "The base for most manipulators")
 public abstract class BaseManipulator implements IManipulator {
     /**
      * Used in events anytime a Need is changed by an external source.
@@ -14,12 +17,15 @@ public abstract class BaseManipulator implements IManipulator {
     protected Need parent;
 
     @Expose
-    protected String messageFormat;
-
-    @Expose
+    @OptionalField(defaultValue = "None")
+    @Document(description = "If specified, the lowest value this manipulator can set the parent need to; if set, this " +
+            "will incur a slight performance hit, as the value of the need has to be calculated at the manipulator level.")
     protected double downTo = Double.NEGATIVE_INFINITY;
 
     @Expose
+    @OptionalField(defaultValue = "None")
+    @Document(description = "If specified, the highest value this manipulator can set the parent need to; if set, this " +
+            "will incur a slight performance hit, as the value of the need has to be calculated at the manipulator level.")
     protected double upTo = Double.POSITIVE_INFINITY;
 
     @Override
@@ -32,18 +38,6 @@ public abstract class BaseManipulator implements IManipulator {
      * Used to finish up any necessary post creation tasks
      */
     public void onCreated() {}
-
-    @Override
-    public String formatMessage(final String needName, final double amount, final double newValue, final NeedLevel level) {
-        return String.format(
-                messageFormat != null ? messageFormat : "Your %s has %s by %.2f to %.2f; you're now %s.",
-                needName.toLowerCase(),
-                amount < 0 ? "decreased" : "increased",
-                Math.abs(amount),
-                newValue,
-                !level.equals(NeedLevel.UNDEFINED) ? level.getName().toLowerCase() : "neutral"
-        );
-    }
 
     private static class ExternalManipulator extends BaseManipulator {
 

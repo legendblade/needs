@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.util.RangeHelper;
@@ -24,10 +25,13 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("WeakerAccess")
 @JsonAdapter(ItemUsedManipulator.Deserializer.class)
+@Document(description = "Triggered when the player uses an item in the list")
 public class ItemUsedManipulator extends TooltipManipulator {
     @Expose
+    @Document(description = "The default amount to apply if not specified on an item level")
     private FoodExpressionContext defaultAmount;
 
+    // TODO: Create an adapter and expose
     protected final Map<Predicate<ItemStack>, ExpressionContext> itemValues = new HashMap<>();
 
     public ItemUsedManipulator() {
@@ -175,7 +179,7 @@ public class ItemUsedManipulator extends TooltipManipulator {
         }
 
         @Override
-        protected List<String> getElements() {
+        public List<String> getElements() {
             final List<String> elements = super.getElements();
             elements.add("hunger");
             elements.add("saturation");

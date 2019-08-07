@@ -5,15 +5,19 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
+import org.winterblade.minecraft.mods.needs.api.needs.ReadOnlyNeed;
 import org.winterblade.minecraft.mods.needs.needs.INeedCapability;
 
 @SuppressWarnings("WeakerAccess")
+@Document(description = "Adjusts the value of either the parent need, or the target need")
 public class AdjustNeedLevelAction extends LevelAction {
     static {
         CAPABILITY = null;
@@ -23,9 +27,13 @@ public class AdjustNeedLevelAction extends LevelAction {
     public static final Capability<INeedCapability> CAPABILITY;
 
     @Expose
+    @OptionalField(defaultValue = "The parent need")
+    @Document(description = "The need to affect; leave out to specify the parent need.")
     protected LazyNeed need;
 
     @Expose
+    @Document(description = "The amount by which to change the targeted need when this action is fired; as a continuous " +
+            "action, it will store the amount it changes the need by, and restore it upon exiting the level.")
     protected NeedExpressionContext amount;
 
     @Override
@@ -75,6 +83,10 @@ public class AdjustNeedLevelAction extends LevelAction {
     }
 
     protected double adjust(final Need other, final PlayerEntity player) {
+        if (other instanceof ReadOnlyNeed) {
+            NeedsMod.LOGGER.warn("You cannot adjust " + need + ", because it is read-only.");
+            return 0;
+        }
         amount.setCurrentNeedValue(other, player);
 
         final double output = amount.get();

@@ -9,8 +9,6 @@ import org.winterblade.minecraft.mods.needs.api.needs.Need;
 public interface IManipulator {
     void onCreated(Need need);
 
-    String formatMessage(String needName, double amount, double newValue, NeedLevel level);
-
     double getLowestToSetNeed();
 
     double getHighestToSetNeed();

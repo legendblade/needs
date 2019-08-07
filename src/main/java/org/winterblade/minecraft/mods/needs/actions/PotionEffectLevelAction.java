@@ -7,6 +7,8 @@ import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.OptionalField;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.actions.IReappliedOnDeathLevelAction;
 import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
@@ -14,17 +16,27 @@ import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 
 import javax.annotation.Nullable;
 
+@Document(description = "Applies a potion effect to the player")
 public class PotionEffectLevelAction extends LevelAction implements IReappliedOnDeathLevelAction {
     @Expose
+    @Document(description = "The ID of the potion effect.")
     private String effect;
 
     @Expose
+    @Document(description = "The amount of time to apply the effect for if specified as an entry or exit action; " +
+            "continuous actions will ignore this.")
     private int duration;
 
     @Expose
+    @OptionalField(defaultValue = "0")
+    @Document(description = "The level to amplify the potion; the default, 0, will apply as a level 1 potion, 1 would apply " +
+            "a level 2 potion, etc.")
     private int amplifier;
 
     @Expose
+    @OptionalField(defaultValue = "False")
+    @Document(description = "If true, the effect will be reapplied with the remaining duration on death; this only " +
+            "applies when this is used as an entry or exit action, continuous effects will always reapply on death.")
     private boolean persistOnDeath;
 
     private Effect theEffect;

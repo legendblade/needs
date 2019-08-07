@@ -7,10 +7,13 @@ import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
 
+@Document(description = "Use this mixin to mirror the need to a scoreboard entry of the same name as the need; the " +
+        "value of the need will be rounded to the nearest whole number.")
 public class ScoreboardMixin extends BaseMixin {
     @SubscribeEvent
     public void onInitialized(final NeedInitializationEvent.Post evt) {

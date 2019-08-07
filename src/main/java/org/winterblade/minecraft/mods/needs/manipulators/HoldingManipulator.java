@@ -5,6 +5,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
@@ -16,19 +17,26 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Function;
 
+@Document(description = "Triggered every 5 ticks while the player is holding the specified item")
 public class HoldingManipulator extends TooltipManipulator {
     @Expose
+    @Document(description = "The amount to change")
     protected CountedExpressionContext amount;
 
     @Expose
+    @OptionalField(defaultValue = "True")
+    @Document(description = "If true, check the player's mainhand for the item.")
     protected boolean mainhand = true;
 
     @Expose
+    @OptionalField(defaultValue = "False")
+    @Document(description = "If true, check the player's offhand for the item")
     protected boolean offhand = false;
 
     @Expose
     @JsonAdapter(IIngredient.ToListDeserializer.class)
-    @Document(type = IIngredient.class)
+    @Document(type = IIngredient.class, description = "An array of items to check against, specified either as a single " +
+            "item (e.g. 'minecraft:cobblestone') or a tag (e.g. 'tag:minecraft:leaves')")
     protected List<IIngredient> items;
 
     @Override

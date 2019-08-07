@@ -2,7 +2,9 @@ package org.winterblade.minecraft.mods.needs.api.needs;
 
 import com.google.gson.JsonParseException;
 import net.minecraft.entity.player.PlayerEntity;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 
+@Document(description = "A read-only need can be read by other needs, and have levels assigned to it, but cannot be changed through manipulators or level actions")
 public abstract class ReadOnlyNeed extends CachedTickingNeed {
     @Override
     public void onCreated() {

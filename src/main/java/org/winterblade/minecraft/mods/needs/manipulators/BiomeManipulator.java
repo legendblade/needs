@@ -10,6 +10,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
@@ -19,16 +20,21 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("WeakerAccess")
+@Document(description = "Triggers while the player is in one of the specified biomes/biome types; at least one or the " +
+        "other must be specified.")
 public class BiomeManipulator extends BaseManipulator {
     @Expose
+    @Document(description = "The amount to change by")
     protected NeedExpressionContext amount;
 
     @Expose
-    @Document(type = String.class)
+    @OptionalField(defaultValue = "All")
+    @Document(type = String.class, description = "A list of biomes that will trigger this")
     protected List<String> biomes = Collections.emptyList();
 
     @Expose
-    @Document(type = String.class)
+    @OptionalField(defaultValue = "All")
+    @Document(type = String.class, description = "A list of biome types that will trigger this")
     protected List<String> biomeTypes = Collections.emptyList();
 
     protected List<BiomeManager.BiomeType> types = Collections.emptyList();

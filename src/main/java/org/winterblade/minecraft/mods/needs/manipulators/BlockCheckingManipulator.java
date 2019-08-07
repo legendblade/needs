@@ -15,12 +15,14 @@ import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
+@Document(description = "A collection of manipulators that check blocks.")
 public abstract class BlockCheckingManipulator <T extends NeedExpressionContext> extends TooltipManipulator {
     @Expose
+    @Document(description = "The amount to apply")
     protected T amount;
 
     @Expose
-    @Document(type = IBlockPredicate.class)
+    @Document(type = IBlockPredicate.class, description = "A list of blocks to check")
     protected List<IBlockPredicate> blocks = Collections.emptyList();
 
     @Nullable

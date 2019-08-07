@@ -5,12 +5,13 @@ import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.PlayerEntity;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.needs.CachedTickingNeed;
-import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 import java.util.UUID;
 
 @SuppressWarnings("WeakerAccess")
+@Document(description = "A collection of needs that target a specific character attribute")
 public abstract class AttributeBasedNeed extends CachedTickingNeed {
     protected final IAttribute attribute;
     protected final UUID modifierId;

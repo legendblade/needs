@@ -6,6 +6,8 @@ import com.google.gson.annotations.JsonAdapter;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.OptionalField;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
@@ -16,23 +18,35 @@ import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
+@Document(description = "Affect this need when another need has changed; do not set to the same need this is applied to. " +
+        "You have been warned. Can be applied multiple times to the same need with different values.")
 public class OnNeedChangedManipulator extends BaseManipulator {
     @Expose
+    @Document(description = "The name of the other need to check.")
     protected LazyNeed need;
 
     @Expose
+    @OptionalField(defaultValue = "None")
+    @Document(description = "The minimum amount the other need must have changed by in order to trigger this manipulator")
     protected double minChange;
 
     @Expose
+    @OptionalField(defaultValue = "None")
+    @Document(description = "The maximum amount the other need must have changed by in order to trigger this manipulator")
     protected double maxChange;
 
     @Expose
+    @OptionalField(defaultValue = "None")
+    @Document(description = "The minimum current amount of the other need in order to trigger this manipulator")
     protected double minValue;
 
     @Expose
+    @OptionalField(defaultValue = "None")
+    @Document(description = "The maximum current amount of the other need in order to trigger this manipulator")
     protected double maxValue;
 
     @Expose
+    @Document(description = "The amount to change by when triggered")
     protected OtherNeedChangedExpressionContext amount;
 
     protected boolean isListening;
@@ -100,7 +114,7 @@ public class OnNeedChangedManipulator extends BaseManipulator {
         }
 
         @Override
-        protected List<String> getElements() {
+        public List<String> getElements() {
             final List<String> elements = super.getElements();
             elements.add("other");
             elements.add("previous");

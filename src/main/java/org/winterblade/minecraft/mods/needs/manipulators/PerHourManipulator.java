@@ -4,11 +4,15 @@ import com.google.gson.annotations.Expose;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 
+@Document(description = "Fired every in-game hour that passes in a world after the first; will multiply its amount " +
+        "by the number of hours that have passed if time skips forward. May not work if time is set back.")
 public class PerHourManipulator extends BaseManipulator {
     @Expose
+    @Document(description = "The amount to set per hour")
     private NeedExpressionContext amount;
 
     private long lastFired = 0;

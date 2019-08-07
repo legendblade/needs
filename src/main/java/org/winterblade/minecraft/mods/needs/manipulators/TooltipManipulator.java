@@ -12,6 +12,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.DistExecutor;
+import org.winterblade.minecraft.mods.needs.api.OptionalField;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
@@ -25,17 +27,27 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 @SuppressWarnings("WeakerAccess")
+@Document(description = "A collection of manipulators that can display their effect in the tooltip when hovering " +
+        "over the item in an inventory")
 public abstract class TooltipManipulator extends BaseManipulator {
     @Expose
+    @OptionalField(defaultValue = "False")
+    @Document(description = "If true, show the tooltip. Note that doing so will incur a slight performance penalty on" +
+            "the client; defaults to false")
     protected boolean showTooltip;
 
     @SuppressWarnings("FieldMayBeFinal")
     @Expose
+    @OptionalField(defaultValue = "1")
+    @Document(description = "The number of decimal places to show in tooltips; defaults to 1.")
     protected int precision = 1;
 
     @Expose
+    @OptionalField(defaultValue = "Normal tooltip")
+    @Document(description = "If this is set, will override the value of the tooltip itself with this string.")
     protected String tooltip;
 
+    // TODO: Create an adapter and expose
     protected final RangeMap<Double, String> formatting = TreeRangeMap.create();
 
     protected int capacity = 0;

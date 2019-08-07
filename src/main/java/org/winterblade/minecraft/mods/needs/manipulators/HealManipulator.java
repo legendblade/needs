@@ -3,8 +3,10 @@ package org.winterblade.minecraft.mods.needs.manipulators;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.entity.living.LivingHealEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.DamageExpressionContext;
 
+@Document(description = "Triggered when the player is healed")
 public class HealManipulator extends DamageBasedManipulator {
     @SubscribeEvent
     protected void onDamaged(final LivingHealEvent event) {
