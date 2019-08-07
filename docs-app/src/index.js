@@ -277,7 +277,7 @@ class App extends React.Component {
                                 <p>
                                     These aren't going to get a separate section by themselves, because they'll be covered inline each time they show up - expressions
                                     are a way to make things more dynamic. On a basic level, most manipulators, rather than just taking in a value that they adjust
-                                    their associated need by, instead can take a mathematical expression like this:
+                                    their associated need by, can instead take a mathematical expression like this:
                                 </p>
                                 <p class="text-center">
                                     <code class="text-center">current / 2</code>
@@ -294,15 +294,33 @@ class App extends React.Component {
                                 </p>
                                 <p>
                                     Do note that each individual expression may have different variables you can use - be sure to read the description of each to check
-                                    what it supports.
+                                    what it supports. When an expression is available, it'll be marked like this: <span class='badge badge-success'>Expression</span>
                                 </p>
+                                <p>
+                                    One last thing - you don't <i>have</i> to use an expression if you don't want to. And you don't necessarily have to use any of the variables
+                                    available to you. When an expression is being parsed during load, it'll go through the following checks, in order:
+                                </p>
+                                <ul>
+                                    <li><b>Is the value a number?</b> - That number will always be used, and no additional overhead will happen during gameplay</li>
+                                    <li>
+                                        <b>Is the value an expression that doesn't use any variables?</b> - 
+                                        The loader will run the expression, and use the result; this happens during load, however, and, as above, no additional overhead will
+                                        happen during gameplay. You happen to forget what 2 + 5 is? Feel free to put "2 + 5" as your expression; we've got you.
+                                    </li>
+                                    <li>
+                                        <b>Does the expression use one or more variables?</b> - 
+                                        The loader will figure out which variables you're using, and only ever parse those during gameplay; this will have a gameplay performance
+                                        impact compared to the above two cases, but we're talking nanoseconds. Unless you have hundreds of needs, or the variable itself
+                                        takes excessively long to calculate, you shouldn't worry too much about it.
+                                    </li>
+                                </ul>
                             </dl>
                         </dl>
                         <p>
                             With all that out of the way, let's dive in to the various sections to see what all can be accomplished.
                         </p>
                         <div class="alert alert-light">
-                            Note, if you're reading this document fromthe mod's config directory, it's been automatically generated from the mods you have installed - 
+                            Note, if you're reading this document from the mod's config directory, it's been automatically generated from the mods you have installed - 
                             so if any mod adds an extra need, mixin, manipulator, or level action, it'll show up here after the first time you run the game with that mod installed.
                         </div>
                     </div>
