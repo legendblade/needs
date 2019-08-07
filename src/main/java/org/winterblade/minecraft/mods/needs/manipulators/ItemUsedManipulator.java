@@ -75,9 +75,15 @@ public class ItemUsedManipulator extends TooltipManipulator {
         if (item.isFood()) {
             final Food food = item.getItem().getFood();
             if (food != null) {
-                expr.setIfRequired("hunger", () -> (double) food.getHealing());
-                expr.setIfRequired("saturation", () -> (double) food.getSaturation());
+                expr.setIfRequired(FoodExpressionContext.HUNGER, () -> (double) food.getHealing());
+                expr.setIfRequired(FoodExpressionContext.SATURATION, () -> (double) food.getSaturation());
+            } else {
+                expr.setIfRequired(FoodExpressionContext.HUNGER, () -> 0d);
+                expr.setIfRequired(FoodExpressionContext.SATURATION, () -> 0d);
             }
+        } else {
+            expr.setIfRequired(FoodExpressionContext.HUNGER, () -> 0d);
+            expr.setIfRequired(FoodExpressionContext.SATURATION, () -> 0d);
         }
     }
 
@@ -175,15 +181,29 @@ public class ItemUsedManipulator extends TooltipManipulator {
 
     @JsonAdapter(ExpressionContext.Deserializer.class)
     public static class FoodExpressionContext extends NeedExpressionContext {
+        public static final String HUNGER = "hunger";
+        public static final String SATURATION = "saturation";
+
+        protected static final Map<String, String> docs = new HashMap<>(NeedExpressionContext.docs);
+        static {
+            docs.put(HUNGER, "The amount of pips on the hunger bar this refills, if food.");
+            docs.put(SATURATION, "The amount of saturation this grants, if food.");
+        }
+
         public FoodExpressionContext() {
         }
 
         @Override
         public List<String> getElements() {
             final List<String> elements = super.getElements();
-            elements.add("hunger");
-            elements.add("saturation");
+            elements.add(HUNGER);
+            elements.add(SATURATION);
             return elements;
+        }
+
+        @Override
+        public Map<String, String> getElementDocumentation() {
+            return docs;
         }
     }
 }

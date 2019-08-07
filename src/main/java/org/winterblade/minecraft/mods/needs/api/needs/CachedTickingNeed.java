@@ -2,11 +2,13 @@ package org.winterblade.minecraft.mods.needs.api.needs;
 
 import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Document(description = "A collection of needs that are updated and cached periodically")
 public abstract class CachedTickingNeed extends Need {
     private final Map<String, Double> cache = new HashMap<>();
 

@@ -31,12 +31,14 @@ import org.winterblade.minecraft.mods.needs.util.TypedRegistry;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class DocumentationBuilder {
@@ -82,6 +84,17 @@ public class DocumentationBuilder {
         return entries.values().stream().filter((f) -> f.isRoot).collect(Collectors.toList());
     }
 
+    /**
+     * Adds a single documentation entry, to the entry list before recursively calling itself all the way up the chain
+     * @param registry The registry to pull entries from
+     * @param root     The root class
+     * @param intf     The root interface, if the root class should not be checked
+     * @param id       The ID of the given entry
+     * @param clazz    The class of the entry
+     * @param entries  The entry list
+     * @param docTag   The document tag
+     * @param <T>      The type of classes to process
+     */
     private static <T> void getEntry(
             final TypedRegistry<T> registry,
             final Class<? extends T> root,
@@ -130,92 +143,7 @@ public class DocumentationBuilder {
                 .filter((f) -> f.getAnnotation(Expose.class) != null
                         || f.getAnnotation(OptionalField.class) != null
                         || f.getAnnotation(Document.class) != null)
-                .map((f) -> {
-                    final DocumentationEntry.Field field = new DocumentationEntry.Field();
-
-                    field.name = f.getName();
-
-                    // Check if we have documentation on the field:
-                    final Document fieldAnno = f.getAnnotation(Document.class);
-                    if (fieldAnno != null && !fieldAnno.description().isEmpty()) {
-                        field.description = fieldAnno.description();
-                    } else {
-                        final String key = docTag + entry.id + "." + f.getName();
-                        if (I18n.hasKey(key)) {
-                            field.description = I18n.format(key);
-                        }
-                    }
-
-                    // Figure out our type values:
-                    Class<?> fieldType = f.getType();
-                    if(ExpressionContext.class.isAssignableFrom(fieldType)) {
-                        field.isExpression = true;
-                        try {
-                            final ExpressionContext ctx = (ExpressionContext) fieldType.getConstructor().newInstance();
-                            if (ctx instanceof IDocumentedContext) {
-                                field.expressionVars = ((IDocumentedContext) ctx).getElementDocumentation();
-                            } else {
-                                field.expressionVars =
-                                    ctx
-                                        .getElements()
-                                        .stream()
-                                        .map((e) -> {
-                                            final String key = NeedsMod.MODID + ".expression." + ctx.getClass().getSimpleName() + "." + e;
-                                            return new Tuple<>(e, I18n.hasKey(key) ? I18n.format(key) : "");
-                                        })
-                                        .collect(Collectors.toMap(Tuple::getA, Tuple::getB));
-                            }
-                        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                            NeedsMod.LOGGER.warn("Unable to create new expression context " + fieldType.getCanonicalName());
-                            field.expressionVars = new HashMap<>();
-                        }
-                    }
-                    field.isOptional = f.getAnnotation(OptionalField.class) != null;
-
-                    if (fieldType.isAssignableFrom(Map.class)) {
-                        field.isMap = true;
-                        fieldType = fieldAnno != null ? fieldAnno.type() : Object.class;
-                        if (fieldType == Object.class) {
-                            field.type = "Map";
-                            NeedsMod.LOGGER.warn(clazz.getCanonicalName() + "#" + f.getName() + " is a map without type information");
-                            return field;
-                        }
-                    }
-
-                    if (fieldType.isAssignableFrom(List.class)) {
-                        field.isArray = true;
-                        fieldType = fieldAnno != null ? fieldAnno.type() : Object.class;
-                        if (fieldType == Object.class) {
-                            field.type = "Array";
-                            NeedsMod.LOGGER.warn(clazz.getCanonicalName() + "#" + f.getName() + " is a list without type information");
-                            return field;
-                        }
-                    }
-
-                    // Raw types:
-                    if (fieldType == double.class || Double.class.isAssignableFrom(fieldType)) field.type = "Number";
-                    else if (fieldType == float.class || Float.class.isAssignableFrom(fieldType)) field.type = "Number";
-                    else if (fieldType == int.class || Integer.class.isAssignableFrom(fieldType)) field.type = "Number";
-                    else if (fieldType == short.class || Short.class.isAssignableFrom(fieldType)) field.type = "Number";
-                    else if (fieldType == long.class || Long.class.isAssignableFrom(fieldType)) field.type = "Number";
-                    else if (fieldType == boolean.class || Boolean.class.isAssignableFrom(fieldType)) field.type = "Boolean";
-
-                    // Class types:
-                    else if (String.class.isAssignableFrom(fieldType)) field.type = "String";
-                    else if (ExpressionContext.class.isAssignableFrom(fieldType)) field.type = "Expression or Number";
-
-                    else if (Need.class.isAssignableFrom(fieldType)) field.type = "Need";
-                    else if (LazyNeed.class.isAssignableFrom(fieldType)) field.type = "Need";
-
-                    else if (IManipulator.class.isAssignableFrom(fieldType)) field.type = "Manipulator";
-                    else if (IMixin.class.isAssignableFrom(fieldType)) field.type = "Mixin";
-                    else if (ILevelAction.class.isAssignableFrom(fieldType)) field.type = "Action";
-
-                    // Give up:
-                    else field.type = fieldType.getSimpleName();
-
-                    return field;
-                })
+                .map(documentField(clazz, docTag, entry))
                 .collect(Collectors.toList());
 
         // Add child storage and shove the whole thing into the class map:
@@ -231,13 +159,104 @@ public class DocumentationBuilder {
         }
 
         // We have actually checked this.
-        final Class<? extends T> sc = (Class<? extends T>) superclass;
+        @SuppressWarnings("unchecked") final Class<? extends T> sc = (Class<? extends T>) superclass;
         if (!entries.containsKey(sc)) {
             getEntry(registry, root, intf, null, sc, entries, docTag);
         }
 
         // This should always be true, but just in case?
         if (entries.containsKey(sc)) entries.get(sc).children.add(entry);
+    }
+
+    /**
+     * Generate a function to process fields
+     * @param clazz  The parent class
+     * @param docTag The document tag
+     * @param entry  The documentation entry
+     * @param <T>    The type of the parent class
+     * @return  A function to process the fields with
+     */
+    private static <T> Function<Field, DocumentationEntry.Field> documentField(final Class<? extends T> clazz, final String docTag, final DocumentationEntry entry) {
+        return (f) -> {
+            final DocumentationEntry.Field field = new DocumentationEntry.Field();
+
+            field.name = f.getName();
+
+            // Check if we have documentation on the field:
+            final Document fieldAnno = f.getAnnotation(Document.class);
+            if (fieldAnno != null && !fieldAnno.description().isEmpty()) {
+                field.description = fieldAnno.description();
+            } else {
+                final String key = docTag + entry.id + "." + f.getName();
+                if (I18n.hasKey(key)) {
+                    field.description = I18n.format(key);
+                }
+            }
+
+            // Figure out our type values:
+            Class<?> fieldType = f.getType();
+            if(ExpressionContext.class.isAssignableFrom(fieldType)) {
+                field.isExpression = true;
+                try {
+                    final ExpressionContext ctx = (ExpressionContext) fieldType.getConstructor().newInstance();
+                    field.expressionVars = ctx.getElementDocumentation();
+                } catch (final InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                    NeedsMod.LOGGER.warn("Unable to create new expression context " + fieldType.getCanonicalName());
+                    field.expressionVars = new HashMap<>();
+                }
+            }
+
+            final OptionalField opt = f.getAnnotation(OptionalField.class);
+            if (opt != null) {
+                field.isOptional = true;
+                field.defaultValue = opt.defaultValue();
+            }
+
+
+            if (fieldType.isAssignableFrom(Map.class)) {
+                field.isMap = true;
+                fieldType = fieldAnno != null ? fieldAnno.type() : Object.class;
+                if (fieldType == Object.class) {
+                    field.type = "Map";
+                    NeedsMod.LOGGER.warn(clazz.getCanonicalName() + "#" + f.getName() + " is a map without type information");
+                    return field;
+                }
+            }
+
+            if (fieldType.isAssignableFrom(List.class)) {
+                field.isArray = true;
+                fieldType = fieldAnno != null ? fieldAnno.type() : Object.class;
+                if (fieldType == Object.class) {
+                    field.type = "Array";
+                    NeedsMod.LOGGER.warn(clazz.getCanonicalName() + "#" + f.getName() + " is a list without type information");
+                    return field;
+                }
+            }
+
+            // Raw types:
+            if (fieldType == double.class || Double.class.isAssignableFrom(fieldType)) field.type = "Number";
+            else if (fieldType == float.class || Float.class.isAssignableFrom(fieldType)) field.type = "Number";
+            else if (fieldType == int.class || Integer.class.isAssignableFrom(fieldType)) field.type = "Number";
+            else if (fieldType == short.class || Short.class.isAssignableFrom(fieldType)) field.type = "Number";
+            else if (fieldType == long.class || Long.class.isAssignableFrom(fieldType)) field.type = "Number";
+            else if (fieldType == boolean.class || Boolean.class.isAssignableFrom(fieldType)) field.type = "Boolean";
+
+            // Class types:
+            else if (String.class.isAssignableFrom(fieldType)) field.type = "String";
+            else if (ExpressionContext.class.isAssignableFrom(fieldType)) field.type = "Expression or Number";
+
+            else if (Need.class.isAssignableFrom(fieldType)) field.type = "Need";
+            else if (LazyNeed.class.isAssignableFrom(fieldType)) field.type = "Need";
+
+            else if (IManipulator.class.isAssignableFrom(fieldType)) field.type = "Manipulator";
+            else if (IMixin.class.isAssignableFrom(fieldType)) field.type = "Mixin";
+            else if (ILevelAction.class.isAssignableFrom(fieldType)) field.type = "Action";
+
+            // Give up:
+            else field.type = fieldType.getSimpleName();
+
+            return field;
+        };
     }
 
     private static Gson getGson() {

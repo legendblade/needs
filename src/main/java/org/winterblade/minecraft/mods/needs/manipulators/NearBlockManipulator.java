@@ -6,7 +6,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -25,11 +24,10 @@ import org.winterblade.minecraft.mods.needs.util.blocks.TagBlockPredicate;
 import javax.annotation.Nonnull;
 import java.util.Iterator;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 @Document(description = "Checks the immediate surroundings of the player for the given block(s); will fire every " +
         "5 ticks.")
-public class NearBlockManipulator extends BlockCheckingManipulator<CountedExpressionContext> {
+public class NearBlockManipulator extends BlockCheckingManipulator {
     @Expose
     @OptionalField(defaultValue = "0")
     @Document(description = "The radius to check around the player; defaults to 0, which only targets the block " +
@@ -142,12 +140,6 @@ public class NearBlockManipulator extends BlockCheckingManipulator<CountedExpres
         super.onCreated();
     }
 
-    @Override
-    protected void setupExpression(final Supplier<Double> currentValue, final PlayerEntity player, final ItemStack item, final ExpressionContext expr) {
-        super.setupExpression(currentValue, player, item, expr);
-        amount.setIfRequired("count", () -> 1d);
-    }
-
     /**
      * Gets the block position at the player's feet
      * @param player The player
@@ -188,7 +180,7 @@ public class NearBlockManipulator extends BlockCheckingManipulator<CountedExpres
         final BlockPos center = getBlockAtFeet(player);
         final BlockState state = player.world.getBlockState(center);
 
-        amount.setIfRequired("count", () -> matchFn.apply(state) ? 1d : 0);
+        amount.setIfRequired(CountedExpressionContext.COUNT, () -> matchFn.apply(state) ? 1d : 0);
         return amount.get();
     }
 
@@ -211,7 +203,7 @@ public class NearBlockManipulator extends BlockCheckingManipulator<CountedExpres
      * @return 1 if the block matches, 0 otherwise
      */
     private double variableAmountConstantRadius(final PlayerEntity player, final long radius) {
-        amount.setIfRequired("count", () -> (double) getCountWithin(player.world, radius, getBlockAtFeet(player)));
+        amount.setIfRequired(CountedExpressionContext.COUNT, () -> (double) getCountWithin(player.world, radius, getBlockAtFeet(player)));
         return amount.get();
     }
 

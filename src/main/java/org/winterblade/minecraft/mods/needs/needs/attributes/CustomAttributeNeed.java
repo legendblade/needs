@@ -5,6 +5,7 @@ import net.minecraft.entity.ai.attributes.Attribute;
 import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 
 import java.util.UUID;
@@ -13,9 +14,15 @@ import java.util.UUID;
 @Document(description = "A collection of attribute-based needs that use custom modifiers to affect the given stat")
 public abstract class CustomAttributeNeed extends AttributeBasedNeed {
     @Expose
+    @OptionalField(defaultValue = "Minimum of the attribute")
+    @Document(description = "The minimum value this need can be set through the the mod; this can be higher than the " +
+            "actual minimum value of the attribute")
     protected double min = Double.NEGATIVE_INFINITY;
 
     @Expose
+    @OptionalField(defaultValue = "Maximum of the attribute")
+    @Document(description = "The maximum value this need can be set through the the mod; this can be lower than the " +
+            "actual maximum value of the attribute")
     protected double max = Double.POSITIVE_INFINITY;
 
     protected final double minFromAttribute;
@@ -29,12 +36,14 @@ public abstract class CustomAttributeNeed extends AttributeBasedNeed {
 
     @Override
     public void onCreated() {
-        if (min < minFromAttribute) {
+        if (min == Double.NEGATIVE_INFINITY) min = minFromAttribute;
+        else if (min < minFromAttribute) {
             NeedsMod.LOGGER.warn("Minimum value of " + getName() + " need is less than the value of the attribute it relies on: " + minFromAttribute);
             min = minFromAttribute;
         }
 
-        if (maxFromAttribute < max) {
+        if (max == Double.POSITIVE_INFINITY) max = maxFromAttribute;
+        else if (maxFromAttribute < max) {
             NeedsMod.LOGGER.warn("Maximum value of " + getName() + " need is larger than the value of the attribute it relies on: " + maxFromAttribute);
             max = maxFromAttribute;
         }

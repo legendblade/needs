@@ -20,7 +20,7 @@ import java.util.function.Function;
 @Document(description = "Triggered every 5 ticks while the player is holding the specified item")
 public class HoldingManipulator extends TooltipManipulator {
     @Expose
-    @Document(description = "The amount to change")
+    @Document(description = "The amount to change; count refers to the current stack size of the item(s)")
     protected CountedExpressionContext amount;
 
     @Expose

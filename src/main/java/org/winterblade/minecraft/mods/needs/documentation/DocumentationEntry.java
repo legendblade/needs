@@ -34,5 +34,7 @@ public class DocumentationEntry {
         public boolean isMap = false;
 
         public Map<String,String> expressionVars;
+
+        public String defaultValue;
     }
 }

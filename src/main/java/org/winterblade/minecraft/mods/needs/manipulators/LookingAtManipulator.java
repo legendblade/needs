@@ -11,10 +11,9 @@ import net.minecraft.util.math.Vec3d;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
-import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 
 @Document(description = "Triggered while the player is looking at, every 5 ticks.")
-public class LookingAtManipulator extends BlockCheckingManipulator<NeedExpressionContext> {
+public class LookingAtManipulator extends BlockCheckingManipulator {
 
     @Expose
     @OptionalField(defaultValue = "6")

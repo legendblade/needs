@@ -4,10 +4,7 @@ import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @JsonAdapter(ExpressionContext.Deserializer.class)
 public class NeedExpressionContext extends ExpressionContext {
@@ -15,6 +12,11 @@ public class NeedExpressionContext extends ExpressionContext {
     private static final List<String> params = Collections.singletonList(
         CURRENT_NEED_VALUE
     );
+    protected static final Map<String, String> docs = new HashMap<>();
+
+    static {
+        docs.put(CURRENT_NEED_VALUE, "The current value of the need being changed.");
+    }
 
     protected final ArrayList<String> elements = new ArrayList<>(params);
 
@@ -28,5 +30,10 @@ public class NeedExpressionContext extends ExpressionContext {
     @Override
     public List<String> getElements() {
         return elements;
+    }
+
+    @Override
+    public Map<String, String> getElementDocumentation() {
+        return docs;
     }
 }

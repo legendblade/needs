@@ -6,6 +6,7 @@ import com.google.gson.annotations.JsonAdapter;
 import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
 import org.winterblade.minecraft.mods.needs.api.IExpression;
+import org.winterblade.minecraft.mods.needs.api.documentation.IDocumentedContext;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -15,7 +16,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @JsonAdapter(ExpressionContext.Deserializer.class)
-public abstract class ExpressionContext implements IExpression {
+public abstract class ExpressionContext implements IExpression, IDocumentedContext {
     // Ensure default constructor?
     protected ExpressionContext() {}
 

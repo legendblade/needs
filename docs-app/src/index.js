@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { chain, cloneDeep, clone, startCase } from 'lodash';
+import { chain, cloneDeep, clone, startCase, union, map } from 'lodash';
 
 const noDesc = (<span class='text-muted'>There's no description of this item; encourage the mod author to add one, either through the API or localization.</span>);
 
@@ -19,7 +19,7 @@ function NavBar(props) {
     });
 
     return (
-        <nav class="navbar sticky-top navbar-light">
+        <nav class="navbar navbar-light">
             <a class={props.value.class || "nav-link"}
                 href={props.value.root}>
                     {props.value.title}
@@ -46,20 +46,44 @@ function AliasList(props) {
     }
 }
 
+function Expression(props) {
+    if (!props.isExpression) return '';
+    return (
+        <div class="alert alert-info">
+            <span>The variables available in this expression are:</span>
+            <dl class="row">
+                {map(props.expressionVars, (v, k) => [
+                    (<dt class="col-sm-3" key={k}>{k}</dt>),
+                    (<dd class="col-sm-9" key={k + "_desc"}>{v}</dd>)
+                ])}
+            </dl>
+        </div>
+    );
+}
+
 function Field(props) {
-    let typeBadge = 'badge float-left mr-1 ' + ((props.isParent) ? 'badge-light' : 'badge-info');
-    let expBadge = 'badge float-left ' + ((props.isParent) ? 'badge-secondary' : 'badge-success');
-    let nameClass = props.isParent ? 'text-muted' : '';
-    let parentText = props.isParent ? [(<br key="0" />), (<span key="1" class='text-muted'><small>From {props.parent}</small></span>)] : [];
+    const rowClass = 'row mx-1 ' + ((props.isParent) ? 'text-muted' : '');
+    const nameClass = props.isParent ? 'text-muted' : '';
+    const typeBadge = 'badge float-left mr-1 ' + ((props.isParent) ? 'badge-light' : 'badge-info');
+    const expBadge = 'badge float-left ' + ((props.isParent) ? 'badge-secondary' : 'badge-success');
+    const parentText = props.isParent ? (<span key="1" class='text-muted'><small>From {props.parent}</small></span>) : '';
+
 
     return (
-        <tr key={props.name} class='row mx-1'>
+        <tr key={props.name} class={rowClass}>
             <th class='col-md-4 text-right'>
                 <span class={typeBadge}>{props.type}</span>
                 {props.isExpression ? (<span class={expBadge}>Expression</span>) : ('')}
-                <span class={nameClass}>{props.name}</span>{parentText}
+                <div class={nameClass}>
+                    {props.name}
+                </div>
+                {props.isOptional ? (<div class='text-muted'><small>Optional; defaults to: {props.defaultValue}</small></div>) : ''}
+                {parentText}
             </th>
-            <td class='col-md-8'>{props.description || noDesc}</td>
+            <td class='col-md-8'>                
+                {props.description || noDesc}
+                {Expression(props)}
+            </td>
         </tr>
     );
 }
@@ -87,13 +111,12 @@ function Entry(props, parentFields) {
 
 
     const output = [(
-        <div class='card mt-4 p-2' style={container}>
-            <Tag class='card-title'>{name}<small>{props.depth.map((d) => " < " + d)}</small></Tag>
+        <div class='card mt-4 p-2' style={container} id={props.href}>
+            <Tag class='card-title'>{name}<small>{props.depth.map((d) => " < " + d).reverse()}</small></Tag>
             <p class='card-subtitle'>{props.description || noDesc}</p>
 
             <AliasList aliases={props.aliases} />
-            <div class='text-muted'>{FieldList(parentFields)}</div>
-            {FieldList(props.fields)}
+            {FieldList(union(parentFields, props.fields))}
         </div>
     )];
 
@@ -102,7 +125,7 @@ function Entry(props, parentFields) {
             f.isParent = true;
             f.parent = name;
         })
-        .union(parentFields || [])
+        .thru((a) => union(parentFields || [], a)) // Called this way to ensure ordering
         .value();
 
     const newDepth = chain(clone(props.depth)).union([name]).value();
@@ -124,6 +147,15 @@ class App extends React.Component {
     }
 
     getData() {
+        const convertToNav = (v, r) => {
+            v.href = r + v.id;
+            return {
+                "title": startCase(v.id),
+                "root": "#" + v.href,
+                "children": map(v.children, (c) => convertToNav(c, v.href))
+            };
+        };
+
         fetch('./data.json')
             .then((response) => {
                 return response.json();
@@ -134,11 +166,11 @@ class App extends React.Component {
                     "root": "#",
                     "class": "navbar-brand",
                     "children": [
-                        { "title": "Need Types", "root": "#needs" },
-                        { "title": "Mixins", "root": "#mixins" },
-                        { "title": "Manipulators", "root": "#manipulators" },
+                        { "title": "Need Types", "root": "#needs", /* "children": map(response.needs, (c) => convertToNav(c, "needs")) */ },
+                        { "title": "Mixins", "root": "#mixins", /* "children": map(response.mixins, (c) => convertToNav(c, "mixins")) */ },
+                        { "title": "Manipulators", "root": "#manipulators", /* "children": map(response.manipulators, (c) => convertToNav(c, "manipulators")) */ },
                         { "title": "Levels", "root": "#levels" },
-                        { "title": "Actions", "root": "#actions" }
+                        { "title": "Actions", "root": "#actions", /* "children": map(response.actions, (c) => convertToNav(c, "actions")) */ }
                     ]
                 };
 
