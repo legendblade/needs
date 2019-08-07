@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Needs, Wants, and Desires - Reference</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    </head>
+    <body style="position: relative" data-spy="scroll" data-target="#scrollnav" data-offset="0">
+        <div class="row" id="root">
+            <div class="col-2">
+                <nav id="scrollnav" class="navbar sticky-top navbar-light">
+                    <a class="navbar-brand" href="#">Needs, Wants, and Desires</a>
+                    <nav class="nav nav-pills flex-column">
+                        <a class="nav-link" href="#needs">Need Types</a>
+                        <a class="nav-link" href="#mixins">Mixins</a>
+                        <a class="nav-link" href="#manipulators">Manipulators</a>
+                        <a class="nav-link" href="#levels">Levels</a>
+                        <a class="nav-link" href="#actions">Actions</a>
+                    </nav>
+                </nav>
+            </div>
+
+            <div class="col-8">
+                <div>
+                    <h4>Overview</h4>
+                    <p class="lead">
+                        There are a couple of major topics that you will need to know when creating needs.
+                    </p>
+                    <p>
+                        <dl class="row">
+                            <dt class="col-sm-2">Need Types</dt>
+                            <dl class="col-sm-10">
+                                <p>
+                                    Needs can be custom - meaning that it's brand new functionality being added - or they can be associated with an already-existing
+                                    stat - some examples which are included by default are a player's max health, or the amount of sunlight they're currently receiving.
+                                </p>
+                                <p>
+                                    Each specific type of need may have specific options associated with it, or may be read-only. Check the relevant section to see
+                                    information on each.
+                                </p>
+                            </dl>
+                            <dt class="col-sm-2">Mixins</dt>
+                            <dl class="col-sm-10">
+                                <p>
+                                    Needs by themselves are generally hidden, background things that the player can't see. Mixins can help resolve that by adding
+                                    specific functionality, such as notifying the user with a chat message when they change levels, or displaying information in
+                                    the UI.
+                                </p>
+                                <p>
+                                    Mixins are in a broad sense functionality that can be shared across needs and mixed-in when you want to use that functionality.
+                                </p>
+                            </dl>
+                            <dt class="col-sm-2">Manipulators</dt>
+                            <dl class="col-sm-10">
+                                <p>
+                                    While needs that are based on existing stats - such as health, food, and breath - and are changed by outside forces, your custom
+                                    needs will need to know how and when to change. Manipulators can provide that functionality by allowing you to define what affects
+                                    a particular need and how.
+                                </p>
+                                <p>
+                                    However, manipulators don't only apply to custom needs - you can also apply them to any need that isn't read-only; say you wanted
+                                    to make the player regenerate health when they first enter sunlight - just use the <code>onNeedChanged</code> manipulator to link up the
+                                    <code>sunlight</code> need with the <code>health</code> need. But maybe that's too nice, and instead you want to... convince the
+                                    player to be more passive, you could use the <code>holding</code> manipulator to say that anytime they're holding a sword or axe, you
+                                    want to decrease their <code>health</code> by a certain amount - you can do that too.
+                                </p>
+                            </dl>
+                            <dt class="col-sm-2">Levels</dt>
+                            <dl class="col-sm-10">
+                                <p>
+                                    Okay, so you have a need, and that's cool, but you want to affect the player in certain ways when they're at a certain level - take
+                                    the idea that spawned this mod: nutritition (or, specifically: Nutrtition, the mod). You want to apply buffs when the player is at
+                                    high nutritional values, and apply debuffs when they're at low values. That's where levels come into play.
+                                </p>
+                                <p>
+                                    And if you associate the <code>ui</code> mixin, you even get nice looking bars showing you where a particular level starts and ends:
+                                </p>
+                                <div class="text-center">
+                                    <img src="https://pbs.twimg.com/media/EA6TYfiUYAAOyXX?format=png&name=small" alt="UI with bar" class="rounded" />
+                                </div>
+                                <p>
+                                    Like mixins and manipulators - levels aren't only for your own custom needs - you can assign levels to <i>any</i> need, including
+                                    read-only needs. So go forth, don't let your dreams be dreams, add some levels to the <code>moonPhase</code> need, and make the
+                                    player a wereparrot during the full mooon.
+                                </p>
+                            </dl>
+                            <dt class="col-sm-2">Actions</dt>
+                            <dl class="col-sm-10">
+                                <p>
+                                    Levels by themselves are cool, right? I mean, look at those slick UI bars. Okay, but maybe you want the levels to <i>do</i> something
+                                    beyond just looking pretty - that's where actions come into play.
+                                </p>
+                                <p>
+                                    Each action defines something that happens - either once, or continuously while the player is at the level the action is assigned to - 
+                                    in order to breathe some life into your levels - possibly literally, you can use the <code>adjustNeed</code> action to target the
+                                    player's <code>breath</code> need.
+                                </p>
+                            </dl>
+                            <dt class="col-sm-2">Expressions</dt>
+                            <dl class="col-sm-10">
+                                <p>
+                                    These aren't going to get a separate section by themselves, because they'll be covered inline each time they show up - expressions
+                                    are a way to make things more dynamic. On a basic level, most manipulators, rather than just taking in a value that they adjust
+                                    their associated need by, instead can take a mathematical expression like this:
+                                </p>
+                                <p class="text-center">
+                                    <code class="text-center">current / 2</code>
+                                </p>
+                                <p>
+                                    ... or this:
+                                </p>
+                                <p class="text-center">
+                                    <code>min(current,4) + max(-2,current)</code>
+                                </p>
+                                <p>
+                                    Or anything else you can find over at <a href="http://mathparser.org/mxparser-math-collection/">http://mathparser.org/mxparser-math-collection/</a>
+                                    in order to let you have full control over how things work.
+                                </p>
+                                <p>
+                                    Do note that each individual expression may have different variables you can use - be sure to read the description of each to check
+                                    what it supports.
+                                </p>
+                            </dl>
+                        </dl>
+                    </p>
+                    <p>
+                        With all that out of the way, let's dive in to the various sections to see what all can be accomplished. Note, if you're reading this document from
+                        the mod's config directory, it's been automatically generated from the mods you have installed - so if any mod adds an extra need, mixin, manipulator,
+                        or level action, it'll show up here after the first time you run the game with that mod installed.
+                    </p>
+                </div>
+                <hr />
+                <div id="needs">
+                    <h4>Need Types</h4>
+                    <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse non enim at quam aliquam sagittis. Cras et lacus dapibus, elementum lacus a, vulputate urna. Vestibulum ac imperdiet libero. Maecenas mauris nibh, iaculis bibendum purus nec, auctor pharetra enim. Curabitur id eros porta, egestas leo non, tristique dui. Fusce felis dui, aliquam non pulvinar non, hendrerit eget sapien. Quisque vel viverra mauris, sit amet accumsan libero. Maecenas maximus nibh non vulputate viverra. Sed ut libero sem.
+
+                            Fusce mauris leo, pellentesque eu scelerisque placerat, laoreet ornare enim. Morbi viverra vulputate pharetra. Pellentesque et ullamcorper elit. Aenean sodales porttitor suscipit. Ut porttitor orci quis nisl gravida porta. Morbi sodales elit et ipsum dictum rutrum. Etiam quis ligula at eros lobortis ullamcorper. Duis vitae lectus sit amet dolor tempor fringilla. Mauris tempor massa quis justo ornare bibendum. Pellentesque nec accumsan ex. In in purus at quam hendrerit tempus id non urna.
+                            
+                            Suspendisse porta metus quis dolor ullamcorper, ut dapibus ligula faucibus. Aliquam sit amet nunc efficitur, facilisis nisl in, consequat orci. Phasellus lacinia purus nec nulla porttitor, at lacinia dui ultricies. Proin et mauris mauris. Cras mauris dolor, maximus in est vitae, vestibulum aliquet nisi. Sed molestie bibendum orci eget viverra. Ut volutpat elementum lectus non gravida. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam at massa commodo, mattis risus et, cursus ligula. Vestibulum quis auctor dui. Integer efficitur tincidunt vestibulum. Quisque blandit sodales turpis, non semper lectus cursus vel. Integer consectetur, urna sit amet facilisis congue, nunc urna elementum tellus, non faucibus velit ipsum eget turpis.
+                            
+                            Morbi quis eleifend mauris. Nam at risus dignissim, venenatis lorem fringilla, dignissim libero. Proin interdum eget lacus sed elementum. Nunc ut blandit lacus. Nullam bibendum lobortis congue. Ut ac tristique tortor. Pellentesque gravida, metus non suscipit sodales, nibh dolor varius nisi, id pretium turpis nunc vitae dui.
+                            
+                            Aenean fermentum finibus pellentesque. Proin mollis orci sed ex blandit blandit. Suspendisse non ex ipsum. Donec ex nibh, feugiat molestie augue non, suscipit fermentum sapien. Curabitur dignissim commodo enim in scelerisque. Etiam at erat nulla. Nunc faucibus facilisis ipsum, mollis suscipit nulla. In quis posuere diam. Praesent maximus ex consectetur commodo consequat. Proin sit amet massa consectetur, maximus ipsum nec, condimentum elit. Nullam ut tristique tortor. Curabitur id nisl ac nibh blandit varius. Curabitur cursus ante egestas luctus finibus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nulla fermentum lectus id purus ullamcorper, eu convallis erat dapibus. Sed hendrerit et dui consectetur ornare.
+                    </p>
+                </div>
+                <div id="mixins">
+                    <h4>Mixins</h4>
+                    <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse non enim at quam aliquam sagittis. Cras et lacus dapibus, elementum lacus a, vulputate urna. Vestibulum ac imperdiet libero. Maecenas mauris nibh, iaculis bibendum purus nec, auctor pharetra enim. Curabitur id eros porta, egestas leo non, tristique dui. Fusce felis dui, aliquam non pulvinar non, hendrerit eget sapien. Quisque vel viverra mauris, sit amet accumsan libero. Maecenas maximus nibh non vulputate viverra. Sed ut libero sem.
+
+                            Fusce mauris leo, pellentesque eu scelerisque placerat, laoreet ornare enim. Morbi viverra vulputate pharetra. Pellentesque et ullamcorper elit. Aenean sodales porttitor suscipit. Ut porttitor orci quis nisl gravida porta. Morbi sodales elit et ipsum dictum rutrum. Etiam quis ligula at eros lobortis ullamcorper. Duis vitae lectus sit amet dolor tempor fringilla. Mauris tempor massa quis justo ornare bibendum. Pellentesque nec accumsan ex. In in purus at quam hendrerit tempus id non urna.
+                            
+                            Suspendisse porta metus quis dolor ullamcorper, ut dapibus ligula faucibus. Aliquam sit amet nunc efficitur, facilisis nisl in, consequat orci. Phasellus lacinia purus nec nulla porttitor, at lacinia dui ultricies. Proin et mauris mauris. Cras mauris dolor, maximus in est vitae, vestibulum aliquet nisi. Sed molestie bibendum orci eget viverra. Ut volutpat elementum lectus non gravida. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam at massa commodo, mattis risus et, cursus ligula. Vestibulum quis auctor dui. Integer efficitur tincidunt vestibulum. Quisque blandit sodales turpis, non semper lectus cursus vel. Integer consectetur, urna sit amet facilisis congue, nunc urna elementum tellus, non faucibus velit ipsum eget turpis.
+                            
+                            Morbi quis eleifend mauris. Nam at risus dignissim, venenatis lorem fringilla, dignissim libero. Proin interdum eget lacus sed elementum. Nunc ut blandit lacus. Nullam bibendum lobortis congue. Ut ac tristique tortor. Pellentesque gravida, metus non suscipit sodales, nibh dolor varius nisi, id pretium turpis nunc vitae dui.
+                            
+                            Aenean fermentum finibus pellentesque. Proin mollis orci sed ex blandit blandit. Suspendisse non ex ipsum. Donec ex nibh, feugiat molestie augue non, suscipit fermentum sapien. Curabitur dignissim commodo enim in scelerisque. Etiam at erat nulla. Nunc faucibus facilisis ipsum, mollis suscipit nulla. In quis posuere diam. Praesent maximus ex consectetur commodo consequat. Proin sit amet massa consectetur, maximus ipsum nec, condimentum elit. Nullam ut tristique tortor. Curabitur id nisl ac nibh blandit varius. Curabitur cursus ante egestas luctus finibus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nulla fermentum lectus id purus ullamcorper, eu convallis erat dapibus. Sed hendrerit et dui consectetur ornare.
+                    </p>
+                </div>
+                <div id="manipulators">
+                    <h4>Manipulators</h4>
+                    <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse non enim at quam aliquam sagittis. Cras et lacus dapibus, elementum lacus a, vulputate urna. Vestibulum ac imperdiet libero. Maecenas mauris nibh, iaculis bibendum purus nec, auctor pharetra enim. Curabitur id eros porta, egestas leo non, tristique dui. Fusce felis dui, aliquam non pulvinar non, hendrerit eget sapien. Quisque vel viverra mauris, sit amet accumsan libero. Maecenas maximus nibh non vulputate viverra. Sed ut libero sem.
+
+                            Fusce mauris leo, pellentesque eu scelerisque placerat, laoreet ornare enim. Morbi viverra vulputate pharetra. Pellentesque et ullamcorper elit. Aenean sodales porttitor suscipit. Ut porttitor orci quis nisl gravida porta. Morbi sodales elit et ipsum dictum rutrum. Etiam quis ligula at eros lobortis ullamcorper. Duis vitae lectus sit amet dolor tempor fringilla. Mauris tempor massa quis justo ornare bibendum. Pellentesque nec accumsan ex. In in purus at quam hendrerit tempus id non urna.
+                            
+                            Suspendisse porta metus quis dolor ullamcorper, ut dapibus ligula faucibus. Aliquam sit amet nunc efficitur, facilisis nisl in, consequat orci. Phasellus lacinia purus nec nulla porttitor, at lacinia dui ultricies. Proin et mauris mauris. Cras mauris dolor, maximus in est vitae, vestibulum aliquet nisi. Sed molestie bibendum orci eget viverra. Ut volutpat elementum lectus non gravida. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam at massa commodo, mattis risus et, cursus ligula. Vestibulum quis auctor dui. Integer efficitur tincidunt vestibulum. Quisque blandit sodales turpis, non semper lectus cursus vel. Integer consectetur, urna sit amet facilisis congue, nunc urna elementum tellus, non faucibus velit ipsum eget turpis.
+                            
+                            Morbi quis eleifend mauris. Nam at risus dignissim, venenatis lorem fringilla, dignissim libero. Proin interdum eget lacus sed elementum. Nunc ut blandit lacus. Nullam bibendum lobortis congue. Ut ac tristique tortor. Pellentesque gravida, metus non suscipit sodales, nibh dolor varius nisi, id pretium turpis nunc vitae dui.
+                            
+                            Aenean fermentum finibus pellentesque. Proin mollis orci sed ex blandit blandit. Suspendisse non ex ipsum. Donec ex nibh, feugiat molestie augue non, suscipit fermentum sapien. Curabitur dignissim commodo enim in scelerisque. Etiam at erat nulla. Nunc faucibus facilisis ipsum, mollis suscipit nulla. In quis posuere diam. Praesent maximus ex consectetur commodo consequat. Proin sit amet massa consectetur, maximus ipsum nec, condimentum elit. Nullam ut tristique tortor. Curabitur id nisl ac nibh blandit varius. Curabitur cursus ante egestas luctus finibus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nulla fermentum lectus id purus ullamcorper, eu convallis erat dapibus. Sed hendrerit et dui consectetur ornare.
+                    </p>
+                </div>
+                <div id="actions">
+                    <h4>Actions</h4>
+                    <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse non enim at quam aliquam sagittis. Cras et lacus dapibus, elementum lacus a, vulputate urna. Vestibulum ac imperdiet libero. Maecenas mauris nibh, iaculis bibendum purus nec, auctor pharetra enim. Curabitur id eros porta, egestas leo non, tristique dui. Fusce felis dui, aliquam non pulvinar non, hendrerit eget sapien. Quisque vel viverra mauris, sit amet accumsan libero. Maecenas maximus nibh non vulputate viverra. Sed ut libero sem.
+
+                            Fusce mauris leo, pellentesque eu scelerisque placerat, laoreet ornare enim. Morbi viverra vulputate pharetra. Pellentesque et ullamcorper elit. Aenean sodales porttitor suscipit. Ut porttitor orci quis nisl gravida porta. Morbi sodales elit et ipsum dictum rutrum. Etiam quis ligula at eros lobortis ullamcorper. Duis vitae lectus sit amet dolor tempor fringilla. Mauris tempor massa quis justo ornare bibendum. Pellentesque nec accumsan ex. In in purus at quam hendrerit tempus id non urna.
+                            
+                            Suspendisse porta metus quis dolor ullamcorper, ut dapibus ligula faucibus. Aliquam sit amet nunc efficitur, facilisis nisl in, consequat orci. Phasellus lacinia purus nec nulla porttitor, at lacinia dui ultricies. Proin et mauris mauris. Cras mauris dolor, maximus in est vitae, vestibulum aliquet nisi. Sed molestie bibendum orci eget viverra. Ut volutpat elementum lectus non gravida. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam at massa commodo, mattis risus et, cursus ligula. Vestibulum quis auctor dui. Integer efficitur tincidunt vestibulum. Quisque blandit sodales turpis, non semper lectus cursus vel. Integer consectetur, urna sit amet facilisis congue, nunc urna elementum tellus, non faucibus velit ipsum eget turpis.
+                            
+                            Morbi quis eleifend mauris. Nam at risus dignissim, venenatis lorem fringilla, dignissim libero. Proin interdum eget lacus sed elementum. Nunc ut blandit lacus. Nullam bibendum lobortis congue. Ut ac tristique tortor. Pellentesque gravida, metus non suscipit sodales, nibh dolor varius nisi, id pretium turpis nunc vitae dui.
+                            
+                            Aenean fermentum finibus pellentesque. Proin mollis orci sed ex blandit blandit. Suspendisse non ex ipsum. Donec ex nibh, feugiat molestie augue non, suscipit fermentum sapien. Curabitur dignissim commodo enim in scelerisque. Etiam at erat nulla. Nunc faucibus facilisis ipsum, mollis suscipit nulla. In quis posuere diam. Praesent maximus ex consectetur commodo consequat. Proin sit amet massa consectetur, maximus ipsum nec, condimentum elit. Nullam ut tristique tortor. Curabitur id nisl ac nibh blandit varius. Curabitur cursus ante egestas luctus finibus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nulla fermentum lectus id purus ullamcorper, eu convallis erat dapibus. Sed hendrerit et dui consectetur ornare.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    </body>
+</html>

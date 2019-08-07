@@ -52,7 +52,7 @@ public abstract class ExpressionContext implements IExpression {
         return expression instanceof ConstantAdjustmentWrappedExpression;
     }
 
-    protected abstract List<String> getElements();
+    public abstract List<String> getElements();
 
     private IExpression deserializeExpression(final JsonElement json, final List<String> elements) {
         return deserializeExpression(

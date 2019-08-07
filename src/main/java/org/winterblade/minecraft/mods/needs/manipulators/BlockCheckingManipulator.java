@@ -4,7 +4,7 @@ import com.google.gson.annotations.Expose;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
-import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.util.blocks.BlockStatePredicate;
@@ -20,6 +20,7 @@ public abstract class BlockCheckingManipulator <T extends NeedExpressionContext>
     protected T amount;
 
     @Expose
+    @Document(type = IBlockPredicate.class)
     protected List<IBlockPredicate> blocks = Collections.emptyList();
 
     @Nullable

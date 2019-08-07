@@ -5,6 +5,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
@@ -27,6 +28,7 @@ public class HoldingManipulator extends TooltipManipulator {
 
     @Expose
     @JsonAdapter(IIngredient.ToListDeserializer.class)
+    @Document(type = IIngredient.class)
     protected List<IIngredient> items;
 
     @Override

@@ -1,7 +1,6 @@
-package org.winterblade.minecraft.mods.needs.api;
+package org.winterblade.minecraft.mods.needs.api.documentation;
 
 import com.google.gson.annotations.Expose;
-import org.winterblade.minecraft.mods.needs.api.DocumentField;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 
 import java.util.List;
@@ -18,7 +17,7 @@ public interface IExtraDocumentation {
 
     /**
      * Get extra fields to document; by default, all fields marked {@link Expose} will be included. You may
-     * also instead use {@link OptionalField} or {@link DocumentField} annotations
+     * also instead use {@link OptionalField} or {@link Document} annotations
      * @return The list of extra fields to document
      */
     List<String> getExtraDocumentedFieldNames();

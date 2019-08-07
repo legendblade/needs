@@ -10,6 +10,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
@@ -23,9 +24,11 @@ public class BiomeManipulator extends BaseManipulator {
     protected NeedExpressionContext amount;
 
     @Expose
+    @Document(type = String.class)
     protected List<String> biomes = Collections.emptyList();
 
     @Expose
+    @Document(type = String.class)
     protected List<String> biomeTypes = Collections.emptyList();
 
     protected List<BiomeManager.BiomeType> types = Collections.emptyList();

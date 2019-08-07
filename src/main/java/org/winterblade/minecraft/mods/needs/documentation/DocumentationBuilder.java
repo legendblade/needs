@@ -1,53 +1,70 @@
 package org.winterblade.minecraft.mods.needs.documentation;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.resources.IResource;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Tuple;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.io.IOUtils;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.api.DocumentField;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
+import org.winterblade.minecraft.mods.needs.api.actions.ILevelAction;
+import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
+import org.winterblade.minecraft.mods.needs.api.documentation.IDocumentedContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
+import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
+import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
+import org.winterblade.minecraft.mods.needs.mixins.BaseMixin;
 import org.winterblade.minecraft.mods.needs.util.TypedRegistry;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DocumentationBuilder {
-    private static final Path path = Paths.get(FMLPaths.CONFIGDIR.get().toString(), "needs", "docs");
-    private static final Pattern templateLiteralParser = Pattern.compile("##([a-z])##", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    private static final GsonBuilder builder = new GsonBuilder();
+    private static final Path path = Paths.get(FMLPaths.CONFIGDIR.get().toString(), "needs");
+    private static Gson gson;
 
     public static void buildDocumentation() {
         try {
             if (!Files.exists(path)) Files.createDirectory(path);
 
-            document("needs", NeedRegistry.INSTANCE);
-//            document("mixins", MixinRegistry.INSTANCE, DocumentationBuilder::documentMixins);
-//            document("manipulators", ManipulatorRegistry.INSTANCE, DocumentationBuilder::documentManipulators);
-//            document("levelActions", LevelActionRegistry.INSTANCE, DocumentationBuilder::documentLevelActions);
+            //final String[] template = {getTemplate(documentType)};
+
+            final DocumentationRoot root = new DocumentationRoot();
+            root.needs = document("needs", NeedRegistry.INSTANCE, Need.class, null);
+            root.mixins = document("mixins", MixinRegistry.INSTANCE, BaseMixin.class, IMixin.class);
+            root.manipulators = document("manipulators", ManipulatorRegistry.INSTANCE, BaseManipulator.class, IManipulator.class);
+            root.actions = document("levelActions", LevelActionRegistry.INSTANCE, LevelAction.class, ILevelAction.class);
+
+            try (final PrintWriter wr = new PrintWriter(path.resolve("data.json").toString())) {
+                wr.println(getGson().toJson(root, DocumentationRoot.class));
+            } catch (final FileNotFoundException e) {
+                e.printStackTrace();
+            }
         } catch (final IOException e) {
             NeedsMod.LOGGER.warn("Error creating documentation.", e);
         }
-    }
-
-    private static Map<String, List<TranslationEntry>> documentNeeds(Class<? extends Need> clazz) {
-        return null;
     }
 
     private static String getTemplate(final String template) throws IOException {
@@ -56,88 +73,177 @@ public class DocumentationBuilder {
         return IOUtils.toString(resource.getInputStream(), Charset.defaultCharset());
     }
 
-    private static <T> void document(final String documentType, final TypedRegistry<T> registry) throws IOException {
+    private static <T> List<DocumentationEntry> document(final String documentType, final TypedRegistry<T> registry, final Class<? extends T> root, final Class<T> intf) {
         final String docTag = NeedsMod.MODID + "." + documentType + ".";
-        final Path subPath = DocumentationBuilder.path.resolve(documentType);
-        if (!Files.exists(subPath)) Files.createDirectory(subPath);
 
-        final String[] template = {getTemplate(documentType)};
+        final Map<Class<? extends T>, DocumentationEntry> entries = new HashMap<>();
 
-        // Set up our regex
-        final Matcher literals = templateLiteralParser.matcher(template[0]);
-        final Set<String> literalTokens = new HashSet<>();
+        registry.getRegistrants().forEach((id, clazz) -> getEntry(registry, root, intf, id, clazz, entries, docTag));
 
-        while (literals.find()) {
-            literalTokens.add(literals.group(0));
-        }
-
-        literalTokens.forEach((t) -> template[0] = template[0].replaceAll("##" + t + "##", I18n.format(docTag + t)));
-
-        registry.getRegistry().entrySet().stream().collect(Collectors.groupingBy(Map.Entry::getValue)).forEach((clazz, list) -> {
-            final String className = clazz.getSimpleName();
-            final Map<String, List<TranslationEntry>> translationKeys = new HashMap<>();
-
-            translationKeys.put("description", Collections.singletonList(new TranslationEntry(docTag + className)));
-
-            translationKeys.put("names", list
-                    .stream()
-                    .map(kv -> new TranslationEntry(docTag + "name").addParam(kv.getKey(), false))
-                    .collect(Collectors.toList()));
-
-            translationKeys.put("fields", Arrays.stream(clazz.getFields())
-                .filter((f) -> f.getAnnotation(Expose.class) != null
-                        || f.getAnnotation(DocumentField.class) != null
-                        || f.getAnnotation(OptionalField.class) != null)
-                .map((f) ->
-                    new TranslationEntry(docTag + "fields")
-                            .addParam(f.getName(), false)
-                            .addParam("needs.documentation." + documentType + "." + className + "." + f.getName(), true)
-                ).collect(Collectors.toList()));
-
-            final String[] output = {template[0]};
-            translationKeys.forEach((k, vs) -> {
-                if (vs.isEmpty()) return;
-                if (vs.size() == 1) {
-                    output[0] = output[0].replaceAll("\\{\\{" + k + "}}", I18n.format(vs.get(0).getKey()));
-                    return;
-                }
-
-                output[0] = output[0].replaceAll("\\{\\{" + k + "}}",
-                        String.join("\n",
-                                vs.stream()
-                                        .map((tk) -> I18n.format(tk.getKey(), tk.getParams()))
-                                        .collect(Collectors.toList())
-                        )
-                );
-            });
-
-            try (final PrintWriter wr = new PrintWriter(subPath.resolve(className + ".txt").toString())) {
-                wr.println(output[0]);
-            } catch (final FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        });
+        return entries.values().stream().filter((f) -> f.isRoot).collect(Collectors.toList());
     }
 
-    private static class TranslationEntry {
-        private final String key;
-        private final List<String> params = new ArrayList<>();
-
-        TranslationEntry(final String key) {
-            this.key = key;
+    private static <T> void getEntry(
+            final TypedRegistry<T> registry,
+            final Class<? extends T> root,
+            final Class<? extends T> intf,
+            final ResourceLocation id,
+            final Class<? extends T> clazz,
+            final Map<Class<? extends T>, DocumentationEntry> entries,
+            final String docTag) {
+        // If we've already gotten here from elsewhere, set the ID:
+        if (id != null && entries.containsKey(clazz)) {
+            final DocumentationEntry entry = entries.get(clazz);
+            entry.id = id.getPath();
+            entry.mod = id.getNamespace();
+            return;
         }
 
-        TranslationEntry addParam(final String param, final boolean translate) {
-            params.add(translate ? I18n.format(param) : param);
-            return this;
+        // Create this entry:
+        final DocumentationEntry entry = new DocumentationEntry();
+        if(id != null) {
+            entry.id = id.getPath();
+            entry.mod = id.getNamespace();
+        } else {
+            entry.id = clazz.getSimpleName();
         }
 
-        Object[] getParams() {
-            return params.toArray(new String[0]);
+        // Check if we have documentation on the class:
+        final Document anno = clazz.getAnnotation(Document.class);
+        if (anno != null && !anno.description().isEmpty()) {
+            entry.description = anno.description();
+        } else {
+            final String key = docTag + entry.id;
+            if (I18n.hasKey(key)) {
+                entry.description = I18n.format(key);
+            }
         }
 
-        String getKey() {
-            return key;
+        // Check for aliases
+        entry.aliases = registry.getRegistry().entrySet()
+                .stream()
+                .filter((kv) -> kv.getValue().equals(clazz))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        // Populate fields
+        entry.fields = Arrays.stream(clazz.getDeclaredFields())
+                .filter((f) -> f.getAnnotation(Expose.class) != null
+                        || f.getAnnotation(OptionalField.class) != null
+                        || f.getAnnotation(Document.class) != null)
+                .map((f) -> {
+                    final DocumentationEntry.Field field = new DocumentationEntry.Field();
+
+                    field.name = f.getName();
+
+                    // Check if we have documentation on the field:
+                    final Document fieldAnno = f.getAnnotation(Document.class);
+                    if (fieldAnno != null && !fieldAnno.description().isEmpty()) {
+                        field.description = fieldAnno.description();
+                    } else {
+                        final String key = docTag + entry.id + "." + f.getName();
+                        if (I18n.hasKey(key)) {
+                            field.description = I18n.format(key);
+                        }
+                    }
+
+                    // Figure out our type values:
+                    Class<?> fieldType = f.getType();
+                    if(ExpressionContext.class.isAssignableFrom(fieldType)) {
+                        field.isExpression = true;
+                        try {
+                            final ExpressionContext ctx = (ExpressionContext) fieldType.getConstructor().newInstance();
+                            if (ctx instanceof IDocumentedContext) {
+                                field.expressionVars = ((IDocumentedContext) ctx).getElementDocumentation();
+                            } else {
+                                field.expressionVars =
+                                    ctx
+                                        .getElements()
+                                        .stream()
+                                        .map((e) -> {
+                                            final String key = NeedsMod.MODID + ".expression." + ctx.getClass().getSimpleName() + "." + e;
+                                            return new Tuple<>(e, I18n.hasKey(key) ? I18n.format(key) : "");
+                                        })
+                                        .collect(Collectors.toMap(Tuple::getA, Tuple::getB));
+                            }
+                        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                            NeedsMod.LOGGER.warn("Unable to create new expression context " + fieldType.getCanonicalName());
+                            field.expressionVars = new HashMap<>();
+                        }
+                    }
+                    field.isOptional = f.getAnnotation(OptionalField.class) != null;
+
+                    if (fieldType.isAssignableFrom(Map.class)) {
+                        field.isMap = true;
+                        fieldType = fieldAnno != null ? fieldAnno.type() : Object.class;
+                        if (fieldType == Object.class) {
+                            field.type = "Map";
+                            NeedsMod.LOGGER.warn(clazz.getCanonicalName() + "#" + f.getName() + " is a map without type information");
+                            return field;
+                        }
+                    }
+
+                    if (fieldType.isAssignableFrom(List.class)) {
+                        field.isArray = true;
+                        fieldType = fieldAnno != null ? fieldAnno.type() : Object.class;
+                        if (fieldType == Object.class) {
+                            field.type = "Array";
+                            NeedsMod.LOGGER.warn(clazz.getCanonicalName() + "#" + f.getName() + " is a list without type information");
+                            return field;
+                        }
+                    }
+
+                    // Raw types:
+                    if (fieldType == double.class || Double.class.isAssignableFrom(fieldType)) field.type = "Number";
+                    else if (fieldType == float.class || Float.class.isAssignableFrom(fieldType)) field.type = "Number";
+                    else if (fieldType == int.class || Integer.class.isAssignableFrom(fieldType)) field.type = "Number";
+                    else if (fieldType == short.class || Short.class.isAssignableFrom(fieldType)) field.type = "Number";
+                    else if (fieldType == long.class || Long.class.isAssignableFrom(fieldType)) field.type = "Number";
+                    else if (fieldType == boolean.class || Boolean.class.isAssignableFrom(fieldType)) field.type = "Boolean";
+
+                    // Class types:
+                    else if (String.class.isAssignableFrom(fieldType)) field.type = "String";
+                    else if (ExpressionContext.class.isAssignableFrom(fieldType)) field.type = "Expression or Number";
+
+                    else if (Need.class.isAssignableFrom(fieldType)) field.type = "Need";
+                    else if (LazyNeed.class.isAssignableFrom(fieldType)) field.type = "Need";
+
+                    else if (IManipulator.class.isAssignableFrom(fieldType)) field.type = "Manipulator";
+                    else if (IMixin.class.isAssignableFrom(fieldType)) field.type = "Mixin";
+                    else if (ILevelAction.class.isAssignableFrom(fieldType)) field.type = "Action";
+
+                    // Give up:
+                    else field.type = fieldType.getSimpleName();
+
+                    return field;
+                })
+                .collect(Collectors.toList());
+
+        // Add child storage and shove the whole thing into the class map:
+        entry.children = new ArrayList<>();
+        entries.put(clazz, entry);
+
+        // Check if we've reached the top:
+        final Class<?> superclass = clazz.getSuperclass();
+        if (superclass == null || (intf != null && Arrays.stream(clazz.getInterfaces()).anyMatch((i) -> i.equals(intf)))
+                || superclass.equals(root) || !root.isAssignableFrom(superclass)) {
+            entry.isRoot = true;
+            return;
         }
+
+        //noinspection unchecked - we have actually checked this.
+        final Class<? extends T> sc = (Class<? extends T>) superclass;
+        if (!entries.containsKey(sc)) {
+            getEntry(registry, root, intf, null, sc, entries, docTag);
+        }
+
+        // This should always be true, but just in case?
+        if (entries.containsKey(sc)) entries.get(sc).children.add(entry);
+    }
+
+    private static Gson getGson() {
+        if (gson == null) gson = builder.create();
+
+        return gson;
     }
 }

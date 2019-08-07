@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.DamageExpressionContext;
 
 import java.util.Collections;
@@ -11,6 +12,7 @@ import java.util.List;
 
 public class HurtManipulator extends DamageBasedManipulator {
     @Expose
+    @Document(type = String.class)
     protected List<String> sources = Collections.emptyList();
 
     protected boolean shouldCheckSource = false;
