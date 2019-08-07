@@ -1,6 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { chain, cloneDeep, clone, startCase, union, map } from 'lodash';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import js from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
+import vs from 'react-syntax-highlighter/dist/esm/styles/hljs/vs';
+ 
+SyntaxHighlighter.registerLanguage('javascript', js);
 
 const noDesc = (<span class='text-muted'>There's no description of this item; encourage the mod author to add one, either through the API or localization.</span>);
 
@@ -137,6 +142,14 @@ function Entry(props, parentFields) {
     return output;
 }
 
+function TutorialCode(code) {
+    return (
+        <SyntaxHighlighter language="javascript" style={vs}>
+            {JSON.stringify(code, null, 2)}
+        </SyntaxHighlighter>
+    );
+}
+
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -166,7 +179,8 @@ class App extends React.Component {
                     "root": "#",
                     "class": "navbar-brand",
                     "children": [
-                        { "title": "Need Types", "root": "#needs", "children": map(response.needs, (c) => convertToNav(c, "needs")) },
+                        { "title": "Needs", "root": "#needs" },
+                        { "title": "Need Types", "root": "#needTypes", "children": map(response.needs, (c) => convertToNav(c, "needTypes")) },
                         { "title": "Mixins", "root": "#mixins", "children": map(response.mixins, (c) => convertToNav(c, "mixins")) },
                         { "title": "Manipulators", "root": "#manipulators", "children": map(response.manipulators, (c) => convertToNav(c, "manipulators")) },
                         { "title": "Levels", "root": "#levels" },
@@ -326,8 +340,513 @@ class App extends React.Component {
                     </div>
                     <hr />
                     <div id="needs">
+                        <h2>Needs</h2>
+                        <p>
+                            In order to get started creating needs, you'll want to fire up a text editor (or preferably an IDE like VSCode), and navigate to
+                            <code>&lt;Minecraft&gt;/config/needs</code>. This directory will be where all of your needs get configured (go figure, right?).
+                        </p>
+                        <p>
+                            The mod will read any JSON file placed in this directory in order to create a need. Let's start out a basic JSON file now; in your editor,
+                            create a new file called <code>tutorial.json</code>, and start off by putting in the name of the need:
+                        </p>
+                        {TutorialCode({
+                            "name": "Learning",
+                            "type": "custom"
+                        })}
+                        <p>
+                            If we started the game now, the system would try and load this need (it might even succeed, but probably not), but because we're missing
+                            a few bits of information, it won't do much of anything. Let's define a few more properties now - specifically <code>min</code>, <code>max</code>, 
+                            and <code>initial</code>
+                        </p>
+                        {TutorialCode({
+                            "name": "Learning",
+                            "type": "custom",
+                            "min": 0,
+                            "max": 100,
+                            "initial": 15
+                        })}
+                        <p>
+                            Okay, with that, we've specified that our new custom need will have a range of 0-100, and will start at 15. 15 what, you ask? Well, that's entirely
+                            up to you. For custom needs, the numbers used - much like every other point system - don't really matter; we could have just as easily specified
+                            that the min was -500, and the max was 8675309, and our example would still work. We'll provide context to our players later.
+                        </p>
+                        <p>
+                            Whatever your choice of range, at the moment, the need is completely static - nothing manipulates (affects, changes, don't ask why I chose "manipulators"
+                            as the term; there's probably some psychological reason, but I don't want to think about that right now...) our new need. Let's set up a way to
+                            increase the value of the need now.
+                        </p>
+                        {TutorialCode({
+                            "name": "Learning",
+                            "type": "custom",
+                            "min": 0,
+                            "max": 100,
+                            "initial": 15,
+                            "manipulators": [
+                                {
+                                    "type": "lookingAt",
+                                    "amount": 0.05,
+                                    "blocks": [
+                                        "minecraft:bookshelf"
+                                    ]
+                                }
+                            ]
+                        })}
+                        <p>
+                            Here, we're declaring the array of manipulators - this is always an array, even if you only have one item in it - and adding the <code>lookingAt</code> 
+                            manipulator to it (for an overview of all available manipulators, look at the 'Manipulators' section, below). The <code>lookingAt</code> manipulator
+                            does exactly what you'd expect - anytime you're looking at one of the blocks listed, it triggers, and adjusts the need by the amount provided. Man,
+                            I wish I could gain knowledge just by staring at a bookshelf.
+                        </p>
+                        <div class="alert alert-dark mx-3">
+                            <p>
+                                I'm going to call this out separately here, because it's important - many needs and manipulators that involve the world around the player will do so
+                                by periodically scanning at set intervals in a tick handler. It's not necessary to understand exactly how all of this works, but, generally keep in
+                                mind that:
+                            </p>
+                            <ul>
+                                <li>
+                                    <b>Only needs and manipulators that are used somewhere will get registered.</b> I've tried to optimize tick handling to be as light as possible
+                                    while still enabling mod makers, pack makers, and players to create in-depth stat systems.
+                                </li>
+                                <li>
+                                    <b>Anything that "ticks" does so every 5 ingame ticks, or roughly 1/4th of a second.</b> This has a couple of reasons for needing stated.
+                                    <ul>
+                                        <li>
+                                            First, in our example above, if you'd specified, say '1' as the amount, your need would have increased by 4 every second,
+                                            so, looking at that bookshelf would very, <i>very</i> quickly fill up the need.
+                                        </li>
+                                        <li>
+                                            Secondly, this does not mean that every player is ticked at the same time. When the mod starts, it creates 5 buckets. As players
+                                            log in, they get assigned to one of the buckets with the fewest number of other players. Every tick, the mod will loop through
+                                            one of the 5 buckets, in sequential order, to do the relevant work for the players in that bucket. This helps mitigate the
+                                            overhead of calling all the players all at once.
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <b>Be mindful of performance, but don't let paranoia hold you back.</b> As mentioned above, I've tried very heavily to optimize
+                                    much of the code; create your systems, and <i>then</i> see if it's really a problem. I hope it never will be.
+                                </li>
+                            </ul>
+                        </div>
+                        <p>
+                            Alright, with that heavy note out of the way, let's lighten up again. We have a way to increase our need, so let's add some ways to decrease it.
+                            What would decrease one's knowledge? How about eating rotten flesh? But let's also add a bit if the player drinks some milk - why milk? It does
+                            a body good.
+                        </p>
+                        {TutorialCode({
+                            "name": "Learning",
+                            "type": "custom",
+                            "min": 0,
+                            "max": 100,
+                            "initial": 15,
+                            "manipulators": [
+                                {
+                                    "type": "lookingAt",
+                                    "amount": 0.05,
+                                    "blocks": [
+                                        "minecraft:bookshelf"
+                                    ]
+                                },
+                                {
+                                    "type": "itemUsed",
+                                    "defaultAmount": 5,
+                                    "showTooltip": true,
+                                    "items": {
+                                        "milk_bucket": null,
+                                        "rotten_flesh": "-current/2"
+                                    }
+                                }
+                            ]
+                        })}
+                        <p>
+                            Okay, okay, I know, it's getting complicated, but, stick with me and let's break it on down. We have a new manipulator - this one is an 
+                            <code>itemUsed</code> manipulator - that will trigger anytime the player finishes using an item (in our case, eating/drinking). Now,
+                            we specify a default amount - there's multiple reasons why this would be used, and that's because the format for the item list is very
+                            forgiving - for now, just know that in our example, the <code>defaultAmount</code> will be used for the milk bucket.
+                        </p>
+                        <div class="alert alert-dark mx-3">
+                            <p>Let's take a very brief aside to talk item formats. The following are all valid:</p>
+                            <ul>
+                                <li><b>milk_bucket</b>: This will refer to the Minecraft 'milk_bucket' item.</li>
+                                <li>
+                                    <b>minecraft:milk_bucket</b>: Same as above, but we're specifying that it's specificaly from 'minecraft'; if you have a modded
+                                    item, you will have to specify the name of the mod here.
+                                </li>
+                                <li>
+                                    <b>tag:forge:ingots/iron</b>: Tags are a new 1.14 concept. In the ancient beforetimes, we had ore dictionaries. Now, we're all
+                                    cool and hip with our 'tags'. If you want to specify a bunch of items, but don't know what they are, that's a tag. In this case,
+                                    we're specifying the <code>tag</code> from <code>forge</code> for <code>ingots</code> made out of <code>iron</code>.
+                                </li>
+                            </ul>
+                        </div>
+                        <p>
+                            We're going to skip over <code>showTooltip</code> for the moment, and go straight to our item list, which is another object - this time
+                            we're specifiying it as a key/value pair of <code>item or tag: the value to use</code>. Our first item, the <code>milk_bucket</code>,
+                            is set to null - in this form of the list, anything that's set to null will default back to the <code>defaultAmount</code>. You might
+                            be able to save yourself some typing there? (don't worry, there's another format we'll discuss after this where it makes more sense)
+                        </p>
+                        <p>
+                            Now, onto our second item, the <code>rotten_flesh</code> - what's this? That's not a number! Correct. As mentioned in the overview (you did
+                            read the overview, right?), most places that accept a number (and it makes even the slightest amount of sense) will also accept an expression.
+                            Which is scary math nonsense, right? Well, in this case, we're saying that "anytime you eat rotten flesh (ick), decrease the need by half".
+                        </p>
+                        <p>
+                            If you were to load up the game now, and moused over a piece of rotten flesh in your inventory, it'd look something like this:
+                        </p>
+                        <div class="text-center">
+                            <img src="https://pbs.twimg.com/media/EAqgNX2UYAEeS8h?format=png&name=360x360" alt="Rotten Flesh" class="rounded" />
+                        </div>
+                        <p>
+                            ... why does it say Protein and not Learning? I'm not recycling screenshots, you are.
+                        </p>
+                        <p>
+                            Ahem. Anyway. With the default tooltip handling, anything that's a positive number will be green, and anything that's a negative number
+                            will be red in the tooltip. Green you say? But it's a milk bucket. Shouldn't that be white? Say no more.
+                        </p>
+                        {TutorialCode({
+                            "name": "Learning",
+                            "type": "custom",
+                            "min": 0,
+                            "max": 100,
+                            "initial": 15,
+                            "manipulators": [
+                                {
+                                    "type": "lookingAt",
+                                    "amount": 0.05,
+                                    "blocks": [
+                                        "minecraft:bookshelf"
+                                    ]
+                                },
+                                {
+                                    "type": "itemUsed",
+                                    "defaultAmount": 5,
+                                    "showTooltip": true,
+                                    "items": {
+                                        "milk_bucket": null,
+                                        "rotten_flesh": "-current/2"
+                                    },
+                                    "formatting": {
+                                        "white": "(0,10]"
+                                    }
+                                }
+                            ]
+                        })}
+                        <p>
+                            Well that's a bit ugly, but it gets the job done, right? The new <code>formatting</code> object is another key/value map, this time
+                            with Minecraft text formatting codes (which are available over 
+                            at <a href="https://minecraft.gamepedia.com/Formatting_codes#Color_codes">https://minecraft.gamepedia.com/Formatting_codes#Color_codes</a>)
+                            acting as the key, and a range or interval specified as the value (in this case, from 0, inclusive, to 10, exclusive - which is really a way of saying
+                            that it's going to be any number, starting at and including 0 and going up to 10). I'm going to leave a link here to Wikipedia on
+                            it: <a href="https://en.wikipedia.org/wiki/Interval_(mathematics)#Notations_for_intervals">Wikipedia: Interval (mathematics)</a>, so 
+                            read up there if you're a bit rusty on the syntax. Or don't. I tried to make the ranges as open as possible.
+                        </p>
+                        <p>
+                            Quick side note: Most of the information on the <code>itemUsed</code> manipulator currently doesn't appear in the documenation. Sorry, I'm
+                            still working on that.
+                        </p>
+                        <p>
+                            Alright. One more example of manipulators before we move on. If only because I want to show off the expression system more. Let's penalize
+                            the player for dying. Because <i>of course</i> we penalize the player for dying. Git gud scrub. This time, I'm just going to show the new
+                            manipulator, because you already know to just put a comma and add it to the end of the array, right?
+                        </p>
+                        {TutorialCode({
+                            "type": "onDeath",
+                            "amount": "min(-current/4, -10)",
+                            "downTo": 15
+                        })}
+                        <p>
+                            Much the same as before, we have a new type, the <code>onDeath</code> manipulator. No surprise that this one triggers when the player dies.
+                            We're also using another expression - this time, it's more complex - we take the minimum (<code>min</code>) of 1/4th the current value 
+                            (<code>-current/4</code>) or <code>-10</code>. Now, this is a bit tricky, and I could have written this differently to make it less so,
+                            but I wanted to <del>be complicated for no reason</del> make sure that y'all were paying attention. Because we're dealing with negative
+                            numbers here, the minimum is actually the larger reduction - so, if the current value is 100, <code>100/4 = 25</code>, which, since -25 is
+                            smaller than -10, the player will lose 25 points.
+                        </p>
+                        <p>
+                            We could have also written that as <code>0-max(current/4, 10)</code> and it might have been a bit easier to understand what was going on.
+                            Either way, the result is that the player will lose 1/4th of their points, but will always lose at least 10 points.
+                        </p>
+                        <p>
+                            Oh, and one more thing. In case we wanted to avoid the player losing fractional points (which is a bit pointless because we're <i>adding</i>
+                            fractional points in the <code>lookingAt</code> section), we can always <code>round(min(-current/4, -10), 0)</code>, which will round the
+                            result to 0 decimal places.
+                        </p>
+                        <p class="alert alert-dark mx-3">
+                            The underlying point here: You can get super complicated with expressions - especially because mXparser has <i>a lot</i> of functions for
+                            you to use. But, I will go back to the note on performance - pick your battles - an expression that takes up three screens of text might
+                            be fine for calculating when a player dies, but not so much if you're testing it on every tick. Again: don't be scared to experiment, 
+                            but do keep performance in mind.
+                        </p>
+                        <p>
+                            So, we have a need, and we have things that change the value of the need, how about we <i>do something with it</i>. Let's add some 
+                            levels. <small>Note, I've cut out the manipulators, so this example doesn't get huge.</small>
+                        </p>
+                        {TutorialCode({
+                            "name": "Learning",
+                            "type": "custom",
+                            "min": 0,
+                            "max": 100,
+                            "initial": 15,
+                            "manipulators": [],
+                            "levels": [
+                                {
+                                    "name": "Genius",
+                                    "min": 80
+                                },
+                                {
+                                    "name": "Learned",
+                                    "min": 50,
+                                    "max": 80
+                                },
+                                {
+                                    "name": "Dumb as Rocks",
+                                    "max": 10
+                                }
+                            ]
+                        })}
+                        <p>
+                            Now we have four levels. Wait, four levels, but we only declared three? Right - we have "Dumb as Rocks", from 0 (our minimum) to 10 (not including 10),
+                            and "Learned" from 50 to 80 (not including 80), and "Genius" from 80 to our maximum - but we also have the gap between "Dumb as Rocks" and "Learned"
+                            which automatically gets a level called "Neutral". Keep that in mind when designing your systems - if you have a spot that isn't covered by any other
+                            level, the player will be "neutral" during that time.
+                        </p>
+                        <p class="alert alert-dark mx-3">
+                            I'm contractually obligated to point out here that levels may not overlap, and that's why the maximum is exclusive, while the minimum is inclusive.
+                            I plan to open up the ability in the future to specify it more precisely using interval notation, but we're not there yet. I also plan on allowing
+                            you to share actions (we'll see those in a minute) between two levels, but we're also not there yet. We're somewhere though. Probably in the realm of
+                            insanity. Who knows.
+                        </p>
+                        <p>
+                            Great. We have levels. They don't do anything right now. But we have them. Let's spice things up, starting with "Learned":
+                        </p>
+                        {TutorialCode({
+                            "name": "Learning",
+                            "type": "custom",
+                            "min": 0,
+                            "max": 100,
+                            "initial": 15,
+                            "manipulators": [],
+                            "levels": [
+                                {
+                                    "name": "Genius",
+                                    "min": 80
+                                },
+                                {
+                                    "name": "Learned",
+                                    "min": 50,
+                                    "max": 80,
+                                    "actions": [
+                                        {
+                                            "type": "potionEffect",
+                                            "effect": "jump_boost"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Dumb as Rocks",
+                                    "max": 10
+                                }
+                            ]
+                        })}
+                        <p>
+                            That's it - just by specifying the <code>potionEffect</code> action, and telling it we want the <code>jump_boost</code> potion effect,
+                            we'll let the player jump higher when they're in the "Learned" level. How? Uh... knowledge of physics and such. Let's you defy gravity.
+                            Yep.
+                        </p>
+                        <p>
+                            Okay, now let's dive in a bit more and do something with Genius.
+                        </p>
+                        {TutorialCode({
+                            "name": "Genius",
+                            "min": 80,
+                            "actions": [
+                                {
+                                    "type": "potionEffect",
+                                    "effect": "jump_boost",
+                                    "amplifier": 2
+                                },
+                                {
+                                    "type": "adjustNeed",
+                                    "need": "attack",
+                                    "amount": 5
+                                }
+                            ]
+                        })}
+                        <p>
+                            So, we're doing two things here, firstly, we're just giving them jump boost again, but this time we're bumping it up to level 3. Big deal.
+                            The other thing we're doing is adjusting another need with the <code>adjustNeed</code> - at this point, the player is so smart, they
+                            know how to hit the right spots, and their <code>attack</code> deals an extra 5 damage. [Dire voice:] How cool is that?
+                        </p>
+                        <p>
+                            While not shown here - because anything I put would be an even more contrived example (and that's saying a lot), there are two other
+                            ways you can specify actions to run - <code>onEnter</code> and <code>onExit</code>. These will be called when you, respectively, enter
+                            and exit the level.
+                        </p>
+                        <div class="alert alert-dark mx-3">
+                            <p>
+                                Technical notes time! Again. When moving between levels, the following actions occur in this order:
+                            </p>
+                            <ol>
+                                <li>Any continuous actions (ones from the <code>actions</code> array) of the previous level are removed.</li>
+                                <li>Any <code>onExit</code> actions of the previous level are triggered.</li>
+                                <li>Any <code>onEnter</code> actions of the new level are triggered.</li>
+                                <li>Any continuous actions of the new level are applied.</li>
+                            </ol>
+                            <p>
+                                Why is this important? Currently, actions that adjust other needs (or the same need) are executed immediately (it's planned for
+                                future development to make updates occur on the next tick), so, if you adjust needs, which then adjust needs, which then
+                                adjust needs, you can very quickly cascade things down into a crash because somewhere along the lines you will loop.
+                            </p>
+                            <p>
+                                Just to drive this point home, let's take a very simple example where we have levels A (50-100) and B (0-50), level A has an action that, upon
+                                entering it, it adjusts the parent need down to 0. We go from level B into level A:
+                            </p>
+                            <ol>
+                                <li>Any continuous actions of level B are removed.</li>
+                                <li>Any <code>onExit</code> actions of level B are triggered.</li>
+                                <li>
+                                    The <code>onEnter</code> action of level A is triggered, taking us out of level A and back into level B.
+                                    <ol>
+                                        <li>Any continuous actions of level A are removed.</li>
+                                        <li>Any <code>onExit</code> actions of level A are triggered.</li>
+                                        <li>Any <code>onEnter</code> actions of level B are triggered.</li>
+                                        <li>Any continuous actions of level B are applied.</li>
+                                    </ol>
+                                </li>
+                                <li>Any continuous actions of level A are applied.</li>
+                            </ol>
+                            <p>
+                                Because of the order of things, right now (and this will be a high priority to resolve), you have a chance of ending up with the wrong
+                                actions applied, depending on what you were intending (especially continuous actions from level A). And if you added something to level B
+                                that bumped you back into level A? That's a loop you won't be getting out of.
+                            </p>
+                        </div>
+                        <p class="alert alert-dark mx-3">
+                            One more thing, I swear, then we get back to the fun stuff. If you use a <code>adjustNeed</code> action <code>onEnter</code> or <code>onExit</code>,
+                            then the need will be adjusted just that once. On the other hand, if you use it as a continuous action, then the need will get adjusted by the amount
+                            when you enter the level, and then adjusted by the <i>inverse</i> of the amount when you exit the level; we used this feature above to add
+                            5 to the player's attack when they're a Genius, and then take that back (-5) when exiting the level.
+                        </p>
+                        <p>
+                            Phew, okay. Enough technical mumbo jumbo. And enough examples for levels. We're going to leave "Dumb as Rocks" alone, because, isn't just being 
+                            called that a good enough penalty for you? Oh, wait. We're not actually calling anybody anything right now, because in all of this, the players
+                            can't actually <i>see</i> what's going on. Let's fix that real quick.
+                        </p>
+                        {TutorialCode({
+                            "name": "Learning",
+                            "type": "custom",
+                            "min": 0,
+                            "max": 100,
+                            "initial": 15,
+                            "manipulators": [],
+                            "levels": [],
+                            "mixins": [
+                                {
+                                    "type": "ui",
+                                    "color": "#99CDC9",
+                                    "icon": "w_book01"
+                                }
+                            ]
+                        })}
+                        <p>
+                            Mixins? What are mixins? Well, they're functionality that you can "mix in" to needs - much like you do with manipulators and level actions - you 
+                            can add additional functionality to your needs.
+                        </p>
+                        <p>
+                            Alright. Assuming you've made it here, you have a file that looks like this:
+                        </p>
+                        {TutorialCode({
+                            "name": "Learning",
+                            "type": "custom",
+                            "min": 0,
+                            "max": 100,
+                            "initial": 15,
+                            "manipulators": [
+                                {
+                                    "type": "lookingAt",
+                                    "amount": 0.05,
+                                    "blocks": [
+                                        "minecraft:bookshelf"
+                                    ]
+                                },
+                                {
+                                    "type": "itemUsed",
+                                    "defaultAmount": 5,
+                                    "showTooltip": true,
+                                    "items": {
+                                        "milk_bucket": null,
+                                        "rotten_flesh": "-current/2"
+                                    },
+                                    "formatting": {
+                                        "white": "(0,10]"
+                                    }
+                                },
+                                {
+                                    "type": "onDeath",
+                                    "amount": "min(-current/4, -10)",
+                                    "downTo": 15
+                                }
+                            ],
+                            "levels": [
+                                {
+                                    "name": "Genius",
+                                    "min": 80,
+                                    "actions": [
+                                        {
+                                            "type": "potionEffect",
+                                            "effect": "jump_boost",
+                                            "amplifier": 2
+                                        },
+                                        {
+                                            "type": "adjustNeed",
+                                            "need": "attack",
+                                            "amount": 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Learned",
+                                    "min": 50,
+                                    "max": 80,
+                                    "actions": [
+                                        {
+                                            "type": "potionEffect",
+                                            "effect": "jump_boost"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Dumb as Rocks",
+                                    "max": 10
+                                }
+                            ],
+                            "mixins": [
+                                {
+                                    "type": "ui",
+                                    "color": "#99CDC9",
+                                    "icon": "w_book01"
+                                }
+                            ]
+                        })}
+                        <p>
+                            Guess who has two thumbs and wasn't following along with the tutorial and had to go back up to piece all that back together?
+                        </p>
+                        <p>
+                            If you open up your game now, you'll be able to go into your inventory and click on the scroll in the upper-right corner to go to
+                            this UI:
+                        </p>
+                        <div class="text-center">
+                            <img src="https://pbs.twimg.com/media/EBYtuCVUcAAL_32?format=png" alt="UI example" class="rounded" />
+                        </div>
+                        <p>
+                            There you go. Your very own custom stat that does things. Now go out and conquer the world. Or at least create new and <del>obtuse</del> interesting
+                            stat systems to <del>torture</del> entertain your players with.
+                        </p>
+                    </div>
+                    <div id="needTypes">
                         <h2>Need Types</h2>
-                        <div class='container-fluid'>
+                        <div>
                             {this.state.needs}
                         </div>
                     </div>
