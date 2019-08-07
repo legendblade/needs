@@ -125,7 +125,7 @@ public class NeedCapability implements INeedCapability {
             nbtCompound.keySet().forEach((k) -> {
                 final CompoundNBT need = getOrDefaultNeed(nbtCompound, k);
 
-                currentLevels.put(k, need.getDouble(CURRENT));
+                if (need.contains(CURRENT)) currentLevels.put(k, need.getDouble(CURRENT));
 
                 if (!need.contains(LEVELS)) return;
                 final CompoundNBT levels = need.getCompound(LEVELS);
@@ -142,18 +142,14 @@ public class NeedCapability implements INeedCapability {
 
         private CompoundNBT getOrDefaultNeed(final CompoundNBT root, final String need) {
             if (!root.contains(need)) {
-                final CompoundNBT output = new CompoundNBT();
-                output.putDouble(CURRENT, 0);
-                return output;
+                return new CompoundNBT();
             }
 
             final INBT nbt = root.get(need);
             if (nbt instanceof CompoundNBT) return (CompoundNBT) nbt;
             if (!(nbt instanceof DoubleNBT)) return new CompoundNBT();
 
-            final CompoundNBT output = new CompoundNBT();
-            output.put(CURRENT, nbt);
-            return output;
+            return new CompoundNBT();
         }
     }
 

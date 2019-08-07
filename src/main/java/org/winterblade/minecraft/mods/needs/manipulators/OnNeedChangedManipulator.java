@@ -7,6 +7,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
+import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
@@ -95,7 +96,7 @@ public class OnNeedChangedManipulator extends BaseManipulator {
         amount.setIfRequired(OtherNeedChangedExpressionContext.CHANGE, () -> diff);
 
         // TODO: Determine best way to prevent loops
-        parent.adjustValue(event.getPlayer(), amount.get(), this);
+        TickManager.INSTANCE.doLater(() -> parent.adjustValue(event.getPlayer(), amount.get(), this));
     }
 
     public void onNonexistentNeed() {

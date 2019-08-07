@@ -6,6 +6,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
+import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
@@ -72,17 +73,21 @@ public class AdjustNeedLevelAction extends LevelAction {
     @Override
     public void onContinuousEnd(final Need need, final NeedLevel level, final PlayerEntity player) {
         this.need.get((o) -> {
+            if (player.world.isRemote) return;
+
             final double amount = player
                     .getCapability(CAPABILITY)
                         .map((c) -> c.getLevelAdjustment(need.getName(), level.getName()))
                         .orElse(0d);
 
             if (amount == 0d) return;
-            o.adjustValue(player, 0 - amount, BaseManipulator.EXTERNAL);
+            TickManager.INSTANCE.doLater(() -> o.adjustValue(player, 0 - amount, BaseManipulator.EXTERNAL));
         }, this::onError);
     }
 
     protected double adjust(final Need other, final PlayerEntity player) {
+        if (player.world.isRemote) return 0;
+
         if (other instanceof ReadOnlyNeed) {
             NeedsMod.LOGGER.warn("You cannot adjust " + need + ", because it is read-only.");
             return 0;
@@ -90,7 +95,7 @@ public class AdjustNeedLevelAction extends LevelAction {
         amount.setCurrentNeedValue(other, player);
 
         final double output = amount.get();
-        other.adjustValue(player, output, BaseManipulator.EXTERNAL);
+        TickManager.INSTANCE.doLater(() -> other.adjustValue(player, output, BaseManipulator.EXTERNAL));
 
         return output;
     }

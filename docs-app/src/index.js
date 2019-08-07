@@ -692,34 +692,14 @@ class App extends React.Component {
                                 <li>Any <code>onExit</code> actions of the previous level are triggered.</li>
                                 <li>Any <code>onEnter</code> actions of the new level are triggered.</li>
                                 <li>Any continuous actions of the new level are applied.</li>
+                                <li>The tick ends</li>
+                                <li>On the next tick, any needs that were adjusted through <code>adjustNeed</code> are adjusted</li>
                             </ol>
                             <p>
-                                Why is this important? Currently, actions that adjust other needs (or the same need) are executed immediately (it's planned for
-                                future development to make updates occur on the next tick), so, if you adjust needs, which then adjust needs, which then
-                                adjust needs, you can very quickly cascade things down into a crash because somewhere along the lines you will loop.
-                            </p>
-                            <p>
-                                Just to drive this point home, let's take a very simple example where we have levels A (50-100) and B (0-50), level A has an action that, upon
-                                entering it, it adjusts the parent need down to 0. We go from level B into level A:
-                            </p>
-                            <ol>
-                                <li>Any continuous actions of level B are removed.</li>
-                                <li>Any <code>onExit</code> actions of level B are triggered.</li>
-                                <li>
-                                    The <code>onEnter</code> action of level A is triggered, taking us out of level A and back into level B.
-                                    <ol>
-                                        <li>Any continuous actions of level A are removed.</li>
-                                        <li>Any <code>onExit</code> actions of level A are triggered.</li>
-                                        <li>Any <code>onEnter</code> actions of level B are triggered.</li>
-                                        <li>Any continuous actions of level B are applied.</li>
-                                    </ol>
-                                </li>
-                                <li>Any continuous actions of level A are applied.</li>
-                            </ol>
-                            <p>
-                                Because of the order of things, right now (and this will be a high priority to resolve), you have a chance of ending up with the wrong
-                                actions applied, depending on what you were intending (especially continuous actions from level A). And if you added something to level B
-                                that bumped you back into level A? That's a loop you won't be getting out of.
+                                Do note that if you extensively use <code>adjustNeed</code> (or its manipulator brethren <code>onNeedChanged</code>), you can
+                                ultimately cause loops - as noted above, needs that get adjusted are fired on the next tick, which, if they in turn adjust needs
+                                will then adjust them on the tick after that, and so on and so forth. If this ends up adjusting the need which started the process,
+                                you <i>could</i> end up adjusting needs every tick, which will cause performance issues.
                             </p>
                         </div>
                         <p class="alert alert-dark mx-3">

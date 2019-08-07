@@ -1,13 +1,18 @@
 package org.winterblade.minecraft.mods.needs.api;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.concurrent.ThreadTaskExecutor;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import org.winterblade.minecraft.mods.needs.NeedsMod;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class TickManager {
@@ -38,6 +43,22 @@ public class TickManager {
         if (perPlayerTick.size() <= 0) MinecraftForge.EVENT_BUS.addListener(this::onTick);
 
         perPlayerTick.add(action);
+    }
+
+    /**
+     * Enqueues a task to run on the server whenever it feels like it; this should generally
+     * only be called from the server. This will always delay the task.
+     * @param runnable The runnable
+     */
+    public CompletableFuture<Void> doLater(final Runnable runnable) {
+        final ThreadTaskExecutor<?> executor = LogicalSidedProvider.WORKQUEUE.get(LogicalSide.SERVER);
+
+        if (executor != null) {
+            return executor.deferTask(runnable);
+        } else {
+            NeedsMod.LOGGER.error("doLater called from a context where there is no server.");
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     /**
