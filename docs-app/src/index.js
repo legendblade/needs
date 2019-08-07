@@ -166,11 +166,11 @@ class App extends React.Component {
                     "root": "#",
                     "class": "navbar-brand",
                     "children": [
-                        { "title": "Need Types", "root": "#needs", /* "children": map(response.needs, (c) => convertToNav(c, "needs")) */ },
-                        { "title": "Mixins", "root": "#mixins", /* "children": map(response.mixins, (c) => convertToNav(c, "mixins")) */ },
-                        { "title": "Manipulators", "root": "#manipulators", /* "children": map(response.manipulators, (c) => convertToNav(c, "manipulators")) */ },
+                        { "title": "Need Types", "root": "#needs", "children": map(response.needs, (c) => convertToNav(c, "needs")) },
+                        { "title": "Mixins", "root": "#mixins", "children": map(response.mixins, (c) => convertToNav(c, "mixins")) },
+                        { "title": "Manipulators", "root": "#manipulators", "children": map(response.manipulators, (c) => convertToNav(c, "manipulators")) },
                         { "title": "Levels", "root": "#levels" },
-                        { "title": "Actions", "root": "#actions", /* "children": map(response.actions, (c) => convertToNav(c, "actions")) */ }
+                        { "title": "Actions", "root": "#actions", "children": map(response.actions, (c) => convertToNav(c, "actions")) }
                     ]
                 };
 
@@ -191,13 +191,13 @@ class App extends React.Component {
     render() {
         return (
             <div class="row">
-                <div class="col-2">
-                    <nav id="scrollnav" class="navbar sticky-top navbar-light">
+                <div class="col-3">
+                    <nav id="scrollnav" class="navbar navbar-light">
                         <NavBar value={this.state.navroot} />
                     </nav>
                 </div>
 
-                <div class="col-8">
+                <div class="col-8 pl-4" style={{'border-left': '1px solid #DEDEDE'}}>
                     <div>
                         <h2>Overview</h2>
                         <p class="lead">
