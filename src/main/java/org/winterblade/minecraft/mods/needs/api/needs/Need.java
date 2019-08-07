@@ -128,13 +128,7 @@ public abstract class Need {
      */
     public final void adjustValue(final PlayerEntity player, final double adjust, final IManipulator source) {
         if (player == null || adjust == 0 || player.world.isRemote) return;
-
-        // Check if we need to initialize the value for the player, or if we should bail entirely
-        if (!isValueInitialized(player)) {
-            if (MinecraftForge.EVENT_BUS.post(new NeedInitializationEvent.Pre(this, player))) return;
-            initialize(player);
-            MinecraftForge.EVENT_BUS.post(new NeedInitializationEvent.Post(this, player));
-        }
+        if (!setInitial(player)) return;
 
         // Check if we shouldn't adjust the player at this moment
         if (MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Pre(this, player, source))) return;
@@ -152,6 +146,21 @@ public abstract class Need {
 
         // ... and let our listeners know
         sendUpdates(player, source, current, newValue);
+    }
+
+    /**
+     * Initializes the value if necessary
+     * @param player The player to set
+     * @return False if the need was not initialized; true otherwise
+     */
+    public final boolean setInitial(final PlayerEntity player) {
+        // Check if we need to initialize the value for the player, or if we should bail entirely
+        if (!isValueInitialized(player)) {
+            if (MinecraftForge.EVENT_BUS.post(new NeedInitializationEvent.Pre(this, player))) return false;
+            initialize(player);
+            MinecraftForge.EVENT_BUS.post(new NeedInitializationEvent.Post(this, player));
+        }
+        return true;
     }
 
     /**

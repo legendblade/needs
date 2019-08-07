@@ -234,6 +234,9 @@ public class NeedRegistry extends TypedRegistry<Need> {
     public void onLogin(final PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getPlayer() instanceof ServerPlayerEntity)) return;
 
+        // Make sure all our needs are initialized
+        loaded.forEach((n) -> n.setInitial(event.getPlayer()));
+
         // Only run config sync when on the dedicated server; if you manage to desync configs on a client... how?
         DistExecutor.runWhenOn(Dist.DEDICATED_SERVER, () -> () -> NetworkManager.INSTANCE.send(
             PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer()),
