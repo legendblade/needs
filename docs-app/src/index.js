@@ -249,8 +249,8 @@ class App extends React.Component {
                                 </p>
                                 <p>
                                     However, manipulators don't only apply to custom needs - you can also apply them to any need that isn't read-only; say you wanted
-                                    to make the player regenerate health when they first enter sunlight - just use the <code>onNeedChanged</code> manipulator to link up the
-                                    <code>sunlight</code> need with the <code>health</code> need. But maybe that's too nice, and instead you want to... convince the
+                                    to make the player regenerate health when they first enter sunlight - just use the <code>onNeedChanged</code> manipulator to link up
+                                    the <code>sunlight</code> need with the <code>health</code> need. But maybe that's too nice, and instead you want to... convince the
                                     player to be more passive, you could use the <code>holding</code> manipulator to say that anytime they're holding a sword or axe, you
                                     want to decrease their <code>health</code> by a certain amount - you can do that too.
                                 </p>
@@ -342,8 +342,8 @@ class App extends React.Component {
                     <div id="needs">
                         <h2>Needs</h2>
                         <p>
-                            In order to get started creating needs, you'll want to fire up a text editor (or preferably an IDE like VSCode), and navigate to
-                            <code>&lt;Minecraft&gt;/config/needs</code>. This directory will be where all of your needs get configured (go figure, right?).
+                            In order to get started creating needs, you'll want to fire up a text editor (or preferably an IDE like VSCode), and navigate
+                            to <code>&lt;Minecraft&gt;/config/needs</code>. This directory will be where all of your needs get configured (go figure, right?).
                         </p>
                         <p>
                             The mod will read any JSON file placed in this directory in order to create a need. Let's start out a basic JSON file now; in your editor,
@@ -392,8 +392,8 @@ class App extends React.Component {
                             ]
                         })}
                         <p>
-                            Here, we're declaring the array of manipulators - this is always an array, even if you only have one item in it - and adding the <code>lookingAt</code> 
-                            manipulator to it (for an overview of all available manipulators, look at the 'Manipulators' section, below). The <code>lookingAt</code> manipulator
+                            Here, we're declaring the array of manipulators - this is always an array, even if you only have one item in it - and adding the <code>lookingAt</code> manipulator
+                            to it (for an overview of all available manipulators, look at the 'Manipulators' section, below). The <code>lookingAt</code> manipulator
                             does exactly what you'd expect - anytime you're looking at one of the blocks listed, it triggers, and adjusts the need by the amount provided. Man,
                             I wish I could gain knowledge just by staring at a bookshelf.
                         </p>
@@ -460,8 +460,8 @@ class App extends React.Component {
                             ]
                         })}
                         <p>
-                            Okay, okay, I know, it's getting complicated, but, stick with me and let's break it on down. We have a new manipulator - this one is an 
-                            <code>itemUsed</code> manipulator - that will trigger anytime the player finishes using an item (in our case, eating/drinking). Now,
+                            Okay, okay, I know, it's getting complicated, but, stick with me and let's break it on down. We have a new manipulator - this one is 
+                            an <code>itemUsed</code> manipulator - that will trigger anytime the player finishes using an item (in our case, eating/drinking). Now,
                             we specify a default amount - there's multiple reasons why this would be used, and that's because the format for the item list is very
                             forgiving - for now, just know that in our example, the <code>defaultAmount</code> will be used for the milk bucket.
                         </p>
