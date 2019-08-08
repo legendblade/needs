@@ -180,15 +180,18 @@ function TutorialCode(code) {
 }
 
 class App extends React.Component {
+
     constructor(props) {
         super(props);
         this.state = {
-            'navroot': {}
+            'navroot': {},
+            'localData': '###LOCALDATA###'
         };
         this.loadAndSetData();
     }
 
-    getData() {
+    parseData(response) {
+        console.log(response);
         const convertToNav = (v, r) => {
             v.href = r + v.id;
             return {
@@ -197,34 +200,41 @@ class App extends React.Component {
                 "children": map(sortEntries(v.children), (c) => convertToNav(c, v.href))
             };
         };
+        
+        const navroot = {
+            "title": "Needs, Wants, and Desires",
+            "root": "#",
+            "class": "navbar-brand",
+            "children": [
+                { "title": "Needs", "root": "#needs" },
+                { "title": "Need Types", "root": "#needTypes", "children": map(sortEntries(response.needs), (c) => convertToNav(c, "needTypes")) },
+                { "title": "Mixins", "root": "#mixins", "children": map(sortEntries(response.mixins), (c) => convertToNav(c, "mixins")) },
+                { "title": "Manipulators", "root": "#manipulators", "children": map(sortEntries(response.manipulators), (c) => convertToNav(c, "manipulators")) },
+                { "title": "Levels", "root": "#levels" },
+                { "title": "Actions", "root": "#actions", "children": map(sortEntries(response.actions), (c) => convertToNav(c, "actions")) }
+            ]
+        };
+
+        this.setState({
+            'navroot': navroot,
+            'needs': sortEntries(response.needs.map((n) => (Entry(n)))),
+            'mixins': sortEntries(response.mixins.map((n) => (Entry(n)))),
+            'manipulators': sortEntries(response.manipulators.map((n) => (Entry(n)))),
+            'actions': sortEntries(response.actions.map((n) => (Entry(n))))
+        });
+    }
+
+    getData() {
+        if (this.state.localData !== '###LOCALDATA###') {
+            this.parseData(this.state.localData);
+            return;
+        }
 
         fetch('./data.json')
             .then((response) => {
                 return response.json();
             })
-            .then((response) => {                
-                const navroot = {
-                    "title": "Needs, Wants, and Desires",
-                    "root": "#",
-                    "class": "navbar-brand",
-                    "children": [
-                        { "title": "Needs", "root": "#needs" },
-                        { "title": "Need Types", "root": "#needTypes", "children": map(sortEntries(response.needs), (c) => convertToNav(c, "needTypes")) },
-                        { "title": "Mixins", "root": "#mixins", "children": map(sortEntries(response.mixins), (c) => convertToNav(c, "mixins")) },
-                        { "title": "Manipulators", "root": "#manipulators", "children": map(sortEntries(response.manipulators), (c) => convertToNav(c, "manipulators")) },
-                        { "title": "Levels", "root": "#levels" },
-                        { "title": "Actions", "root": "#actions", "children": map(sortEntries(response.actions), (c) => convertToNav(c, "actions")) }
-                    ]
-                };
-
-                this.setState({
-                    'navroot': navroot,
-                    'needs': sortEntries(response.needs.map((n) => (Entry(n)))),
-                    'mixins': sortEntries(response.mixins.map((n) => (Entry(n)))),
-                    'manipulators': sortEntries(response.manipulators.map((n) => (Entry(n)))),
-                    'actions': sortEntries(response.actions.map((n) => (Entry(n))))
-                });
-            });
+            .then((response) => this.parseData(response));
     }
 
     loadAndSetData() {

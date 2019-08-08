@@ -61,11 +61,17 @@ public class DocumentationBuilder {
             root.manipulators = document("manipulators", ManipulatorRegistry.INSTANCE, IManipulator.class, IManipulator.class);
             root.actions = document("levelActions", LevelActionRegistry.INSTANCE, LevelAction.class, ILevelAction.class);
 
-            try (final PrintWriter wr = new PrintWriter(path.resolve("data.json").toString())) {
-                wr.println(getGson().toJson(root, DocumentationRoot.class));
-            } catch (final FileNotFoundException e) {
-                e.printStackTrace();
+            // If we're in dev, output the docs to our directory for upload
+            if (System.getProperty("devBuild") != null) {
+                try (final PrintWriter wr = new PrintWriter(path.resolve("../../../docs-app/public/data.json").toString())) {
+                    wr.println(getGson().toJson(root, DocumentationRoot.class));
+                } catch (final FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                return;
             }
+
+
         } catch (final IOException e) {
             NeedsMod.LOGGER.warn("Error creating documentation.", e);
         }
