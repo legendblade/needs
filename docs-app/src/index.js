@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { chain, cloneDeep, clone, startCase, union, map } from 'lodash';
+import { chain, cloneDeep, clone, startCase, union, map, sortBy } from 'lodash';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import js from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
 import vs from 'react-syntax-highlighter/dist/esm/styles/hljs/vs';
@@ -8,6 +8,10 @@ import vs from 'react-syntax-highlighter/dist/esm/styles/hljs/vs';
 SyntaxHighlighter.registerLanguage('javascript', js);
 
 const noDesc = (<span class='text-muted'>There's no description of this item; encourage the mod author to add one, either through the API or localization.</span>);
+
+function sortEntries(entries) {
+    return sortBy(entries, 'id');
+}
 
 function NavBar(props) {
     if (!props.value.children || props.value.children.length <= 0) {
@@ -47,7 +51,7 @@ function AliasList(props) {
             </div>
         );
     } else {
-        return (<div><small>This cannot be directly added</small></div>);
+        return (<div><small class='text-muted'>This cannot be directly added</small></div>);
     }
 }
 
@@ -114,11 +118,36 @@ function Entry(props, parentFields) {
         'marginLeft': (props.depth.length * 20 + 'px')
     };
 
+    const modColor = (function(str) {
+        // Adapted from https://stackoverflow.com/a/16348977
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        let colour = '#';
+        for (let i = 0; i < 3; i++) {
+            const value = ((hash >> (i * 8)) & 0x88)// + 0x77;
+            colour += ('00' + value.toString(16)).substr(-2);
+        }
+        return colour;
+    })(props.mod || "");
 
     const output = [(
         <div class='card mt-4 p-2' style={container} id={props.href}>
-            <Tag class='card-title'>{name}<small>{props.depth.map((d) => " < " + d).reverse()}</small></Tag>
-            <p class='card-subtitle'>{props.description || noDesc}</p>
+            <div class='row'>
+                <div class='col-9'>
+                    <Tag class='card-title'>{name}<small>{props.depth.map((d) => (<a class='entry-path' href={'#' + d.href}>{d.name}</a>)).reverse()}</small></Tag>
+                    <p class='card-subtitle'>{props.description || noDesc}</p>
+                </div>
+                <div class='col-3 text-right'>
+                    {
+                        props.aliases.length 
+                            ? (<div class="badge badge-pill text-white" style={{"backgroundColor": modColor}}>{props.mod || "Unknown"}</div>) 
+                            : (<div class="badge badge-pill badge-dark">Abstract</div>)
+                    }
+                </div>
+            </div>
 
             <AliasList aliases={props.aliases} />
             {FieldList(union(parentFields, props.fields))}
@@ -133,8 +162,8 @@ function Entry(props, parentFields) {
         .thru((a) => union(parentFields || [], a)) // Called this way to ensure ordering
         .value();
 
-    const newDepth = chain(clone(props.depth)).union([name]).value();
-    props.children.forEach((c) => {
+    const newDepth = chain(clone(props.depth)).union([{'name': name, 'href': props.href}]).value();
+    sortEntries(props.children).forEach((c) => {
         c.depth = newDepth;
         output.push(Entry(c, pfields))
     });
@@ -165,7 +194,7 @@ class App extends React.Component {
             return {
                 "title": startCase(v.id),
                 "root": "#" + v.href,
-                "children": map(v.children, (c) => convertToNav(c, v.href))
+                "children": map(sortEntries(v.children), (c) => convertToNav(c, v.href))
             };
         };
 
@@ -180,20 +209,20 @@ class App extends React.Component {
                     "class": "navbar-brand",
                     "children": [
                         { "title": "Needs", "root": "#needs" },
-                        { "title": "Need Types", "root": "#needTypes", "children": map(response.needs, (c) => convertToNav(c, "needTypes")) },
-                        { "title": "Mixins", "root": "#mixins", "children": map(response.mixins, (c) => convertToNav(c, "mixins")) },
-                        { "title": "Manipulators", "root": "#manipulators", "children": map(response.manipulators, (c) => convertToNav(c, "manipulators")) },
+                        { "title": "Need Types", "root": "#needTypes", "children": map(sortEntries(response.needs), (c) => convertToNav(c, "needTypes")) },
+                        { "title": "Mixins", "root": "#mixins", "children": map(sortEntries(response.mixins), (c) => convertToNav(c, "mixins")) },
+                        { "title": "Manipulators", "root": "#manipulators", "children": map(sortEntries(response.manipulators), (c) => convertToNav(c, "manipulators")) },
                         { "title": "Levels", "root": "#levels" },
-                        { "title": "Actions", "root": "#actions", "children": map(response.actions, (c) => convertToNav(c, "actions")) }
+                        { "title": "Actions", "root": "#actions", "children": map(sortEntries(response.actions), (c) => convertToNav(c, "actions")) }
                     ]
                 };
 
                 this.setState({
                     'navroot': navroot,
-                    'needs': response.needs.map((n) => (Entry(n))),
-                    'mixins': response.mixins.map((n) => (Entry(n))),
-                    'manipulators': response.manipulators.map((n) => (Entry(n))),
-                    'actions': response.actions.map((n) => (Entry(n)))
+                    'needs': sortEntries(response.needs.map((n) => (Entry(n)))),
+                    'mixins': sortEntries(response.mixins.map((n) => (Entry(n)))),
+                    'manipulators': sortEntries(response.manipulators.map((n) => (Entry(n)))),
+                    'actions': sortEntries(response.actions.map((n) => (Entry(n))))
                 });
             });
     }

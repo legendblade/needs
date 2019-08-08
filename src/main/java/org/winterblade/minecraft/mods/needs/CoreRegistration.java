@@ -38,26 +38,25 @@ public class CoreRegistration {
     private static void registerNeeds() {
         // Need classes
         NeedRegistry.INSTANCE.register(NeedsMod.MODID, "custom", CustomNeed.class);
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "tick", CustomNeed.class, "onTick");
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "food", FoodNeed.class, "hunger");
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "health", HealthNeed.class, "hp");
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "saturation", SaturationNeed.class);
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "yLevel", YLevelNeed.class, "y", "depth");
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "light", LightLevelNeed.class, "lightlevel");
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "breath", BreathNeed.class, "air");
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "temperature", TemperatureNeed.class);
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "sunlight", SunlightNeed.class);
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "moonPhase", MoonPhaseNeed.class, "moon");
+        NeedRegistry.INSTANCE.register("minecraft", "food", FoodNeed.class, "hunger");
+        NeedRegistry.INSTANCE.register("minecraft", "health", HealthNeed.class, "hp");
+        NeedRegistry.INSTANCE.register("minecraft", "saturation", SaturationNeed.class);
+        NeedRegistry.INSTANCE.register("minecraft", "yLevel", YLevelNeed.class, "y", "depth");
+        NeedRegistry.INSTANCE.register("minecraft", "light", LightLevelNeed.class, "lightlevel");
+        NeedRegistry.INSTANCE.register("minecraft", "breath", BreathNeed.class, "air");
+        NeedRegistry.INSTANCE.register("minecraft", "temperature", TemperatureNeed.class);
+        NeedRegistry.INSTANCE.register("minecraft", "sunlight", SunlightNeed.class);
+        NeedRegistry.INSTANCE.register("minecraft", "moonPhase", MoonPhaseNeed.class, "moon");
 
         // Attributes
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "maxHealth", MaxHealthNeed.class, "maxhp");
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "attackDamage", AttackDamageNeed.class, "attack");
-        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "luck", LuckNeed.class);
+        NeedRegistry.INSTANCE.register("minecraft", "maxHealth", MaxHealthNeed.class, "maxhp");
+        NeedRegistry.INSTANCE.register("minecraft", "attackDamage", AttackDamageNeed.class, "attack");
+        NeedRegistry.INSTANCE.register("minecraft", "luck", LuckNeed.class);
     }
 
     private static void registerMixins() {
         // Mixins
-        MixinRegistry.INSTANCE.register(NeedsMod.MODID, "scoreboard", ScoreboardMixin.class, "score");
+        MixinRegistry.INSTANCE.register("minecraft", "scoreboard", ScoreboardMixin.class, "score");
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "chatOnChanged", ChatMixin.class);
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "chatOnLevel", ChatLevelMixin.class, "chat");
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "ui", UiMixin.class, "gui");
@@ -65,22 +64,23 @@ public class CoreRegistration {
 
     private static void registerManipulators() {
         // Manipulators
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "itemUsed", ItemUsedManipulator.class);
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "perHour", PerHourManipulator.class);
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "onDeath", OnDeathManipulator.class);
+        ManipulatorRegistry.INSTANCE.register("minecraft", "itemUsed", ItemUsedManipulator.class);
+        ManipulatorRegistry.INSTANCE.register("minecraft", "perHour", PerHourManipulator.class);
+        ManipulatorRegistry.INSTANCE.register("minecraft", "onDeath", OnDeathManipulator.class);
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "onNeedChanged", OnNeedChangedManipulator.class);
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "onBlock", NearBlockManipulator.class, "block", "nearBlock", "aroundBlock");
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "holding", HoldingManipulator.class);
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "attacking", AttackingManipulator.class, "onAttack", "attack");
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "hurt", HurtManipulator.class, "damaged", "attacked");
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "heal", HealManipulator.class, "healed");
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "biome", BiomeManipulator.class, "inBiome", "inBiomeType", "biomeType");
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "lookingAt", LookingAtManipulator.class, "lookingAtBlock");
+        ManipulatorRegistry.INSTANCE.register("minecraft", "onBlock", NearBlockManipulator.class, "block", "nearBlock", "aroundBlock");
+        ManipulatorRegistry.INSTANCE.register("minecraft", "holding", HoldingManipulator.class);
+        ManipulatorRegistry.INSTANCE.register("minecraft", "attacking", AttackingManipulator.class, "onAttack", "attack");
+        ManipulatorRegistry.INSTANCE.register("minecraft", "hurt", HurtManipulator.class, "damaged", "attacked");
+        ManipulatorRegistry.INSTANCE.register("minecraft", "heal", HealManipulator.class, "healed");
+        ManipulatorRegistry.INSTANCE.register("minecraft", "biome", BiomeManipulator.class, "inBiome", "inBiomeType", "biomeType");
+        ManipulatorRegistry.INSTANCE.register("minecraft", "lookingAt", LookingAtManipulator.class, "lookingAtBlock");
+        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "tick", TickManipulator.class, "onTick");
     }
 
     private static void registerActions() {
         // Actions
-        LevelActionRegistry.INSTANCE.register(NeedsMod.MODID, "potionEffect", PotionEffectLevelAction.class);
+        LevelActionRegistry.INSTANCE.register("minecraft", "potionEffect", PotionEffectLevelAction.class);
         LevelActionRegistry.INSTANCE.register(NeedsMod.MODID, "adjustNeed", AdjustNeedLevelAction.class);
     }
 

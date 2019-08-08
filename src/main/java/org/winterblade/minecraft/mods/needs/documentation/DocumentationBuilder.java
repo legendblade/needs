@@ -8,7 +8,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.resources.IResource;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 import org.apache.commons.io.IOUtils;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
@@ -108,7 +110,7 @@ public class DocumentationBuilder {
         if (id != null && entries.containsKey(clazz)) {
             final DocumentationEntry entry = entries.get(clazz);
             entry.id = id.getPath();
-            entry.mod = id.getNamespace();
+            entry.mod = getMod(id);
             return;
         }
 
@@ -116,7 +118,7 @@ public class DocumentationBuilder {
         final DocumentationEntry entry = new DocumentationEntry();
         if(id != null) {
             entry.id = id.getPath();
-            entry.mod = id.getNamespace();
+            entry.mod = getMod(id);
         } else {
             entry.id = clazz.getSimpleName();
         }
@@ -167,6 +169,22 @@ public class DocumentationBuilder {
 
         // This should always be true, but just in case?
         if (entries.containsKey(sc)) entries.get(sc).children.add(entry);
+    }
+
+    /**
+     * Attempts to locate the mod by its namespace
+     * @param id The ID of the resource to locate by
+     * @return The mod name, or its namespace if it couldn't be found.
+     */
+    private static String getMod(final ResourceLocation id) {
+        return ModList
+            .get()
+                .getMods()
+                .stream()
+                .filter((m) -> m.getModId().equals(id.getNamespace()) || m.getNamespace().equals(id.getNamespace()))
+                .findFirst()
+                .map(ModInfo::getDisplayName)
+                .orElse(id.getNamespace());
     }
 
     /**
