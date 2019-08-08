@@ -90,7 +90,12 @@ public class DocumentationBuilder {
 
         registry.getRegistrants().forEach((id, clazz) -> getEntry(registry, root, intf, id, clazz, entries, docTag));
 
-        return entries.values().stream().filter((f) -> f.isRoot).collect(Collectors.toList());
+        return entries.values()
+                .stream()
+                .peek((f) -> f.children.sort((a, b) -> a.id.compareTo(b.id)))
+                .filter((f) -> f.isRoot)
+                .sorted(Comparator.comparing(a -> a.id))
+                .collect(Collectors.toList());
     }
 
     /**
