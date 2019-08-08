@@ -25,6 +25,8 @@ import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.mixins.BaseMixin;
 import org.winterblade.minecraft.mods.needs.util.TypedRegistry;
+import org.winterblade.minecraft.mods.needs.util.blocks.IBlockPredicate;
+import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -241,7 +243,7 @@ public class DocumentationBuilder {
 
             // Class types:
             else if (String.class.isAssignableFrom(fieldType)) field.type = "String";
-            else if (ExpressionContext.class.isAssignableFrom(fieldType)) field.type = "Expression or Number";
+            else if (ExpressionContext.class.isAssignableFrom(fieldType)) field.type = "Number";
 
             else if (Need.class.isAssignableFrom(fieldType)) field.type = "Need";
             else if (LazyNeed.class.isAssignableFrom(fieldType)) field.type = "Need";
@@ -249,6 +251,9 @@ public class DocumentationBuilder {
             else if (IManipulator.class.isAssignableFrom(fieldType)) field.type = "Manipulator";
             else if (IMixin.class.isAssignableFrom(fieldType)) field.type = "Mixin";
             else if (ILevelAction.class.isAssignableFrom(fieldType)) field.type = "Action";
+
+            else if (IBlockPredicate.class.isAssignableFrom(fieldType)) field.type = "Block/Tag";
+            else if (IIngredient.class.isAssignableFrom(fieldType)) field.type = "Item/Tag";
 
             // Give up:
             else field.type = fieldType.getSimpleName();
