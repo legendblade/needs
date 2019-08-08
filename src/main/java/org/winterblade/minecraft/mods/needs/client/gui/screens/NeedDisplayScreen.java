@@ -59,12 +59,12 @@ public class NeedDisplayScreen extends ComponentScreen {
                     c.setTitle(mixin.getDisplayName());
 
                     c.setBarValues(
-                        localNeed.getMin(),
-                        localNeed.getMax(),
-                        localNeed.getValue(),
+                        mixin.doFormat(localNeed.getMin()),
+                        mixin.doFormat(localNeed.getMax()),
+                        mixin.doFormat(localNeed.getValue()),
                         mixin.getColor(),
-                        localNeed.getLower(),
-                        localNeed.getUpper(),
+                        mixin.doFormat(localNeed.getLower()),
+                        mixin.doFormat(localNeed.getUpper()),
                         mixin.getPrecision()
                     );
 

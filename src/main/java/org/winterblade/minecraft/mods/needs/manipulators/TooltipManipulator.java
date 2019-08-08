@@ -60,6 +60,12 @@ public abstract class TooltipManipulator extends BaseManipulator {
     @JsonAdapter(FormattingDeserializer.class)
     protected final RangeMap<Double, String> formatting = TreeRangeMap.create();
 
+    @Expose
+    @Document(description = "Optional expression that will be used to modify the value prior to displaying it (in case you " +
+            "want to multiply it, round it, square root things, etc). Not used if 'tooltip' is set.")
+    @OptionalField(defaultValue = "None")
+    protected NeedExpressionContext displayFormat;
+
     protected int capacity = 0;
     protected String precisionFormat;
     protected BiFunction<StringBuilder, PlayerEntity, String> postFormat;
@@ -168,10 +174,17 @@ public abstract class TooltipManipulator extends BaseManipulator {
 
         if (tooltip != null && !tooltip.isEmpty()) return theLine.append(tooltip).toString();
 
-        theLine.append(value < 0 ? '-' : '+');
-        theLine.append(String.format(precisionFormat, Math.abs(value)));
+        final double adjustedValue;
+        if (displayFormat != null) {
+            displayFormat.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> value);
+            adjustedValue = displayFormat.get();
+        }
+        else adjustedValue = value;
+
+        theLine.append(adjustedValue < 0 ? '-' : '+');
+        theLine.append(String.format(precisionFormat, Math.abs(adjustedValue)));
         theLine.append("  ");
-        theLine.append(value < 0 ? '\u25bc' : '\u25b2'); // Up or down arrows
+        theLine.append(adjustedValue < 0 ? '\u25bc' : '\u25b2'); // Up or down arrows
 
         return postFormat != null ? postFormat.apply(theLine, player) : theLine.toString();
     }

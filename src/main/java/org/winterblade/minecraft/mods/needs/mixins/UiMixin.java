@@ -7,6 +7,7 @@ import net.minecraftforge.common.MinecraftForge;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
+import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
@@ -98,6 +99,13 @@ public class UiMixin extends BaseMixin {
             "may use shorthand (e.g. '#777' will expand to '#777777').")
     private int color;
 
+    @Expose
+    @Document(description = "Optional expression that will be used to modify the value prior to displaying it (in case you " +
+            "want to multiply it, round it, square root things, etc). The min, max, value, and upper and lower bounds of the " +
+            "current level will all be run through this expression.")
+    @OptionalField(defaultValue = "None")
+    protected NeedExpressionContext displayFormat;
+
     private boolean shouldDisplay = true;
     private Texture iconTexture;
     private String precisionFormat;
@@ -164,6 +172,13 @@ public class UiMixin extends BaseMixin {
 
     public String getPrecision() {
         return precisionFormat;
+    }
+
+    public double doFormat(final double input) {
+        if (displayFormat == null) return input;
+
+        displayFormat.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> input);
+        return displayFormat.get();
     }
 
     /**
