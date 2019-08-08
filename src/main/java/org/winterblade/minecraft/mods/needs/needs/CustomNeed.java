@@ -129,7 +129,7 @@ public class CustomNeed extends Need {
                 .map(INeedCapability::getValues)
                 .ifPresent((values) ->
                         event
-                            .getEntityPlayer()
+                            .getPlayer()
                                 .getCapability(CAPABILITY)
                                 .ifPresent((cap) -> values.forEach(cap::setValue))
                 );

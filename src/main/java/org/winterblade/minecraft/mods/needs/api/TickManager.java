@@ -5,8 +5,8 @@ import net.minecraft.util.concurrent.ThreadTaskExecutor;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.LogicalSidedProvider;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 
 import java.util.ArrayList;

@@ -11,7 +11,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
@@ -312,8 +312,8 @@ public abstract class Need {
     private void onRespawned(final PlayerEvent.Clone event) {
         if (event.isCanceled() || !event.isWasDeath()) return;
 
-        final NeedLevel level = getLevel(event.getEntityPlayer());
-        level.onRespawned(event.getEntityPlayer(), event.getOriginal());
+        final NeedLevel level = getLevel(event.getPlayer());
+        level.onRespawned(event.getPlayer(), event.getOriginal());
     }
 
     /**
