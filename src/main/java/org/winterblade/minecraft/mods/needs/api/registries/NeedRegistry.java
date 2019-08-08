@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("WeakerAccess")
@@ -113,21 +114,22 @@ public class NeedRegistry extends TypedRegistry<Need> {
             if (loaded.stream().anyMatch((n) -> n.getName().equals(d))) continue;
 
             // Check if the name is a type:
-            final Class<? extends Need> type = getType(d);
-            if (type != null) {
-                if (loaded.stream().anyMatch((l) -> type.isAssignableFrom(l.getClass()))) {
+            final Supplier<? extends Need> factory = getFactory(d);
+            if (factory != null) {
+                if (loaded.stream().anyMatch((l) -> getType(d).isAssignableFrom(l.getClass()))) {
                     NeedsMod.LOGGER.error("Dependency '" + d + "' would have loaded a type of the same name, but one is already registered.");
                     continue;
                 }
 
-                try {
-                    final Need need = type.newInstance();
-                    loaded.add(need);
-                    need.finalizeDeserialization();
+                final Need need = factory.get();
+                if (need == null) {
+                    NeedsMod.LOGGER.error("A need of name '" + d + "' wasn't loaded while validating dependencies of other needs.");
                     continue;
-                } catch (final InstantiationException | IllegalAccessException e) {
-                    NeedsMod.LOGGER.error("Unable to load dependency " + d, e);
                 }
+
+                loaded.add(need);
+                need.finalizeDeserialization();
+                continue;
             }
 
             NeedsMod.LOGGER.error("A need of name '" + d + "' wasn't loaded while validating dependencies of other needs.");
@@ -135,9 +137,9 @@ public class NeedRegistry extends TypedRegistry<Need> {
     }
 
     /**
-     * Gets a need by name, falling back to type otherwise
+     * Gets a need by name
      * @param need  The name of the need
-     * @return      The need matching that name or type.
+     * @return      The need matching that name or null if not found.
      */
     @Nullable
     public Need getByName(final String need) {
@@ -145,17 +147,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
                 .stream()
                 .filter((n) -> n.getName().equals(need))
                 .findFirst()
-                .orElse(loaded
-                        .stream()
-                        .filter((n) ->
-                            registry
-                                .entrySet()
-                                .stream()
-                                .anyMatch((rn) -> rn.getValue().equals(n.getClass()) && rn.getKey().equals(need))
-                        )
-                        .findFirst()
-                        .orElse(null)
-                );
+                .orElse(null);
     }
 
     /**

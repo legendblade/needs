@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.resources.IResource;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Tuple;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.io.IOUtils;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
@@ -15,7 +14,6 @@ import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.actions.ILevelAction;
 import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
-import org.winterblade.minecraft.mods.needs.api.documentation.IDocumentedContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.IManipulator;
 import org.winterblade.minecraft.mods.needs.api.mixins.IMixin;
@@ -134,7 +132,7 @@ public class DocumentationBuilder {
         // Check for aliases
         entry.aliases = registry.getRegistry().entrySet()
                 .stream()
-                .filter((kv) -> kv.getValue().equals(clazz))
+                .filter((kv) -> kv.getValue().getB().equals(clazz))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
