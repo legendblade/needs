@@ -31,11 +31,11 @@ import org.winterblade.minecraft.mods.needs.util.TypedRegistry;
 import org.winterblade.minecraft.mods.needs.util.blocks.IBlockPredicate;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,16 +62,33 @@ public class DocumentationBuilder {
             root.actions = document("levelActions", LevelActionRegistry.INSTANCE, LevelAction.class, ILevelAction.class);
 
             // If we're in dev, output the docs to our directory for upload
+            final String json = getGson().toJson(root, DocumentationRoot.class);
             if (System.getProperty("devBuild") != null) {
                 try (final PrintWriter wr = new PrintWriter(path.resolve("../../../docs-app/public/data.json").toString())) {
-                    wr.println(getGson().toJson(root, DocumentationRoot.class));
+                    wr.println(json);
                 } catch (final FileNotFoundException e) {
                     e.printStackTrace();
                 }
                 return;
             }
 
+            final StringBuilder result = new StringBuilder();
+            final HttpURLConnection conn = (HttpURLConnection) new URL("https://legendblade.github.io/needs/index.html").openConnection();
+            conn.setRequestMethod("GET");
 
+            try(final BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                String line;
+                while ((line = rd.readLine()) != null) {
+                    result.append(line).append("\n");
+                }
+            }
+
+            final String output = result.toString().replaceAll("localData:\"###LOCALDATA###\"", "localData:" + json);
+            try (final PrintWriter wr = new PrintWriter(path.resolve("readme.html").toString())) {
+                wr.println(output);
+            } catch (final FileNotFoundException e) {
+                e.printStackTrace();
+            }
         } catch (final IOException e) {
             NeedsMod.LOGGER.warn("Error creating documentation.", e);
         }

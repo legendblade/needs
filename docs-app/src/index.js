@@ -187,7 +187,7 @@ class App extends React.Component {
             'navroot': {},
             'localData': '###LOCALDATA###'
         };
-        this.loadAndSetData();
+        this.getData();
     }
 
     parseData(response) {
@@ -226,7 +226,8 @@ class App extends React.Component {
 
     getData() {
         if (this.state.localData !== '###LOCALDATA###') {
-            this.parseData(this.state.localData);
+            new Promise((resolve) => resolve(this.state.localData))
+                .then((response) => this.parseData(response));
             return;
         }
 
@@ -235,10 +236,6 @@ class App extends React.Component {
                 return response.json();
             })
             .then((response) => this.parseData(response));
-    }
-
-    loadAndSetData() {
-        this.getData();
     }
 
     render() {
