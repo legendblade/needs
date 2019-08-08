@@ -38,6 +38,7 @@ public class CoreRegistration {
     private static void registerNeeds() {
         // Need classes
         NeedRegistry.INSTANCE.register(NeedsMod.MODID, "custom", CustomNeed.class);
+        NeedRegistry.INSTANCE.register(NeedsMod.MODID, "tick", CustomNeed.class, "onTick");
         NeedRegistry.INSTANCE.register(NeedsMod.MODID, "food", FoodNeed.class, "hunger");
         NeedRegistry.INSTANCE.register(NeedsMod.MODID, "health", HealthNeed.class, "hp");
         NeedRegistry.INSTANCE.register(NeedsMod.MODID, "saturation", SaturationNeed.class);

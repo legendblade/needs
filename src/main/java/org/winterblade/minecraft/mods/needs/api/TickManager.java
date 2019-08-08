@@ -93,4 +93,12 @@ public class TickManager {
 
         // TODO: Consider if we should resort buckets
     }
+
+    /**
+     * Gets the number of buckets (ie: number of ticks between player updates)
+     * @return  The bucket count.
+     */
+    public int getBucketCount() {
+        return buckets;
+    }
 }
