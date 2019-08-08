@@ -15,7 +15,7 @@ public class NeedExpressionContext extends ExpressionContext {
     protected static final Map<String, String> docs = new HashMap<>();
 
     static {
-        docs.put(CURRENT_NEED_VALUE, "The current value of the need being changed.");
+        docs.put(CURRENT_NEED_VALUE, "The current value of the parent need.");
     }
 
     protected final ArrayList<String> elements = new ArrayList<>(params);
