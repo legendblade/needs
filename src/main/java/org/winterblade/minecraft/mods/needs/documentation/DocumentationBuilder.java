@@ -1,5 +1,6 @@
 package org.winterblade.minecraft.mods.needs.documentation;
 
+import com.google.common.collect.RangeMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
@@ -213,7 +214,7 @@ public class DocumentationBuilder {
             }
 
 
-            if (fieldType.isAssignableFrom(Map.class)) {
+            if (fieldType.isAssignableFrom(Map.class) || fieldType.isAssignableFrom(RangeMap.class)) {
                 field.isMap = true;
                 fieldType = fieldAnno != null ? fieldAnno.type() : Object.class;
                 if (fieldType == Object.class) {

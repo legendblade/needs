@@ -542,10 +542,6 @@ class App extends React.Component {
                             read up there if you're a bit rusty on the syntax. Or don't. I tried to make the ranges as open as possible.
                         </p>
                         <p>
-                            Quick side note: Most of the information on the <code>itemUsed</code> manipulator currently doesn't appear in the documenation. Sorry, I'm
-                            still working on that.
-                        </p>
-                        <p>
                             Alright. One more example of manipulators before we move on. If only because I want to show off the expression system more. Let's penalize
                             the player for dying. Because <i>of course</i> we penalize the player for dying. Git gud scrub. This time, I'm just going to show the new
                             manipulator, because you already know to just put a comma and add it to the end of the array, right?

@@ -1,8 +1,14 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
+import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
@@ -19,8 +25,10 @@ import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
+import org.winterblade.minecraft.mods.needs.util.RangeHelper;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.WeakHashMap;
 import java.util.function.BiFunction;
@@ -47,7 +55,9 @@ public abstract class TooltipManipulator extends BaseManipulator {
     @Document(description = "If this is set, will override the value of the tooltip itself with this string.")
     protected String tooltip;
 
-    // TODO: Create an adapter and expose
+    @Expose
+    @Document(description = "A key/value map of formatting/color codes to their associated interval to format tooltips with", type = String.class)
+    @JsonAdapter(FormattingDeserializer.class)
     protected final RangeMap<Double, String> formatting = TreeRangeMap.create();
 
     protected int capacity = 0;
@@ -68,6 +78,12 @@ public abstract class TooltipManipulator extends BaseManipulator {
         // Rough string capacity for tooltips:
         capacity = parent.getName().length() + 12;
         precisionFormat = "%." + precision + "f";
+
+        // Default colors:
+        if (formatting.asMapOfRanges().isEmpty()) {
+            formatting.put(Range.greaterThan(0d), TextFormatting.GREEN.toString());
+            formatting.put(Range.lessThan(0d), TextFormatting.RED.toString());
+        }
     }
 
     /**
@@ -169,5 +185,31 @@ public abstract class TooltipManipulator extends BaseManipulator {
 
         localCachedNeed = NeedRegistry.INSTANCE.getLocalCache().get(parent.getName());
         return localCachedNeed;
+    }
+
+    private static class FormattingDeserializer implements JsonDeserializer<RangeMap<Double, String>> {
+        @Override
+        public RangeMap<Double, String> deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
+            final TreeRangeMap<Double, String> output = TreeRangeMap.create();
+            if (!json.isJsonObject()) return output;
+
+            json.getAsJsonObject().entrySet().forEach((kv) -> {
+                final Range<Double> range;
+                if (kv.getValue().isJsonPrimitive()) {
+                    final String rangeStr = kv.getValue().getAsJsonPrimitive().getAsString();
+                    range = RangeHelper.parseStringAsRange(rangeStr);
+                } else if (kv.getValue().isJsonObject()) {
+                    range = RangeHelper.parseObjectToRange(kv.getValue().getAsJsonObject());
+                } else {
+                    throw new JsonParseException("Format range must be an object with min/max or a string.");
+                }
+
+                final TextFormatting format = TextFormatting.getValueByName(kv.getKey());
+                if (format == null) throw new JsonParseException("Unknown format color: " + kv.getKey());
+                output.put(range, format.toString());
+            });
+
+            return output;
+        }
     }
 }
