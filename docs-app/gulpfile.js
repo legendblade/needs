@@ -1,6 +1,5 @@
 const gulp = require('gulp'),
-    inline = require('gulp-inline'),
-    copy = require('gulp-copy');
+    inline = require('gulp-inline');
 
 // Combine the scripts and load it for Github pages
 function postbuild() {
