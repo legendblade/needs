@@ -8,6 +8,7 @@ import net.minecraft.item.Food;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
@@ -40,9 +41,9 @@ public class ItemUsedManipulator extends TooltipManipulator {
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
         //noinspection ConstantConditions - never, ever trust user input.
-        if (items == null || items.isEmpty()) throw new IllegalArgumentException("Items array must be specified.");
+        if (getItems() == null || getItems().isEmpty()) throw new IllegalArgumentException("Items array must be specified.");
 
-        if (defaultAmount == null && items.entrySet().stream().anyMatch((kv) -> kv.getValue() == null)) {
+        if (getDefaultAmount() == null && getItems().entrySet().stream().anyMatch((kv) -> kv.getValue() == null)) {
             throw new IllegalArgumentException("Default amount must be specified if one or more items use it.");
         }
 
@@ -52,31 +53,50 @@ public class ItemUsedManipulator extends TooltipManipulator {
     @Override
     public void onLoaded() {
         super.onLoaded();
-        items.entrySet().forEach((kv) -> {
-            if (kv.getValue() == null) kv.setValue(defaultAmount);
+        getItems().entrySet().forEach((kv) -> {
+            if (kv.getValue() == null) kv.setValue(getDefaultAmount());
         });
     }
 
     @SubscribeEvent
     public void onItemUsed(final LivingEntityUseItemEvent.Finish evt) {
         if (evt.getEntity().world.isRemote || !(evt.getEntityLiving() instanceof PlayerEntity)) return;
-        final PlayerEntity player = (PlayerEntity) evt.getEntityLiving();
-
-        for (final Map.Entry<Predicate<ItemStack>, ExpressionContext> entry : items.entrySet()) {
+        TickManager.INSTANCE.doLater(() -> {
+            final PlayerEntity player = (PlayerEntity) evt.getEntityLiving();
             final ItemStack item = evt.getItem();
+
+            final ExpressionContext expr = checkItem(item);
+            if (expr == null) return;
+            handle(player, item, expr);
+        });
+    }
+
+    /**
+     * Handles checking the item and adjusting the need for the player
+     * @param item   The item to check
+     */
+    protected ExpressionContext checkItem(final ItemStack item) {
+        for (final Map.Entry<Predicate<ItemStack>, ExpressionContext> entry : getItems().entrySet()) {
             if (!entry.getKey().test(item)) continue;
-
-            final ExpressionContext expr = entry.getValue();
-            setupExpression(() -> parent.getValue(player), player, item, expr);
-
-            parent.adjustValue(player, expr.get(), this);
-            return;
+            return entry.getValue();
         }
+        return null;
+    }
+
+    /**
+     * Handles actually setting the value for the player
+     * @param player The player
+     * @param item   The source item
+     * @param expr   The expression for the item
+     */
+    protected void handle(final PlayerEntity player, final ItemStack item, final ExpressionContext expr) {
+        setupExpression(() -> parent.getValue(player), player, item, expr);
+        parent.adjustValue(player, expr.get(), this);
     }
 
     @Override
     protected ExpressionContext getItemTooltipExpression(final ItemStack item) {
-        for (final Map.Entry<Predicate<ItemStack>, ExpressionContext> entry : items.entrySet()) {
+        for (final Map.Entry<Predicate<ItemStack>, ExpressionContext> entry : getItems().entrySet()) {
             if (entry.getKey().test(item)) return entry.getValue();
         }
         return null;
@@ -104,6 +124,14 @@ public class ItemUsedManipulator extends TooltipManipulator {
             expr.setIfRequired(FoodExpressionContext.HUNGER, () -> 0d);
             expr.setIfRequired(FoodExpressionContext.SATURATION, () -> 0d);
         }
+    }
+
+    public FoodExpressionContext getDefaultAmount() {
+        return defaultAmount;
+    }
+
+    public Map<Predicate<ItemStack>, ExpressionContext> getItems() {
+        return items;
     }
 
     @JsonAdapter(ExpressionContext.Deserializer.class)
@@ -134,10 +162,13 @@ public class ItemUsedManipulator extends TooltipManipulator {
         }
     }
 
-    private static class ItemValueDeserializer implements JsonDeserializer<Map<Predicate<ItemStack>, ExpressionContext>> {
-
+    protected static class ItemValueDeserializer implements JsonDeserializer<Map<Predicate<ItemStack>, ExpressionContext>> {
         @Override
         public Map<Predicate<ItemStack>, ExpressionContext> deserialize(final JsonElement itemsEl, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
+            return deserialize(itemsEl, context, FoodExpressionContext.class);
+        }
+
+        protected static Map<Predicate<ItemStack>, ExpressionContext> deserialize(final JsonElement itemsEl, final JsonDeserializationContext context, final Class<? extends FoodExpressionContext> contextClass) {
             final Map<Predicate<ItemStack>, ExpressionContext> output = new HashMap<>();
             // Handle if it's a key/value pair:
             if (itemsEl.isJsonObject()) {
@@ -148,7 +179,7 @@ public class ItemUsedManipulator extends TooltipManipulator {
 
                     final JsonElement value = pair.getValue();
                     output.put(ingredient, !value.isJsonNull()
-                            ? context.deserialize(value, FoodExpressionContext.class)
+                            ? context.deserialize(value, contextClass)
                             : null);
                 });
                 return output;
@@ -174,7 +205,7 @@ public class ItemUsedManipulator extends TooltipManipulator {
                     }
 
                     if (elObj.has("amount")) {
-                        amount = context.deserialize(elObj.get("amount"), FoodExpressionContext.class);
+                        amount = context.deserialize(elObj.get("amount"), contextClass);
                     }
                 } else {
                     throw new JsonParseException("Unknown item format: " + el.toString());

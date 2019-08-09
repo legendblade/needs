@@ -1,6 +1,7 @@
 package org.winterblade.minecraft.mods.needs.needs;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Map;
 
 public interface INeedCapability {
@@ -18,4 +19,5 @@ public interface INeedCapability {
     double getLevelAdjustment(String needName, String levelName);
 
     Map<String,Map<String,Double>> getLevelAdjustments();
+
 }

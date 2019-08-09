@@ -25,6 +25,11 @@ import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 public class CoreRegistration {
     public static void register() {
         CapabilityManager.INSTANCE.register(INeedCapability.class, NeedCapability.Storage.INSTANCE, NeedCapability::new);
+        CapabilityManager.INSTANCE.register(
+                ItemUsedCountManipulator.IItemUsedCountCapability.class,
+                ItemUsedCountManipulator.ItemUsedCountCapability.Storage.INSTANCE,
+                ItemUsedCountManipulator.ItemUsedCountCapability::new
+        );
 
         registerNeeds();
         registerManipulators();
@@ -66,6 +71,7 @@ public class CoreRegistration {
     private static void registerManipulators() {
         // Manipulators
         ManipulatorRegistry.INSTANCE.register("minecraft", "itemUsed", ItemUsedManipulator.class);
+        ManipulatorRegistry.INSTANCE.register("minecraft", "countedItemUse", ItemUsedCountManipulator.class, "itemUsedOnce");
         ManipulatorRegistry.INSTANCE.register("minecraft", "perHour", PerHourManipulator.class);
         ManipulatorRegistry.INSTANCE.register("minecraft", "onDeath", OnDeathManipulator.class);
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "onNeedChanged", OnNeedChangedManipulator.class);

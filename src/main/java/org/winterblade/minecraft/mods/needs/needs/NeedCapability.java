@@ -20,6 +20,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 public class NeedCapability implements INeedCapability {
     protected Map<String, Double> values = new HashMap<>();
     protected Map<String, Map<String, Double>> levelAdjustments = new HashMap<>();
+    protected Map<String, Object> extensions = new HashMap<>();
 
     @Override
     public double getValue(final String id) {
