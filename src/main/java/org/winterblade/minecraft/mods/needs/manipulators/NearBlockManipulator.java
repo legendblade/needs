@@ -79,7 +79,7 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
         }
 
         if (blocks.size() <= 0) {
-            throw new JsonParseException("On/near block manipulator has no predicates that will match blocks.");
+            throw new IllegalArgumentException("On/near block manipulator has no predicates that will match blocks.");
         } else if (blocks.size() <= 1) {
             final IBlockPredicate head = blocks.get(0);
             matchFn = head::test;
@@ -139,8 +139,14 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
             at various points (cos, sin, n - count, etc)
         */
 
-        TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
         super.onLoaded();
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        TickManager.INSTANCE.removePlayerTickUpdate(this);
     }
 
     /**

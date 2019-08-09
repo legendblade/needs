@@ -151,6 +151,37 @@ public class NeedLevel {
     }
 
     /**
+     * Called in order to finish unloading the level
+     */
+    public void onUnloaded() {
+        // Clean up
+        entryActions.forEach(ea -> {
+            MinecraftForge.EVENT_BUS.unregister(ea);
+            ea.onUnloaded();
+        });
+
+        continuousActions.forEach(ea -> {
+            MinecraftForge.EVENT_BUS.unregister(ea);
+            ea.onUnloaded();
+        });
+
+        exitActions.forEach(ea -> {
+            MinecraftForge.EVENT_BUS.unregister(ea);
+            ea.onUnloaded();
+        });
+
+        entryActions = Collections.emptyList();
+        exitActions = Collections.emptyList();
+        continuousActions = Collections.emptyList();
+        reappliedActions = Collections.emptyList();
+        reappliedContinuousActions = Collections.emptyList();
+
+        MinecraftForge.EVENT_BUS.unregister(this);
+        isListeningToTicks = false;
+        tickAction = null;
+    }
+
+    /**
      * Called by the parent need when entering this level, after exit has been called on the previous level
      * @param player The player involved
      */

@@ -1,6 +1,5 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
-import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
@@ -29,8 +28,14 @@ public class LookingAtManipulator extends BlockCheckingManipulator {
 
     @Override
     public void onLoaded() {
-        TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
         super.onLoaded();
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        TickManager.INSTANCE.removePlayerTickUpdate(this);
     }
 
     private void onTick(final PlayerEntity player) {

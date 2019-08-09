@@ -17,4 +17,9 @@ public abstract class BaseMixin implements IMixin {
     public void onLoaded(final Need need) {
         this.need = need;
     }
+
+    @Override
+    public void onUnloaded() {
+        this.need = null;
+    }
 }

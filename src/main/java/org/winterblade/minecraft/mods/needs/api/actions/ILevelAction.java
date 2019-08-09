@@ -21,6 +21,8 @@ public interface ILevelAction {
 
     void onLoaded(Need parentNeed, NeedLevel parentLevel);
 
+    void onUnloaded();
+
     void onEntered(Need need, NeedLevel level, PlayerEntity player);
 
     void onExited(Need need, NeedLevel level, PlayerEntity player);

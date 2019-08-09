@@ -90,6 +90,13 @@ public class LazyNeed {
         return name;
     }
 
+    /**
+     * Discards the stored value
+     */
+    public void discard() {
+        instance = null;
+    }
+
     private void getInstance() {
         instance = NeedRegistry.INSTANCE.getByName(name);
         checked = true;

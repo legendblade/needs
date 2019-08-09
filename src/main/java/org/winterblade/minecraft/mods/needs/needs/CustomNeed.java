@@ -62,6 +62,12 @@ public class CustomNeed extends Need {
         MinecraftForge.EVENT_BUS.register(this);
     }
 
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        MinecraftForge.EVENT_BUS.unregister(this);
+    }
+
     public String getName() {
         return name;
     }

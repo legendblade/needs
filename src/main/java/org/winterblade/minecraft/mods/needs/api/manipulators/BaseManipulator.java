@@ -43,6 +43,11 @@ public abstract class BaseManipulator implements IManipulator {
      */
     public void onLoaded() {}
 
+    @Override
+    public void onUnloaded() {
+        parent = null;
+    }
+
     private static class ExternalManipulator extends BaseManipulator {
 
     }

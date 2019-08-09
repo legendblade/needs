@@ -14,7 +14,14 @@ public abstract class CachedTickingNeed extends Need {
 
     @Override
     public void onLoaded() {
-        TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        cache.clear();
+        TickManager.INSTANCE.removePlayerTickUpdate(this);
     }
 
     private void onTick(final PlayerEntity p) {

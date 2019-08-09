@@ -24,7 +24,7 @@ public class HurtManipulator extends DamageBasedManipulator {
     @Override
     public void onLoaded() {
         super.onLoaded();
-        if (0 < sources.size()) shouldCheckSource = true;
+        shouldCheckSource = (0 < sources.size());
     }
 
     @SubscribeEvent

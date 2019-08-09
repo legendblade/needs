@@ -12,6 +12,7 @@ import org.winterblade.minecraft.mods.needs.NeedsMod;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -19,7 +20,7 @@ public class TickManager {
     public static TickManager INSTANCE = new TickManager();
     private static final int buckets = 5; // TODO: This needs to be a config option
 
-    private final List<Consumer<PlayerEntity>> perPlayerTick = new ArrayList<>();
+    private final WeakHashMap<Object, Consumer<PlayerEntity>> perPlayerTick = new WeakHashMap<>();
     private final List<List<PlayerEntity>> players = new ArrayList<>();
 
     private int currentBucket = 0;
@@ -36,13 +37,18 @@ public class TickManager {
 
     /**
      * Sets an action to get called for this need, every 5 ticks, per player
+     * @param source The source of the action
      * @param action The action to call
      */
-    public void requestPlayerTickUpdate(final Consumer<PlayerEntity> action) {
+    public void requestPlayerTickUpdate(final Object source, final Consumer<PlayerEntity> action) {
         // Register us on the first event added:
         if (perPlayerTick.size() <= 0) MinecraftForge.EVENT_BUS.addListener(this::onTick);
 
-        perPlayerTick.add(action);
+        perPlayerTick.put(source, action);
+    }
+
+    public void removePlayerTickUpdate(final Object source) {
+        perPlayerTick.remove(source);
     }
 
     /**
@@ -62,13 +68,21 @@ public class TickManager {
     }
 
     /**
+     * Gets the number of buckets (ie: number of ticks between player updates)
+     * @return  The bucket count.
+     */
+    public int getBucketCount() {
+        return buckets;
+    }
+
+    /**
      * Called when the server ticks
      * @param event The tick event
      */
     private void onTick(final TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
 
-        players.get(currentBucket++).forEach((p) -> perPlayerTick.forEach((a) -> a.accept(p)));
+        players.get(currentBucket++).forEach((p) -> perPlayerTick.forEach((k, v) -> v.accept(p)));
         if (buckets <= currentBucket) currentBucket = 0;
     }
 
@@ -92,13 +106,5 @@ public class TickManager {
         }
 
         // TODO: Consider if we should resort buckets
-    }
-
-    /**
-     * Gets the number of buckets (ie: number of ticks between player updates)
-     * @return  The bucket count.
-     */
-    public int getBucketCount() {
-        return buckets;
     }
 }

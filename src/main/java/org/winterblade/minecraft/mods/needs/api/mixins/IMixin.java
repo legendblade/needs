@@ -16,7 +16,12 @@ public interface IMixin {
 
     /**
      * Called when the mixin is being loaded
-     * @param need The need the manipulator is in
+     * @param need The need the mixin is in
      */
     void onLoaded(Need need);
+
+    /**
+     * Called in order to finish unloading the mixin
+     */
+    void onUnloaded();
 }

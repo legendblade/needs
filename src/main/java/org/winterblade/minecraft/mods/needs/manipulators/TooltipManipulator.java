@@ -92,6 +92,12 @@ public abstract class TooltipManipulator extends BaseManipulator {
         }
     }
 
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        MinecraftForge.EVENT_BUS.unregister(this);
+    }
+
     /**
      * Called on the client when Minecraft wants to render the tooltip
      * @param event The tooltip event

@@ -82,7 +82,14 @@ public class BiomeManipulator extends BaseManipulator {
         if (!types.isEmpty()) trackTypes = true;
 
         super.onLoaded();
-        TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        TickManager.INSTANCE.removePlayerTickUpdate(this);
+        types = Collections.emptyList();
     }
 
     private void onTick(final PlayerEntity player) {

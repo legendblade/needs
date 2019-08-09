@@ -19,6 +19,12 @@ public abstract class LevelAction implements ILevelAction {
         this.parentLevel = parentLevel;
     }
 
+    @Override
+    public void onUnloaded() {
+        this.parentNeed = null;
+        this.parentLevel = null;
+    }
+
     /**
      * Called when declared as an entry action and the level is entered
      * @param need   The need calling this

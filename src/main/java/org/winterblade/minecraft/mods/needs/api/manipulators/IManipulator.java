@@ -21,6 +21,11 @@ public interface IManipulator {
      */
     void onLoaded(Need need);
 
+    /**
+     * Called in order to finish unloading the manipulator
+     */
+    void onUnloaded();
+
     double getLowestToSetNeed();
 
     double getHighestToSetNeed();

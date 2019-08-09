@@ -1,6 +1,5 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
-import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
@@ -50,7 +49,7 @@ public class HoldingManipulator extends TooltipManipulator {
 
     @Override
     public void onLoaded() {
-        TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
         super.onLoaded();
 
         final String amountType = amount.isConstant() || !amount.isRequired(CountedExpressionContext.COUNT) ? "" : ", Per Item";
@@ -64,6 +63,12 @@ public class HoldingManipulator extends TooltipManipulator {
         }
 
         postFormat = (sb, player) -> sb.append(suffix).toString();
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        TickManager.INSTANCE.removePlayerTickUpdate(this);
     }
 
     @Nullable
