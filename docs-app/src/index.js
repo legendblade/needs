@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { chain, cloneDeep, clone, startCase, union, map, sortBy } from 'lodash';
+import { cloneDeep, clone, startCase, union, unionBy, map, sortBy, differenceBy } from 'lodash';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import js from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
 import vs from 'react-syntax-highlighter/dist/esm/styles/hljs/vs';
@@ -154,18 +154,16 @@ function Entry(props, parentFields) {
         </div>
     )];
 
-    const pfields = chain(cloneDeep(props.fields))
-        .each((f) => {
-            f.isParent = true;
-            f.parent = name;
-        })
-        .thru((a) => union(parentFields || [], a)) // Called this way to ensure ordering
-        .value();
+    const pfields = unionBy(parentFields || [], cloneDeep(props.fields).map((f) => {
+                        f.isParent = true;
+                        f.parent = name;
+                        return f;
+                    }), 'name'); // Called this way to ensure ordering
 
-    const newDepth = chain(clone(props.depth)).union([{'name': name, 'href': props.href}]).value();
+    const newDepth = union(clone(props.depth), [{'name': name, 'href': props.href}]);
     sortEntries(props.children).forEach((c) => {
         c.depth = newDepth;
-        output.push(Entry(c, pfields))
+        output.push(Entry(c, differenceBy(pfields, c.fields, 'name')))
     });
 
     return output;
