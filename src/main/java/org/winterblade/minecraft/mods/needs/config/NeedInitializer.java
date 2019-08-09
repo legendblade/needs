@@ -83,6 +83,28 @@ public class NeedInitializer {
     }
 
     /**
+     * Handles deserializng the content
+     * @param id The filename or ID to use as the need name
+     * @param content  The content of the file.
+     */
+    public Need deserializeRemoteContent(final String id, final String content) {
+        final Need need;
+
+        try {
+            need = GetGson().fromJson(content, Need.class);
+        } catch (final Exception e) {
+            NeedsMod.LOGGER.error("Error parsing need from remote.", e);
+            return null;
+        }
+
+        if (need instanceof CustomNeed && (need.getName() == null || need.getName().isEmpty())) {
+            ((CustomNeed)need).setName(id);
+        }
+
+        return need;
+    }
+
+    /**
      * Registers the need after deserialization
      * @param file    The file the need was loaded from
      * @param md      The message digest

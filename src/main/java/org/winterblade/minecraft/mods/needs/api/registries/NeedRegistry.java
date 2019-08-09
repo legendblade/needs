@@ -9,22 +9,23 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.Tuple;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
 import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
-import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
-import org.winterblade.minecraft.mods.needs.network.ConfigCheckPacket;
-import org.winterblade.minecraft.mods.needs.network.ConfigDesyncPacket;
-import org.winterblade.minecraft.mods.needs.network.ConfigSyncedPacket;
-import org.winterblade.minecraft.mods.needs.network.NetworkManager;
+import org.winterblade.minecraft.mods.needs.config.NeedInitializer;
+import org.winterblade.minecraft.mods.needs.config.RemoteFileHandler;
+import org.winterblade.minecraft.mods.needs.network.*;
 import org.winterblade.minecraft.mods.needs.util.TypedRegistry;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Type;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
@@ -45,9 +46,11 @@ public class NeedRegistry extends TypedRegistry<Need> {
     private final Map<String, LocalCachedNeed> localCache = new ConcurrentHashMap<>();
 
     /**
-     * Config storage; client and server both have hashes, server has full configs
+     * Config storage; client and server both have cached hashes, server has full configs.
+     * Client will record the current config hashes from the server to compare for later
      */
     private final Map<String, byte[]> cachedConfigHashes = new HashMap<>();
+    private final Map<String, byte[]> remoteConfigHashes = new HashMap<>();
     private final Map<String, String> cachedConfigs = new HashMap<>();
 
     @Override
@@ -198,9 +201,11 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param configHashes The map of ID to file hash
      */
     public void validateConfig(final Map<String, byte[]> configHashes) {
+        remoteConfigHashes.clear();
         final Map<String, ConfigDesyncPacket.DesyncTypes> desyncs = configHashes
                 .entrySet()
                 .stream()
+                .peek((kv) -> remoteConfigHashes.put(kv.getKey(), kv.getValue()))
                 .map((kv) -> {
                     boolean exists = cachedConfigHashes.containsKey(kv.getKey());
                     if (exists && Arrays.equals(cachedConfigHashes.get(kv.getKey()), kv.getValue())) return null;
@@ -230,10 +235,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
         loaded.forEach((n) -> n.setInitial(event.getPlayer()));
 
         // Only run config sync when on the dedicated server; if you manage to desync configs on a client... how?
-        DistExecutor.runWhenOn(Dist.DEDICATED_SERVER, () -> () -> NetworkManager.INSTANCE.send(
-            PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) event.getPlayer()),
-            new ConfigCheckPacket(cachedConfigHashes)
-        ));
+        DistExecutor.runWhenOn(Dist.DEDICATED_SERVER, () -> () -> sendConfigHashesToPlayer((ServerPlayerEntity) event.getPlayer()));
 
         // Shortcut the entire system when it's just the local client:
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
@@ -242,6 +244,24 @@ public class NeedRegistry extends TypedRegistry<Need> {
                 (n, v) -> setLocalNeed(n.getName(), v, n.getMin(event.getPlayer()), n.getMax(event.getPlayer()))
             );
         });
+    }
+
+    /**
+     * Sends the config hashes to the player
+     * @param player The player to send to
+     */
+    public void sendConfigHashesToPlayer(final ServerPlayerEntity player) {
+        NetworkManager.INSTANCE.send(
+                PacketDistributor.PLAYER.with(() -> player),
+                new ConfigCheckPacket(
+                    // We only need to sync configs that are needed by the client.
+                    loaded
+                        .stream()
+                        .filter(Need::shouldSync)
+                        .map((n) -> new Tuple<>(n.getName(), cachedConfigHashes.get(n.getName())))
+                        .collect(Collectors.toMap(Tuple::getA, Tuple::getB))
+                )
+        );
     }
 
     /**
@@ -257,5 +277,60 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
             callback.accept(n, n.getValue(player));
         });
+    }
+
+    /**
+     * Gets the saved config
+     *
+     * We're loading it from a cache rather than trying to load it from the filesystem to shortcut any
+     * possibility that a client can attempt to request other server files.
+     * @param needId The need ID
+     * @return The cached config JSON
+     */
+    public String getContent(final String needId) {
+        return cachedConfigs.get(needId);
+    }
+
+    /**
+     * Updates a local need from the remote
+     * @param needId  The need ID
+     * @param content The content of the file
+     */
+    public void updateFromRemote(final String needId, final String content) {
+        // Did we not want this one? Chuck it out.
+        if (!remoteConfigHashes.containsKey(needId)) NetworkManager.INSTANCE.sendToServer(new ConfigTransferSuccess());
+
+        // First, make sure this need matches what we were expecting to receive:
+        try {
+            final MessageDigest md = MessageDigest.getInstance("MD5");
+            final byte[] digest = md.digest(content.getBytes());
+
+            if (!Arrays.equals(remoteConfigHashes.get(needId), digest)) {
+                NeedsMod.LOGGER.error("Unable to validate need " + needId + " from server; " +
+                        "expected: " + Arrays.toString(remoteConfigHashes.get(needId)) +
+                        ", got: " + Arrays.toString(digest));
+                NetworkManager.INSTANCE.sendToServer(new ConfigTransferFailure(needId));
+                return;
+            }
+        } catch (final NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        // Hand this off, because the next bit runs client-only code...
+        final Need need = NeedInitializer.INSTANCE.deserializeRemoteContent(needId, content);
+        if (need == null) {
+            NetworkManager.INSTANCE.sendToServer(new ConfigTransferFailure(needId));
+            return;
+        }
+
+
+
+        DistExecutor.runWhenOn(Dist.CLIENT, () ->
+            () ->
+                NetworkManager.INSTANCE.sendToServer(
+                    RemoteFileHandler.handle(needId, content)
+                        ? new ConfigTransferSuccess()
+                        : new ConfigTransferFailure(needId)
+        ));
     }
 }

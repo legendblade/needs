@@ -4,6 +4,8 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
+import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,8 +44,10 @@ public class ConfigDesyncPacket {
 
             if (thePlayer == null) return;
 
-            // TODO: deal with updating configs
             msg.desyncs.forEach((needId, desyncType) -> {
+                NetworkManager.queueConfigContent(thePlayer, new ConfigContentPacket(needId, NeedRegistry.INSTANCE.getContent(needId)));
+
+                // Let the player know
                 if (desyncType == DesyncTypes.MISSING) {
                     thePlayer.sendMessage(new StringTextComponent("Need " + needId + " does not exist in your local config."));
                     return;
@@ -51,6 +55,8 @@ public class ConfigDesyncPacket {
 
                 thePlayer.sendMessage(new StringTextComponent("Need " + needId + "'s config does not match between server and client."));
             });
+
+            NetworkManager.processQueue(thePlayer);
         });
         ctx.get().setPacketHandled(true);
     }
