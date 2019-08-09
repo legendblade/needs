@@ -17,6 +17,7 @@ import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.util.blocks.BlockStatePredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.IBlockPredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.TagBlockPredicate;
@@ -39,11 +40,13 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
     private Function<PlayerEntity, Double> onTickFn;
     private Function<BlockState, Boolean> matchFn;
 
-    public void onLoaded() {
-        if (blocks.size() <= 0) {
-            throw new JsonParseException("On/near block manipulator must have at least one block predicate.");
-        }
+    @Override
+    public void validate(final Need need) throws IllegalArgumentException {
+        if (radius.isConstant() && radius.get() < 0) throw new IllegalArgumentException("Constant radius must be greater than zero.");
+        super.validate(need);
+    }
 
+    public void onLoaded() {
         // Optimize the list to only predicates that will match:
         final IForgeRegistry<Block> blockReg = RegistryManager.ACTIVE.getRegistry(Block.class);
         final Iterator<IBlockPredicate> iter = blocks.iterator();
@@ -252,6 +255,8 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      * @return True if at least one block matches, false otherwise
      */
     private boolean isWithin(final World world, final double radius, final BlockPos center) {
+        if (radius < 0) return false;
+
         for (double x = -radius; x <= radius; x += 1d) {
             for (double y = -radius; y <= radius; y += 1d) {
                 for (double z = -radius; z <= radius; z += 1d) {
@@ -271,6 +276,8 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      * @return The number of matching blocks
      */
     private int getCountWithin(final World world, final double radius, final BlockPos center) {
+        if (radius < 0) return 0;
+
         int i = 0;
         for (double x = -radius; x <= radius; x += 1d) {
             for (double y = -radius; y <= radius; y += 1d) {

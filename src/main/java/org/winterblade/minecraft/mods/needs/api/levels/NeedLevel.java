@@ -92,6 +92,18 @@ public class NeedLevel {
     }
 
     /**
+     * Called after deserialization to validate the level has everything it needs
+     * to function.
+     * @param need The need the mixin is in
+     * @throws IllegalArgumentException If a parameter is invalid
+     */
+    public void validate(final Need need) throws IllegalArgumentException {
+        entryActions.forEach((ea) -> ea.validate(need, this));
+        continuousActions.forEach((ea) -> ea.validate(need, this));
+        exitActions.forEach((ea) -> ea.validate(need, this));
+    }
+
+    /**
      * Fired when this level is created
      * @param parent The need the level is part of
      */

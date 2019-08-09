@@ -28,6 +28,11 @@ public abstract class BaseManipulator implements IManipulator {
     protected double upTo = Double.POSITIVE_INFINITY;
 
     @Override
+    public void validate(final Need need) throws IllegalArgumentException {
+
+    }
+
+    @Override
     public final void onLoaded(final Need need) {
         parent = need;
         onLoaded();

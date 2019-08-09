@@ -11,6 +11,7 @@ import net.minecraft.util.math.Vec3d;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "Triggered while the player is looking at, every 5 ticks.")
 public class LookingAtManipulator extends BlockCheckingManipulator {
@@ -21,11 +22,13 @@ public class LookingAtManipulator extends BlockCheckingManipulator {
     protected int distance = 6;
 
     @Override
-    public void onLoaded() {
-        if (blocks.size() <= 0) {
-            throw new JsonParseException("On/near block manipulator must have at least one block predicate.");
-        }
+    public void validate(final Need need) throws IllegalArgumentException {
+        if (distance <= 0) throw new IllegalArgumentException("Distance must be a positive whole number.");
+        super.validate(need);
+    }
 
+    @Override
+    public void onLoaded() {
         TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
         super.onLoaded();
     }

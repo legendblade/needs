@@ -10,6 +10,7 @@ import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 
 import javax.annotation.Nonnull;
@@ -40,9 +41,15 @@ public class HoldingManipulator extends TooltipManipulator {
     protected List<IIngredient> items;
 
     @Override
-    public void onLoaded() {
-        if (!mainhand && !offhand) throw new JsonParseException("Holding manipulator should set at least one of 'mainhand' or 'offhand'.");
+    public void validate(final Need need) throws IllegalArgumentException {
+        if (amount == null) throw new IllegalArgumentException("Amount must be specified.");
+        if (!mainhand && !offhand) throw new IllegalArgumentException("Holding manipulator should set at least one of 'mainhand' or 'offhand'.");
 
+        super.validate(need);
+    }
+
+    @Override
+    public void onLoaded() {
         TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
         super.onLoaded();
 

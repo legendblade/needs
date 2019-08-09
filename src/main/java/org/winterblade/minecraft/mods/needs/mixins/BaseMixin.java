@@ -9,6 +9,11 @@ public abstract class BaseMixin implements IMixin {
     protected Need need;
 
     @Override
+    public void validate(final Need need) throws IllegalArgumentException {
+
+    }
+
+    @Override
     public void onLoaded(final Need need) {
         this.need = need;
     }

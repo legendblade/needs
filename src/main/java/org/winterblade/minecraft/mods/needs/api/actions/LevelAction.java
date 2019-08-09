@@ -9,6 +9,11 @@ public abstract class LevelAction implements ILevelAction {
     private NeedLevel parentLevel;
 
     @Override
+    public void validate(final Need parentNeed, final NeedLevel parentLevel) throws IllegalArgumentException {
+
+    }
+
+    @Override
     public void onLoaded(final Need parentNeed, final NeedLevel parentLevel) {
         this.parentNeed = parentNeed;
         this.parentLevel = parentLevel;

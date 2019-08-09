@@ -11,6 +11,7 @@ import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.DamageExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "A collection of manipulators based on damage (in or out)")
 public abstract class DamageBasedManipulator extends BaseManipulator {
@@ -42,6 +43,12 @@ public abstract class DamageBasedManipulator extends BaseManipulator {
     @OptionalField(defaultValue = "None")
     @Document(description = "The maximum amount of damage required to trigger this")
     protected double maxAmount = Double.POSITIVE_INFINITY;
+
+    @Override
+    public void validate(final Need need) throws IllegalArgumentException {
+        if (amount == null) throw new IllegalArgumentException("Amount must be specified.");
+        super.validate(need);
+    }
 
     @SuppressWarnings("WeakerAccess")
     protected boolean doesNotMatchFilters(final Entity target) {

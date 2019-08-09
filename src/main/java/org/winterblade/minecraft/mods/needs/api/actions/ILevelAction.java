@@ -10,6 +10,15 @@ import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
 public interface ILevelAction {
     String getName();
 
+    /**
+     * Called after deserialization to validate the level has everything it needs
+     * to function.
+     * @param parentNeed  The need the action is in
+     * @param parentLevel The level the action is in
+     * @throws IllegalArgumentException If a parameter is invalid
+     */
+    void validate(Need parentNeed, NeedLevel parentLevel) throws IllegalArgumentException;
+
     void onLoaded(Need parentNeed, NeedLevel parentLevel);
 
     void onEntered(Need need, NeedLevel level, PlayerEntity player);

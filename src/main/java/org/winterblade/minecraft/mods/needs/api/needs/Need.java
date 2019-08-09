@@ -63,6 +63,26 @@ public abstract class Need {
     }
 
     /**
+     * Called after deserialization to validate the need has everything it needs
+     * to function.
+     * @throws IllegalArgumentException If a parameter is invalid
+     */
+    public void validate() throws IllegalArgumentException {
+        getManipulators().forEach((m) -> {
+            m.validate(this);
+        });
+
+        getMixins().forEach((m) -> {
+            m.validate(this);
+        });
+
+        for (final Map.Entry<Range<Double>,NeedLevel> kv : getLevels().entrySet()) {
+            kv.getValue().validate(this);
+        }
+
+    }
+
+    /**
      * Called in order to finish loading the need and its children
      */
     public final void finishLoad() {

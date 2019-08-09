@@ -75,6 +75,16 @@ public class LazyNeed {
         else invalid.accept(t);
     }
 
+    /**
+     * Checks that the passed in need is not the same as this need
+     * @param need The need to check against
+     * @return True if the needs are different, false otherwise
+     */
+    public boolean isNot(final Need need) {
+        if (instance != null) return instance == need;
+        return need.getName().equals(name);
+    }
+
     @Override
     public String toString() {
         return name;
