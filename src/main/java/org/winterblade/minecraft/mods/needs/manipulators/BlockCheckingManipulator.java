@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.util.blocks.BlockStatePredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.IBlockPredicate;
 
@@ -26,6 +27,13 @@ public abstract class BlockCheckingManipulator extends TooltipManipulator {
     @Expose
     @Document(type = IBlockPredicate.class, description = "A list of blocks to check")
     protected List<IBlockPredicate> blocks = Collections.emptyList();
+
+    @Override
+    public void validate(final Need need) throws IllegalArgumentException {
+        if (amount == null) throw new IllegalArgumentException("Amount must be specified.");
+        if (blocks == null || blocks.isEmpty()) throw new IllegalArgumentException("An array of blocks must be specified.");
+        super.validate(need);
+    }
 
     @Nullable
     @Override

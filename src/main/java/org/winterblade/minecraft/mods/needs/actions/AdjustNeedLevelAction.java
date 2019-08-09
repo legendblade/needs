@@ -43,8 +43,8 @@ public class AdjustNeedLevelAction extends LevelAction {
     }
 
     @Override
-    public void onCreated(final Need parentNeed, final NeedLevel parentLevel) {
-        super.onCreated(parentNeed, parentLevel);
+    public void onLoaded(final Need parentNeed, final NeedLevel parentLevel) {
+        super.onLoaded(parentNeed, parentLevel);
 
         // If there wasn't a need specified, assume they want the parent need.
         if (need == null) need = LazyNeed.of(parentNeed);

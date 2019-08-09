@@ -10,8 +10,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
@@ -62,7 +62,24 @@ public abstract class Need {
         return false;
     }
 
-    public final void finalizeDeserialization() {
+    /**
+     * Called after deserialization to validate the need has everything it needs
+     * to function.
+     * @throws IllegalArgumentException If a parameter is invalid
+     */
+    public void validate() throws IllegalArgumentException {
+        getManipulators().forEach((m) -> m.validate(this));
+        getMixins().forEach((m) -> m.validate(this));
+
+        for (final Map.Entry<Range<Double>,NeedLevel> kv : getLevels().entrySet()) {
+            kv.getValue().validate(this);
+        }
+    }
+
+    /**
+     * Called in order to finish loading the need and its children
+     */
+    public final void finishLoad() {
         // Freeze our manipulator list
         manipulators = ImmutableList.copyOf(manipulators);
         mixins = ImmutableList.copyOf(mixins);
@@ -80,32 +97,71 @@ public abstract class Need {
 
         // Finalize creating everything:
         getManipulators().forEach((m) -> {
-            m.onCreated(this);
+            m.onLoaded(this);
             MinecraftForge.EVENT_BUS.register(m);
         });
 
         getMixins().forEach((m) -> {
-            m.onCreated(this);
+            m.onLoaded(this);
             MinecraftForge.EVENT_BUS.register(m);
         });
 
         boolean hasTickingActions = false;
         for (final Map.Entry<Range<Double>,NeedLevel> kv : getLevels().entrySet()) {
             final NeedLevel v = kv.getValue();
-            v.onCreated(this);
+            v.onLoaded(this);
             MinecraftForge.EVENT_BUS.register(v);
             hasTickingActions = hasTickingActions || v.hasTickingActions();
         }
 
         // Let subclasses wrap up anything they need to:
-        onCreated();
+        onLoaded();
 
         // Register ourself where necessary:
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onRespawned);
         if (hasTickingActions) MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onPlayerJoined);
     }
 
-    public void onCreated() {
+    /**
+     * Fired when a need is loaded
+     */
+    public void onLoaded() {
+
+    }
+
+    /**
+     * Called when a need is about to be unloaded.
+     */
+    public final void beginUnload() {
+        getManipulators().forEach(manipulator -> {
+            MinecraftForge.EVENT_BUS.unregister(manipulator);
+            manipulator.onUnloaded();
+        });
+
+        getMixins().forEach(mixin -> {
+            MinecraftForge.EVENT_BUS.unregister(mixin);
+            mixin.onUnloaded();
+        });
+
+        for (final Map.Entry<Range<Double>,NeedLevel> kv : getLevels().entrySet()) {
+            final NeedLevel level = kv.getValue();
+            MinecraftForge.EVENT_BUS.unregister(level);
+            level.onUnloaded();
+        }
+
+        onUnloaded();
+
+        // Bye-bye
+        manipulators = Collections.emptyList();
+        mixins = Collections.emptyList();
+        levels = TreeRangeMap.create();
+        MinecraftForge.EVENT_BUS.unregister(this);
+    }
+
+    /**
+     * Fired when a need is unloaded
+     */
+    public void onUnloaded() {
 
     }
 

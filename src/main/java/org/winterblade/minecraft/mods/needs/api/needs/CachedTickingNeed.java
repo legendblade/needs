@@ -13,8 +13,15 @@ public abstract class CachedTickingNeed extends Need {
     private final Map<String, Double> cache = new HashMap<>();
 
     @Override
-    public void onCreated() {
-        TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
+    public void onLoaded() {
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        cache.clear();
+        TickManager.INSTANCE.removePlayerTickUpdate(this);
     }
 
     private void onTick(final PlayerEntity p) {

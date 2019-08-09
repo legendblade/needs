@@ -11,6 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 
 import java.lang.reflect.Type;
@@ -37,8 +38,20 @@ public class ItemUsedManipulator extends TooltipManipulator {
     }
 
     @Override
-    public void onCreated() {
-        super.onCreated();
+    public void validate(final Need need) throws IllegalArgumentException {
+        //noinspection ConstantConditions - never, ever trust user input.
+        if (items == null || items.isEmpty()) throw new IllegalArgumentException("Items array must be specified.");
+
+        if (defaultAmount == null && items.entrySet().stream().anyMatch((kv) -> kv.getValue() == null)) {
+            throw new IllegalArgumentException("Default amount must be specified if one or more items use it.");
+        }
+
+        super.validate(need);
+    }
+
+    @Override
+    public void onLoaded() {
+        super.onLoaded();
         items.entrySet().forEach((kv) -> {
             if (kv.getValue() == null) kv.setValue(defaultAmount);
         });

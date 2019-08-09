@@ -76,7 +76,7 @@ public abstract class TooltipManipulator extends BaseManipulator {
     private LocalCachedNeed localCachedNeed;
 
     @Override
-    public void onCreated() {
+    public void onLoaded() {
         if (showTooltip) {
             DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.addListener(this::onTooltip));
         }
@@ -90,6 +90,12 @@ public abstract class TooltipManipulator extends BaseManipulator {
             formatting.put(Range.greaterThan(0d), TextFormatting.GREEN.toString());
             formatting.put(Range.lessThan(0d), TextFormatting.RED.toString());
         }
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        MinecraftForge.EVENT_BUS.unregister(this);
     }
 
     /**

@@ -42,6 +42,15 @@ public class PotionEffectLevelAction extends LevelAction implements IReappliedOn
     private Effect theEffect;
 
     @Override
+    public void validate(final Need parentNeed, final NeedLevel parentLevel) throws IllegalArgumentException {
+        if (effect == null || effect.isEmpty()) throw new IllegalArgumentException("Potion effect must be specified.");
+
+        if (RegistryManager.ACTIVE.getRegistry(Effect.class).getValue(new ResourceLocation(effect)) == null) {
+            throw new IllegalArgumentException("Unable to get potion effect '" + effect + "'.");
+        }
+    }
+
+    @Override
     public String getName() {
         return "Potion";
     }

@@ -35,7 +35,7 @@ public abstract class CustomAttributeNeed extends AttributeBasedNeed {
     }
 
     @Override
-    public void onCreated() {
+    public void onLoaded() {
         if (min == Double.NEGATIVE_INFINITY) min = minFromAttribute;
         else if (min < minFromAttribute) {
             NeedsMod.LOGGER.warn("Minimum value of " + getName() + " need is less than the value of the attribute it relies on: " + minFromAttribute);
@@ -54,7 +54,7 @@ public abstract class CustomAttributeNeed extends AttributeBasedNeed {
             ((Attribute) attribute).setShouldWatch(true);
         }
 
-        super.onCreated();
+        super.onLoaded();
     }
 
     @Override

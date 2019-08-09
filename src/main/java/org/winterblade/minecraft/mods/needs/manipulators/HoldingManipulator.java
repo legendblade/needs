@@ -1,6 +1,5 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
-import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
@@ -10,6 +9,7 @@ import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 
 import javax.annotation.Nonnull;
@@ -40,11 +40,17 @@ public class HoldingManipulator extends TooltipManipulator {
     protected List<IIngredient> items;
 
     @Override
-    public void onCreated() {
-        if (!mainhand && !offhand) throw new JsonParseException("Holding manipulator should set at least one of 'mainhand' or 'offhand'.");
+    public void validate(final Need need) throws IllegalArgumentException {
+        if (amount == null) throw new IllegalArgumentException("Amount must be specified.");
+        if (!mainhand && !offhand) throw new IllegalArgumentException("Holding manipulator should set at least one of 'mainhand' or 'offhand'.");
 
-        TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
-        super.onCreated();
+        super.validate(need);
+    }
+
+    @Override
+    public void onLoaded() {
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
+        super.onLoaded();
 
         final String amountType = amount.isConstant() || !amount.isRequired(CountedExpressionContext.COUNT) ? "" : ", Per Item";
         final String suffix;
@@ -57,6 +63,12 @@ public class HoldingManipulator extends TooltipManipulator {
         }
 
         postFormat = (sb, player) -> sb.append(suffix).toString();
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        TickManager.INSTANCE.removePlayerTickUpdate(this);
     }
 
     @Nullable

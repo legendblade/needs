@@ -92,26 +92,38 @@ public class NeedLevel {
     }
 
     /**
+     * Called after deserialization to validate the level has everything it needs
+     * to function.
+     * @param need The need the mixin is in
+     * @throws IllegalArgumentException If a parameter is invalid
+     */
+    public void validate(final Need need) throws IllegalArgumentException {
+        entryActions.forEach((ea) -> ea.validate(need, this));
+        continuousActions.forEach((ea) -> ea.validate(need, this));
+        exitActions.forEach((ea) -> ea.validate(need, this));
+    }
+
+    /**
      * Fired when this level is created
      * @param parent The need the level is part of
      */
-    public void onCreated(final Need parent) {
+    public void onLoaded(final Need parent) {
         this.parent = parent;
 
         reappliedActions = new ArrayList<>();
         reappliedContinuousActions = new ArrayList<>();
 
         entryActions.forEach((ea) -> {
-            ea.onCreated(parent, this);
+            ea.onLoaded(parent, this);
             if (!(ea instanceof IReappliedOnDeathLevelAction)) return;
             reappliedActions.add((IReappliedOnDeathLevelAction)ea);
         });
 
-        exitActions.forEach((ea) -> ea.onCreated(parent, this));
+        exitActions.forEach((ea) -> ea.onLoaded(parent, this));
 
         // Build up our consumer
         for (final ILevelAction ca : continuousActions) {
-            ca.onCreated(parent, this);
+            ca.onLoaded(parent, this);
 
             if ((ca instanceof IReappliedOnDeathLevelAction)) {
                 reappliedContinuousActions.add((IReappliedOnDeathLevelAction) ca);
@@ -136,6 +148,37 @@ public class NeedLevel {
         continuousActions = ImmutableList.copyOf(continuousActions);
         reappliedActions = ImmutableList.copyOf(reappliedActions);
         reappliedContinuousActions = ImmutableList.copyOf(reappliedContinuousActions);
+    }
+
+    /**
+     * Called in order to finish unloading the level
+     */
+    public void onUnloaded() {
+        // Clean up
+        entryActions.forEach(ea -> {
+            MinecraftForge.EVENT_BUS.unregister(ea);
+            ea.onUnloaded();
+        });
+
+        continuousActions.forEach(ea -> {
+            MinecraftForge.EVENT_BUS.unregister(ea);
+            ea.onUnloaded();
+        });
+
+        exitActions.forEach(ea -> {
+            MinecraftForge.EVENT_BUS.unregister(ea);
+            ea.onUnloaded();
+        });
+
+        entryActions = Collections.emptyList();
+        exitActions = Collections.emptyList();
+        continuousActions = Collections.emptyList();
+        reappliedActions = Collections.emptyList();
+        reappliedContinuousActions = Collections.emptyList();
+
+        MinecraftForge.EVENT_BUS.unregister(this);
+        isListeningToTicks = false;
+        tickAction = null;
     }
 
     /**
@@ -253,7 +296,7 @@ public class NeedLevel {
         }
 
         @Override
-        public void onCreated(final Need parent) {
+        public void onLoaded(final Need parent) {
 
         }
 

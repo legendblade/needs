@@ -1,6 +1,5 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
-import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraftforge.common.MinecraftForge;
@@ -64,11 +63,24 @@ public class OnNeedChangedManipulator extends BaseManipulator {
     }
 
     @Override
-    public void onCreated() {
-        if (need == null) throw new JsonParseException("onNeedChanged requires a 'need' property.");
-        isListening = true;
+    public void validate(final Need need) throws IllegalArgumentException {
+        if (amount == null) throw new IllegalArgumentException("Amount must be specified.");
+        if (this.need == null) throw new IllegalArgumentException("onNeedChanged requires a 'need' property.");
+        if (!this.need.isNot(need)) throw new IllegalArgumentException("onNeedChanged cannot target itself.");
+        super.validate(need);
+    }
 
+    @Override
+    public void onLoaded() {
+        isListening = true;
         checkValue = (minValue != Double.NEGATIVE_INFINITY || maxValue != Double.POSITIVE_INFINITY);
+    }
+
+    @Override
+    public void onUnloaded() {
+        isListening = false;
+        need.discard();
+        need = null;
     }
 
     @SubscribeEvent

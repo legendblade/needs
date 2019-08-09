@@ -53,8 +53,19 @@ public class CustomNeed extends Need {
     }
 
     @Override
-    public void onCreated() {
+    public void validate() throws IllegalArgumentException {
+        if (max < min) throw new IllegalArgumentException("Min must be less than max");
+    }
+
+    @Override
+    public void onLoaded() {
         MinecraftForge.EVENT_BUS.register(this);
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        MinecraftForge.EVENT_BUS.unregister(this);
     }
 
     public String getName() {

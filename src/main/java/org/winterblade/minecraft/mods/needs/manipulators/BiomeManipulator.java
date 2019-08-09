@@ -1,7 +1,6 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -11,10 +10,11 @@ import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
-import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
+import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,12 +45,32 @@ public class BiomeManipulator extends BaseManipulator {
     protected boolean trackBiomes = false;
 
     @Override
-    public void onCreated() {
+    public void validate(final Need need) throws IllegalArgumentException {
+        if (amount == null) throw new IllegalArgumentException("Amount must be specified.");
+
+        // Check if we have biomes; don't store them, as they may change between
+        if (!biomeTypes.isEmpty()) {
+            biomeTypes = biomeTypes.stream().filter((b) -> {
+                try {
+                    BiomeManager.BiomeType.valueOf(b.toUpperCase());
+                } catch (final IllegalArgumentException e) {
+                    throw new IllegalArgumentException("The biome type " + b + " isn't registered; valid values are: " + Arrays.toString(BiomeManager.BiomeType.values()));
+                }
+                return true;
+            }).collect(Collectors.toList());
+        }
+
+        if (biomes.isEmpty() && biomeTypes.isEmpty()) throw new IllegalArgumentException("At least one valid biome or biome type must be specified.");
+    }
+
+    @Override
+    public void onLoaded() {
         if (!biomeTypes.isEmpty()) {
             types = biomeTypes.stream().map((b) -> {
                 try {
                     return BiomeManager.BiomeType.valueOf(b.toUpperCase());
                 } catch (IllegalArgumentException e) {
+                    // This should be impossible by now, but, go off.
                     NeedsMod.LOGGER.info("The biome type " + b + " isn't registered.");
                     return null;
                 }
@@ -58,13 +78,18 @@ public class BiomeManipulator extends BaseManipulator {
             .collect(Collectors.toList());
         }
 
-        if (biomes.isEmpty() && types.isEmpty()) throw new JsonParseException("At least one valid biome or biome type must be specified.");
-
         if (!biomes.isEmpty()) trackBiomes = true;
         if (!types.isEmpty()) trackTypes = true;
 
-        super.onCreated();
-        TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
+        super.onLoaded();
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        TickManager.INSTANCE.removePlayerTickUpdate(this);
+        types = Collections.emptyList();
     }
 
     private void onTick(final PlayerEntity player) {

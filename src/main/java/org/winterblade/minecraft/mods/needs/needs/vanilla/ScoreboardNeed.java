@@ -37,11 +37,12 @@ public class ScoreboardNeed extends CachedTickingNeed {
     private boolean readOnly;
 
     @Override
-    public void onCreated() {
+    public void validate() throws IllegalArgumentException {
         if (getMixins().stream().anyMatch((m) -> m instanceof ScoreboardMixin)) {
             throw new IllegalArgumentException("Scoreboard need cannot have Scoreboard mixin applied to it.");
         }
-        super.onCreated();
+
+        super.validate();
     }
 
     @Override

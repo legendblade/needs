@@ -120,7 +120,7 @@ public class NeedInitializer {
             throw new IllegalArgumentException("This need duplicates another need");
         }
 
-        need.finalizeDeserialization();
+        need.finishLoad();
         NeedRegistry.INSTANCE.register(need, need.getName(), md.digest(), content);
     }
 
