@@ -14,7 +14,7 @@ public class TickManipulator extends BaseManipulator {
     protected NeedExpressionContext amount;
 
     @Override
-    public void onCreated() {
+    public void onLoaded() {
         TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
     }
 

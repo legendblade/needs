@@ -9,7 +9,7 @@ public abstract class LevelAction implements ILevelAction {
     private NeedLevel parentLevel;
 
     @Override
-    public void onCreated(final Need parentNeed, final NeedLevel parentLevel) {
+    public void onLoaded(final Need parentNeed, final NeedLevel parentLevel) {
         this.parentNeed = parentNeed;
         this.parentLevel = parentLevel;
     }

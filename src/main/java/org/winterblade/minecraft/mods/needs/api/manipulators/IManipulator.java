@@ -7,7 +7,7 @@ import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @JsonAdapter(ManipulatorRegistry.class)
 public interface IManipulator {
-    void onCreated(Need need);
+    void onLoaded(Need need);
 
     double getLowestToSetNeed();
 

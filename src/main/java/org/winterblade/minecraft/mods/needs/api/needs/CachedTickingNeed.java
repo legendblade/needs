@@ -13,7 +13,7 @@ public abstract class CachedTickingNeed extends Need {
     private final Map<String, Double> cache = new HashMap<>();
 
     @Override
-    public void onCreated() {
+    public void onLoaded() {
         TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
     }
 

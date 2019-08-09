@@ -53,7 +53,7 @@ public class CustomNeed extends Need {
     }
 
     @Override
-    public void onCreated() {
+    public void onLoaded() {
         MinecraftForge.EVENT_BUS.register(this);
     }
 

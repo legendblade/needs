@@ -4,7 +4,6 @@ import com.google.gson.annotations.Expose;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
-import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 
 @SuppressWarnings("WeakerAccess")
 @Document(description = "The base for most manipulators")
@@ -29,15 +28,15 @@ public abstract class BaseManipulator implements IManipulator {
     protected double upTo = Double.POSITIVE_INFINITY;
 
     @Override
-    public final void onCreated(final Need need) {
+    public final void onLoaded(final Need need) {
         parent = need;
-        onCreated();
+        onLoaded();
     }
 
     /**
      * Used to finish up any necessary post creation tasks
      */
-    public void onCreated() {}
+    public void onLoaded() {}
 
     private static class ExternalManipulator extends BaseManipulator {
 

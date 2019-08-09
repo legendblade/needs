@@ -76,7 +76,7 @@ public abstract class TooltipManipulator extends BaseManipulator {
     private LocalCachedNeed localCachedNeed;
 
     @Override
-    public void onCreated() {
+    public void onLoaded() {
         if (showTooltip) {
             DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.addListener(this::onTooltip));
         }

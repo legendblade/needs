@@ -95,23 +95,23 @@ public class NeedLevel {
      * Fired when this level is created
      * @param parent The need the level is part of
      */
-    public void onCreated(final Need parent) {
+    public void onLoaded(final Need parent) {
         this.parent = parent;
 
         reappliedActions = new ArrayList<>();
         reappliedContinuousActions = new ArrayList<>();
 
         entryActions.forEach((ea) -> {
-            ea.onCreated(parent, this);
+            ea.onLoaded(parent, this);
             if (!(ea instanceof IReappliedOnDeathLevelAction)) return;
             reappliedActions.add((IReappliedOnDeathLevelAction)ea);
         });
 
-        exitActions.forEach((ea) -> ea.onCreated(parent, this));
+        exitActions.forEach((ea) -> ea.onLoaded(parent, this));
 
         // Build up our consumer
         for (final ILevelAction ca : continuousActions) {
-            ca.onCreated(parent, this);
+            ca.onLoaded(parent, this);
 
             if ((ca instanceof IReappliedOnDeathLevelAction)) {
                 reappliedContinuousActions.add((IReappliedOnDeathLevelAction) ca);
@@ -253,7 +253,7 @@ public class NeedLevel {
         }
 
         @Override
-        public void onCreated(final Need parent) {
+        public void onLoaded(final Need parent) {
 
         }
 

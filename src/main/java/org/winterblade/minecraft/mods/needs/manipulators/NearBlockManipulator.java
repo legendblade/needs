@@ -39,7 +39,7 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
     private Function<PlayerEntity, Double> onTickFn;
     private Function<BlockState, Boolean> matchFn;
 
-    public void onCreated() {
+    public void onLoaded() {
         if (blocks.size() <= 0) {
             throw new JsonParseException("On/near block manipulator must have at least one block predicate.");
         }
@@ -137,7 +137,7 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
         */
 
         TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
-        super.onCreated();
+        super.onLoaded();
     }
 
     /**

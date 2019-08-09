@@ -40,11 +40,11 @@ public class HoldingManipulator extends TooltipManipulator {
     protected List<IIngredient> items;
 
     @Override
-    public void onCreated() {
+    public void onLoaded() {
         if (!mainhand && !offhand) throw new JsonParseException("Holding manipulator should set at least one of 'mainhand' or 'offhand'.");
 
         TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
-        super.onCreated();
+        super.onLoaded();
 
         final String amountType = amount.isConstant() || !amount.isRequired(CountedExpressionContext.COUNT) ? "" : ", Per Item";
         final String suffix;

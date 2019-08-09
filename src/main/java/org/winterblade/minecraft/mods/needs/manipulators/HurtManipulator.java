@@ -22,8 +22,8 @@ public class HurtManipulator extends DamageBasedManipulator {
     protected boolean shouldCheckSource = false;
 
     @Override
-    public void onCreated() {
-        super.onCreated();
+    public void onLoaded() {
+        super.onLoaded();
         if (0 < sources.size()) shouldCheckSource = true;
     }
 

@@ -116,8 +116,8 @@ public class UiMixin extends BaseMixin {
     }
 
     @Override
-    public void onCreated(final Need need) {
-        super.onCreated(need);
+    public void onLoaded(final Need need) {
+        super.onLoaded(need);
         need.enableSyncing();
 
         if (icon != null && !icon.isEmpty()) {

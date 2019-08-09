@@ -6,5 +6,5 @@ import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
 
 @JsonAdapter(MixinRegistry.class)
 public interface IMixin {
-    void onCreated (Need need);
+    void onLoaded(Need need);
 }

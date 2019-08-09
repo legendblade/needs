@@ -10,7 +10,7 @@ import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
 public interface ILevelAction {
     String getName();
 
-    void onCreated(Need parentNeed, NeedLevel parentLevel);
+    void onLoaded(Need parentNeed, NeedLevel parentLevel);
 
     void onEntered(Need need, NeedLevel level, PlayerEntity player);
 

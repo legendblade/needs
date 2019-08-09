@@ -45,7 +45,7 @@ public class BiomeManipulator extends BaseManipulator {
     protected boolean trackBiomes = false;
 
     @Override
-    public void onCreated() {
+    public void onLoaded() {
         if (!biomeTypes.isEmpty()) {
             types = biomeTypes.stream().map((b) -> {
                 try {
@@ -63,7 +63,7 @@ public class BiomeManipulator extends BaseManipulator {
         if (!biomes.isEmpty()) trackBiomes = true;
         if (!types.isEmpty()) trackTypes = true;
 
-        super.onCreated();
+        super.onLoaded();
         TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
     }
 

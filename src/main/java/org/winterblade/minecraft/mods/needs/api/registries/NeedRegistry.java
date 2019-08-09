@@ -128,7 +128,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
                 }
 
                 loaded.add(need);
-                need.finalizeDeserialization();
+                need.finishLoad();
                 continue;
             }
 

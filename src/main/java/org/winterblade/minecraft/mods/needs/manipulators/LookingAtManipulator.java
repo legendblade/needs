@@ -21,13 +21,13 @@ public class LookingAtManipulator extends BlockCheckingManipulator {
     protected int distance = 6;
 
     @Override
-    public void onCreated() {
+    public void onLoaded() {
         if (blocks.size() <= 0) {
             throw new JsonParseException("On/near block manipulator must have at least one block predicate.");
         }
 
         TickManager.INSTANCE.requestPlayerTickUpdate(this::onTick);
-        super.onCreated();
+        super.onLoaded();
     }
 
     private void onTick(final PlayerEntity player) {

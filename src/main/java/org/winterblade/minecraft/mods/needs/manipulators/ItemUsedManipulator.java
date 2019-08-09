@@ -37,8 +37,8 @@ public class ItemUsedManipulator extends TooltipManipulator {
     }
 
     @Override
-    public void onCreated() {
-        super.onCreated();
+    public void onLoaded() {
+        super.onLoaded();
         items.entrySet().forEach((kv) -> {
             if (kv.getValue() == null) kv.setValue(defaultAmount);
         });

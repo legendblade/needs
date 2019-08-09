@@ -64,7 +64,7 @@ public class OnNeedChangedManipulator extends BaseManipulator {
     }
 
     @Override
-    public void onCreated() {
+    public void onLoaded() {
         if (need == null) throw new JsonParseException("onNeedChanged requires a 'need' property.");
         isListening = true;
 

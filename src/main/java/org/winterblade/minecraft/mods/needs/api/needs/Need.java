@@ -62,7 +62,10 @@ public abstract class Need {
         return false;
     }
 
-    public final void finalizeDeserialization() {
+    /**
+     * Called in order to finish loading the need and its children
+     */
+    public final void finishLoad() {
         // Freeze our manipulator list
         manipulators = ImmutableList.copyOf(manipulators);
         mixins = ImmutableList.copyOf(mixins);
@@ -80,32 +83,35 @@ public abstract class Need {
 
         // Finalize creating everything:
         getManipulators().forEach((m) -> {
-            m.onCreated(this);
+            m.onLoaded(this);
             MinecraftForge.EVENT_BUS.register(m);
         });
 
         getMixins().forEach((m) -> {
-            m.onCreated(this);
+            m.onLoaded(this);
             MinecraftForge.EVENT_BUS.register(m);
         });
 
         boolean hasTickingActions = false;
         for (final Map.Entry<Range<Double>,NeedLevel> kv : getLevels().entrySet()) {
             final NeedLevel v = kv.getValue();
-            v.onCreated(this);
+            v.onLoaded(this);
             MinecraftForge.EVENT_BUS.register(v);
             hasTickingActions = hasTickingActions || v.hasTickingActions();
         }
 
         // Let subclasses wrap up anything they need to:
-        onCreated();
+        onLoaded();
 
         // Register ourself where necessary:
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onRespawned);
         if (hasTickingActions) MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::onPlayerJoined);
     }
 
-    public void onCreated() {
+    /**
+     * Fired when a need is loaded
+     */
+    public void onLoaded() {
 
     }
 

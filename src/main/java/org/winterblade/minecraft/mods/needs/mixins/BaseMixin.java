@@ -9,7 +9,7 @@ public abstract class BaseMixin implements IMixin {
     protected Need need;
 
     @Override
-    public void onCreated(final Need need) {
+    public void onLoaded(final Need need) {
         this.need = need;
     }
 }
