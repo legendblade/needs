@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { cloneDeep, clone, startCase, union, unionBy, map, sortBy, differenceBy } from 'lodash';
+import { cloneDeep, clone, startCase, snakeCase, union, unionBy, map, sortBy, differenceBy } from 'lodash';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import js from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
 import vs from 'react-syntax-highlighter/dist/esm/styles/hljs/vs';
@@ -191,11 +191,11 @@ class App extends React.Component {
     parseData(response) {
         console.log(response);
         const convertToNav = (v, r) => {
-            v.href = r + v.id;
+            v.href = snakeCase(r + '_' + v.id);
             return {
                 "title": startCase(v.id),
                 "root": "#" + v.href,
-                "children": map(sortEntries(v.children), (c) => convertToNav(c, v.href))
+                "children": map(sortEntries(v.children), (c) => convertToNav(c, r))
             };
         };
         
