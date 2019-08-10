@@ -55,46 +55,89 @@ function AliasList(props) {
     }
 }
 
-function Expression(props) {
-    if (!props.isExpression) return '';
-    return (
-        <div class="alert alert-info">
-            <span>The variables available in this expression are:</span>
-            <dl class="row">
-                {map(props.expressionVars, (v, k) => [
-                    (<dt class="col-sm-3" key={k}>{k}</dt>),
-                    (<dd class="col-sm-9" key={k + "_desc"}>{v}</dd>)
-                ])}
-            </dl>
-        </div>
-    );
-}
-
 function Field(props) {
+    props.depth = props.depth || 0;
+
     const rowClass = 'row mx-1 ' + ((props.isParent) ? 'text-muted' : '');
     const nameClass = props.isParent ? 'text-muted' : '';
-    const typeBadge = 'badge float-left mr-1 ' + ((props.isParent) ? 'badge-light' : 'badge-info');
+    const typeBadge = 'badge float-left mr-1 ' + ((props.isParent) ? 'badge-light' : (props.type === 'Variable' ? 'badge-primary' : 'badge-info'));
     const expBadge = 'badge float-left ' + ((props.isParent) ? 'badge-secondary' : 'badge-success');
     const parentText = props.isParent ? (<span key="1" class='text-muted'><small>From {props.parent}</small></span>) : '';
+    const showMap = props.isMap && props.type !== "Map";
+    const showArray = props.isArray && props.type !== "Array";
+    
+    const prefix = showMap 
+                        ? "Map of Strings->"
+                        : showArray
+                            ? "Array of "
+                            : "";
+    const suffix = showArray ? "s" : ""
 
+    const hasSubfield = props.listOrMapClass && props.listOrMapClass.fields && props.listOrMapClass.fields.length;
 
-    return (
+    let d = (
+        <div class='p-2'>
+            <span class={typeBadge}>{prefix}{startCase(props.type)}{suffix}</span>
+            {props.isExpression ? (<span class={expBadge}>Expression</span>) : ('')}
+            <div class={nameClass}>
+                {props.name}
+            </div>
+            {props.isOptional ? (<div class='text-muted'><small>Optional; defaults to: {props.defaultValue}</small></div>) : ''}
+            {parentText}
+        </div>
+    )
+
+    const thStyle = {
+        'borderLeft': '1px solid #CCC',
+        'display': 'block',
+        'height': '100%',
+        'marginLeft': '1rem',
+        'paddingLeft': '1rem'
+    };
+    for (let i = 0; i < props.depth; i++) {
+        d = (<div style={thStyle}>{d}</div>);
+    }
+
+    const field = (
         <tr key={props.name} class={rowClass}>
-            <th class='col-md-4 text-right'>
-                <span class={typeBadge}>{props.type}</span>
-                {props.isExpression ? (<span class={expBadge}>Expression</span>) : ('')}
-                <div class={nameClass}>
-                    {props.name}
-                </div>
-                {props.isOptional ? (<div class='text-muted'><small>Optional; defaults to: {props.defaultValue}</small></div>) : ''}
-                {parentText}
+            <th class='col-md-4 text-right p-0'>
+                {d}
             </th>
-            <td class='col-md-8'>                
+            <td class='col-md-8 p-2'>                
                 {props.description || noDesc}
-                {Expression(props)}
+                {props.isExpression ? (<div class='mt-4'><span class='badge badge-success'>Expression</span> The following variables are available for this expression</div>) : ""}
+                {hasSubfield ? (<div class='mt-4'><strong>{startCase(props.type)}</strong>: {props.listOrMapClass.description || noDesc}</div>) : ""}
             </td>
         </tr>
     );
+
+    if (!hasSubfield && !props.isExpression) return field;
+
+    if (hasSubfield) {
+        const hasVisited = {};
+        return [field,map(props.listOrMapClass.fields, (f) => {
+            f.isParent = props.isParent;
+            f.parent = props.parent;
+            f.depth = props.depth + 1;
+
+            if (hasVisited[f.type]) delete f.listOrMapClass;
+            hasVisited[f.type] = true;
+            return Field(f);
+        })];
+    }
+
+    return [field,map(props.expressionVars, (v, k) => {
+        return Field({
+            'name': k,
+            'description': v,
+            'type': 'Variable',
+            'isParent': props.isParent,
+            'depth': props.depth + 1,
+            'parent': props.parent,
+            'expressionVar': true
+        });
+    })];
+
 }
 
 function FieldList(props) {
@@ -138,7 +181,6 @@ function Entry(props, parentFields) {
             <div class='row'>
                 <div class='col-9'>
                     <Tag class='card-title'>{name}<small>{props.depth.map((d) => (<a class='entry-path' href={'#' + d.href}>{d.name}</a>)).reverse()}</small></Tag>
-                    <p class='card-subtitle'>{props.description || noDesc}</p>
                 </div>
                 <div class='col-3 text-right'>
                     {
@@ -148,6 +190,7 @@ function Entry(props, parentFields) {
                     }
                 </div>
             </div>
+            <p class='card-subtitle'>{props.description || noDesc}</p>
 
             <AliasList aliases={props.aliases} />
             {FieldList(union(parentFields, props.fields))}

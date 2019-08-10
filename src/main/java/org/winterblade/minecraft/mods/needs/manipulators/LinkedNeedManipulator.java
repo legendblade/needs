@@ -3,12 +3,14 @@ package org.winterblade.minecraft.mods.needs.manipulators;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
+import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.OtherNeedChangedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
@@ -157,7 +159,9 @@ public class LinkedNeedManipulator extends BaseManipulator {
         }
     }
 
-    @Document(description = "An individual link in the chain")
+    @Document(description = "An individual link in the chain. All links are symmetrical; e.g. if you adjust the need " +
+            "on the left side of the link, the right side will be adjusted by the amount, and if you adjust the right " +
+            "side of the link, the left side will be adjusted.")
     protected static class Link {
         @Expose
         @Document(description = "The left side of the link")
@@ -172,6 +176,7 @@ public class LinkedNeedManipulator extends BaseManipulator {
     protected static class LinkHalf {
         @Expose
         @OptionalField(defaultValue = "The parent need")
+        @Document(description = "The need for this side of the link")
         protected LazyNeed need;
 
         @Expose
@@ -196,10 +201,29 @@ public class LinkedNeedManipulator extends BaseManipulator {
 
         @Expose
         @Document(description = "The amount to change by when triggered")
-        protected OtherNeedChangedExpressionContext amount;
+        protected ChainExpressionContext amount;
 
         protected Need instance;
     }
 
     protected static class ChainedManipulator extends BaseManipulator {}
+
+    @JsonAdapter(ExpressionContext.Deserializer.class)
+    protected static class ChainExpressionContext extends OtherNeedChangedExpressionContext {
+        protected static final Map<String, String> docs = new HashMap<>(NeedExpressionContext.docs);
+        static {
+            docs.put(CURRENT_NEED_VALUE, "The current value of this side of the chain.");
+            docs.put(OTHER, "The current value of the other side of the chain.");
+            docs.put(PREVIOUS, "The previous value of the other side of the chain.");
+            docs.put(CHANGE, "The amount the other side of the chain changed by, or: (current - previous).");
+        }
+
+        public ChainExpressionContext() {
+        }
+
+        @Override
+        public Map<String, String> getElementDocumentation() {
+            return docs;
+        }
+    }
 }

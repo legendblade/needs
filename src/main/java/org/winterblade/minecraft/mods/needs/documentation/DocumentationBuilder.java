@@ -33,7 +33,6 @@ import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 
 import java.io.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -223,9 +222,9 @@ public class DocumentationBuilder {
      * @param <T>    The type of the parent class
      * @return  A function to process the fields with
      */
-    private static <T> Function<Field, DocumentationEntry.Field> documentField(final Class<? extends T> clazz, final String docTag, final DocumentationEntry entry) {
+    private static <T> Function<Field, DocumentationField> documentField(final Class<? extends T> clazz, final String docTag, final DocumentationBase entry) {
         return (f) -> {
-            final DocumentationEntry.Field field = new DocumentationEntry.Field();
+            final DocumentationField field = new DocumentationField();
 
             field.name = f.getName();
 
@@ -234,9 +233,14 @@ public class DocumentationBuilder {
             if (fieldAnno != null && !fieldAnno.description().isEmpty()) {
                 field.description = fieldAnno.description();
             } else {
-                final String key = docTag + entry.id + "." + f.getName();
+                String key = docTag + entry.id + "." + field.name;
                 if (I18n.hasKey(key)) {
                     field.description = I18n.format(key);
+                } else {
+                    key = docTag + field.name;
+                    if (I18n.hasKey(key)) {
+                        field.description = I18n.format(key);
+                    }
                 }
             }
 
@@ -305,6 +309,23 @@ public class DocumentationBuilder {
 
             // Give up:
             else field.type = fieldType.getSimpleName();
+
+            final DocumentationBase subclass = new DocumentationBase();
+            subclass.id = entry.id + "." + field.name;
+
+            final Document subdoc = fieldType.getAnnotation(Document.class);
+            final List<DocumentationField> fieldList = Arrays.stream(fieldType.getDeclaredFields())
+                    .filter((f2) -> f2.getAnnotation(Expose.class) != null
+                            || f2.getAnnotation(OptionalField.class) != null
+                            || f2.getAnnotation(Document.class) != null)
+                    .map(documentField(fieldType, docTag, subclass))
+                    .collect(Collectors.toList());
+
+            if (!fieldList.isEmpty() && subdoc == null) return field;
+
+            subclass.description = subdoc != null ? subdoc.description() : "";
+            subclass.fields = fieldList;
+            field.listOrMapClass = subclass;
 
             return field;
         };
