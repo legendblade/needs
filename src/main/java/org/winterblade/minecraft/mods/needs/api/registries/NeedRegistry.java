@@ -145,9 +145,18 @@ public class NeedRegistry extends TypedRegistry<Need> {
     public Need getByName(final String need) {
         return loaded
                 .stream()
-                .filter((n) -> n.getName().equals(need))
+                .filter((n) -> n.getName().toLowerCase().equals(need.toLowerCase()))
                 .findFirst()
-                .orElse(null);
+                .orElseGet(() -> {
+                    final Tuple<Supplier<? extends Need>, Class<? extends Need>> val = getRegistry().get(need.toLowerCase());
+                    if (val == null) return null;
+
+                    return loaded
+                        .stream()
+                        .filter((n) -> n.getClass().equals(val.getB()))
+                        .findFirst()
+                        .orElse(null);
+                });
     }
 
     /**
