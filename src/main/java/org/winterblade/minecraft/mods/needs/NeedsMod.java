@@ -33,8 +33,7 @@ public class NeedsMod
     @SuppressWarnings("unused")
     private void setup(final FMLCommonSetupEvent event)
     {
-        LOGGER.info("Needs, Wants, Desires uses mXparser for expression parsing. mXparser is released under the following license:");
-        LOGGER.info(mXparser.LICENSE);
+        LOGGER.info("Needs, Wants, Desires uses mXparser for expression parsing. mXparser is released under the following license:\n" + mXparser.getLicense());
 
         MinecraftForge.EVENT_BUS.addListener(NeedRegistry.INSTANCE::onLogin);
     }

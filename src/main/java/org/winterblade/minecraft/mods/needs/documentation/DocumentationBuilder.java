@@ -247,7 +247,8 @@ public class DocumentationBuilder {
                 try {
                     final ExpressionContext ctx = (ExpressionContext) fieldType.getConstructor().newInstance();
                     field.expressionVars = ctx.getElementDocumentation();
-                } catch (final InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                } catch (
+                        final Exception | NoClassDefFoundError e) {
                     NeedsMod.LOGGER.warn("Unable to create new expression context " + fieldType.getCanonicalName());
                     field.expressionVars = new HashMap<>();
                 }

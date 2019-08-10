@@ -45,7 +45,7 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
     }
 
     @CapabilityInject(IItemUsedCountCapability.class)
-    protected static final Capability<IItemUsedCountCapability> CAPABILITY;
+    protected static Capability<IItemUsedCountCapability> CAPABILITY;
 
     @Expose
     @Document(description = "The default amount to apply if not specified on an item level")

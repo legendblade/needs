@@ -19,7 +19,7 @@ public class CustomNeed extends Need {
     }
 
     @CapabilityInject(INeedCapability.class)
-    public static final Capability<INeedCapability> CAPABILITY;
+    public static Capability<INeedCapability> CAPABILITY;
 
     @Expose
     @Document(description = "The name of the need; names should be unique")

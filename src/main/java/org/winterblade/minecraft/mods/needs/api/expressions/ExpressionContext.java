@@ -5,6 +5,7 @@ import com.google.gson.*;
 import com.google.gson.annotations.JsonAdapter;
 import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
+import org.mariuszgromada.math.mxparser.PrimitiveElement;
 import org.winterblade.minecraft.mods.needs.api.IExpression;
 import org.winterblade.minecraft.mods.needs.api.documentation.IDocumentedContext;
 
@@ -55,6 +56,10 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
 
     public abstract List<String> getElements();
 
+    private void testSomething() {
+        final PrimitiveElement primitiveElement = new PrimitiveElement(Argument.TYPE_ID);
+    }
+
     private IExpression deserializeExpression(final JsonElement json, final List<String> elements) {
         return deserializeExpression(
             json,
@@ -67,6 +72,7 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
 
     private IExpression deserializeExpression(final JsonElement json, final Argument[] elements) {
         if (!json.isJsonPrimitive()) throw new JsonParseException("Expression must be a string or an integer");
+        testSomething();
 
         final JsonPrimitive primitive = json.getAsJsonPrimitive();
 
