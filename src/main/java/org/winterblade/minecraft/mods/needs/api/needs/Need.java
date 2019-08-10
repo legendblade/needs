@@ -185,26 +185,27 @@ public abstract class Need {
      * @param adjust      The amount to adjust by
      * @param source      The source of the adjustment
      */
-    public final void adjustValue(final PlayerEntity player, final double adjust, final IManipulator source) {
-        if (player == null || adjust == 0 || player.world.isRemote) return;
-        if (!setInitial(player)) return;
+    public final double adjustValue(final PlayerEntity player, final double adjust, final IManipulator source) {
+        if (player == null || adjust == 0 || player.world.isRemote) return 0;
+        if (!setInitial(player)) return 0;
 
         // Check if we shouldn't adjust the player at this moment
-        if (MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Pre(this, player, source))) return;
-
-        // Get our current and clamped values:
         final double current = getValue(player);
+        if (MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Pre(this, player, source))) return current;
+
+        // Get our clamped value:
         double newValue = MathLib.clamp(current + adjust, getMin(player), getMax(player), source.getLowestToSetNeed(), source.getHighestToSetNeed());
 
         // If the new value is the same as the current because we've hit the max/min, don't do anything
-        if (newValue == current) return;
+        if (newValue == current) return newValue;
 
         // Finally, set the value...
         newValue = setValue(player, newValue, adjust);
-        if (newValue == current) return; // If we didn't _really_ change, bail
+        if (newValue == current) return newValue; // If we didn't _really_ change, bail
 
         // ... and let our listeners know
         sendUpdates(player, source, current, newValue);
+        return newValue;
     }
 
     /**

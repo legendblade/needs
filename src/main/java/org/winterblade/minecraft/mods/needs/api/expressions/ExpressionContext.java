@@ -46,8 +46,9 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
     }
 
     @Override
-    public void setIfRequired(final String arg, final Supplier<Double> value) {
+    public IExpression setIfRequired(final String arg, final Supplier<Double> value) {
         expression.setIfRequired(arg, value);
+        return this;
     }
 
     public boolean isConstant() {
@@ -144,8 +145,9 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
         }
 
         @Override
-        public void setIfRequired(final String arg, final Supplier<Double> value) {
+        public IExpression setIfRequired(final String arg, final Supplier<Double> value) {
             // No-op
+            return this;
         }
 
         @Override
@@ -169,11 +171,12 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
         }
 
         @Override
-        public void setIfRequired(final String argName, final Supplier<Double> value) {
+        public IExpression setIfRequired(final String argName, final Supplier<Double> value) {
             final Argument arg = elements.get(argName);
-            if(arg == null) return;
+            if(arg == null) return this;
 
             arg.setArgumentValue(value.get());
+            return this;
         }
 
         @Override

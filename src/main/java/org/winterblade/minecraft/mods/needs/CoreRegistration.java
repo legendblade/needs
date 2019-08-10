@@ -69,12 +69,11 @@ public class CoreRegistration {
     }
 
     private static void registerManipulators() {
-        // Manipulators
+        // Base game type things
         ManipulatorRegistry.INSTANCE.register("minecraft", "itemUsed", ItemUsedManipulator.class);
         ManipulatorRegistry.INSTANCE.register("minecraft", "countedItemUse", ItemUsedCountManipulator.class, "itemUsedOnce");
         ManipulatorRegistry.INSTANCE.register("minecraft", "perHour", PerHourManipulator.class);
         ManipulatorRegistry.INSTANCE.register("minecraft", "onDeath", OnDeathManipulator.class);
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "onNeedChanged", OnNeedChangedManipulator.class);
         ManipulatorRegistry.INSTANCE.register("minecraft", "onBlock", NearBlockManipulator.class, "block", "nearBlock", "aroundBlock");
         ManipulatorRegistry.INSTANCE.register("minecraft", "holding", HoldingManipulator.class);
         ManipulatorRegistry.INSTANCE.register("minecraft", "attacking", AttackingManipulator.class, "onAttack", "attack");
@@ -82,6 +81,10 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register("minecraft", "heal", HealManipulator.class, "healed");
         ManipulatorRegistry.INSTANCE.register("minecraft", "biome", BiomeManipulator.class, "inBiome", "inBiomeType", "biomeType");
         ManipulatorRegistry.INSTANCE.register("minecraft", "lookingAt", LookingAtManipulator.class, "lookingAtBlock");
+
+        // Need specifics
+        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "onNeedChanged", OnNeedChangedManipulator.class);
+        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "linkChain", LinkedNeedManipulator.class, "link", "chain");
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "tick", TickManipulator.class, "onTick");
     }
 

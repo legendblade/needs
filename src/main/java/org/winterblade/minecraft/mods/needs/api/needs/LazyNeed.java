@@ -5,6 +5,7 @@ import com.google.gson.annotations.JsonAdapter;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 
 import java.lang.reflect.Type;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -83,6 +84,23 @@ public class LazyNeed {
     public boolean isNot(final Need need) {
         if (instance != null) return instance == need;
         return !need.getName().equals(name);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final LazyNeed lazyNeed = (LazyNeed) o;
+
+        return instance != null
+                ? Objects.equals(instance, lazyNeed.instance)
+                : Objects.equals(name, lazyNeed.name); // TODO: Technically this allows for two separate aliases
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, instance);
     }
 
     @Override
