@@ -170,12 +170,6 @@ public class NeedLevel {
             ea.onUnloaded();
         });
 
-        entryActions = Collections.emptyList();
-        exitActions = Collections.emptyList();
-        continuousActions = Collections.emptyList();
-        reappliedActions = Collections.emptyList();
-        reappliedContinuousActions = Collections.emptyList();
-
         MinecraftForge.EVENT_BUS.unregister(this);
         isListeningToTicks = false;
         tickAction = null;

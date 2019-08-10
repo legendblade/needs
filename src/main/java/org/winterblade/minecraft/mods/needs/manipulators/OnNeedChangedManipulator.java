@@ -80,7 +80,6 @@ public class OnNeedChangedManipulator extends BaseManipulator {
     public void onUnloaded() {
         isListening = false;
         need.discard();
-        need = null;
     }
 
     @SubscribeEvent

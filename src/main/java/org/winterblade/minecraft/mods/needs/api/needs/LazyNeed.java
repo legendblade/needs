@@ -82,7 +82,7 @@ public class LazyNeed {
      */
     public boolean isNot(final Need need) {
         if (instance != null) return instance == need;
-        return need.getName().equals(name);
+        return !need.getName().equals(name);
     }
 
     @Override
@@ -95,6 +95,7 @@ public class LazyNeed {
      */
     public void discard() {
         instance = null;
+        checked = false;
     }
 
     private void getInstance() {

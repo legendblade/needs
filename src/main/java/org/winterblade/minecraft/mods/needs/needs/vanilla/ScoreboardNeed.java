@@ -46,6 +46,14 @@ public class ScoreboardNeed extends CachedTickingNeed {
     }
 
     @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        scoreCache.clear();
+        scoreboard = null;
+        objective = null;
+    }
+
+    @Override
     public boolean allowMultiple() {
         return true;
     }

@@ -11,6 +11,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
+import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
@@ -37,7 +39,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
     public static final NeedRegistry INSTANCE = new NeedRegistry();
 
     private final Queue<String> dependencies = new LinkedList<>();
-    private final Set<Need> loaded = new HashSet<>();
+    private final Set<Need> instances = new HashSet<>();
 
     /**
      * Client-side cache
@@ -73,7 +75,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
             predicate = predicate.or((n) -> n.getClass().equals(need.getClass()));
         }
 
-        return loaded.stream().noneMatch(predicate);
+        return instances.stream().noneMatch(predicate);
     }
 
     /**
@@ -92,7 +94,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      */
     public void register(final Need need) throws IllegalArgumentException {
         if (!isValid(need)) throw new IllegalArgumentException("Tried to register need of same name or singleton with same class.");
-        loaded.add(need);
+        instances.add(need);
     }
 
     /**
@@ -110,29 +112,39 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
     public void validateDependencies() {
         while (!dependencies.isEmpty()) {
-            final String d = dependencies.remove();
-            if (loaded.stream().anyMatch((n) -> n.getName().equals(d))) continue;
+            final String d = dependencies.poll();
+            if (d == null) continue;
 
-            // Check if the name is a type:
-            final Supplier<? extends Need> factory = getFactory(d);
-            if (factory != null) {
-                if (loaded.stream().anyMatch((l) -> getType(d).isAssignableFrom(l.getClass()))) {
-                    NeedsMod.LOGGER.error("Dependency '" + d + "' would have loaded a type of the same name, but one is already registered.");
+            try {
+                if (instances.stream().anyMatch((n) -> n.getName().equals(d))) continue;
+
+                // Check if the name is a type:
+                final Supplier<? extends Need> factory = getFactory(d);
+                if (factory != null) {
+                    if (instances.stream().anyMatch((l) -> getType(d).isAssignableFrom(l.getClass()))) {
+                        NeedsMod.LOGGER.error("Dependency '" + d + "' would have loaded a type of the same name, but one is already registered.");
+                        continue;
+                    }
+
+                    final Need need = factory.get();
+                    if (need == null) {
+                        NeedsMod.LOGGER.error("A need of name '" + d + "' could not be created while validating dependencies of other needs.");
+                        continue;
+                    }
+
+                    try {
+                        need.beginValidate();
+                    } catch (final IllegalArgumentException e) {
+                        NeedsMod.LOGGER.error("A need of name '" + d + "' was in an invalid state while loading dependencies: " + e.getMessage(), e);
+                    }
+                    instances.add(need);
                     continue;
                 }
 
-                final Need need = factory.get();
-                if (need == null) {
-                    NeedsMod.LOGGER.error("A need of name '" + d + "' wasn't loaded while validating dependencies of other needs.");
-                    continue;
-                }
-
-                loaded.add(need);
-                need.finishLoad();
-                continue;
+                NeedsMod.LOGGER.error("A need of name '" + d + "' wasn't able to be loaded while validating dependencies of other needs.");
+            } catch (final Exception e) {
+                NeedsMod.LOGGER.error("A need of name '" + d + "' wasn't able to be loaded while validating dependencies of other needs.", e);
             }
-
-            NeedsMod.LOGGER.error("A need of name '" + d + "' wasn't loaded while validating dependencies of other needs.");
         }
     }
 
@@ -143,7 +155,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      */
     @Nullable
     public Need getByName(final String need) {
-        return loaded
+        return instances
                 .stream()
                 .filter((n) -> n.getName().toLowerCase().equals(need.toLowerCase()))
                 .findFirst()
@@ -151,7 +163,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
                     final Tuple<Supplier<? extends Need>, Class<? extends Need>> val = getRegistry().get(need.toLowerCase());
                     if (val == null) return null;
 
-                    return loaded
+                    return instances
                         .stream()
                         .filter((n) -> n.getClass().equals(val.getB()))
                         .findFirst()
@@ -207,6 +219,8 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param configHashes The map of ID to file hash
      */
     public void validateConfig(final Map<String, byte[]> configHashes) {
+        localCache.clear(); // This is the first packet we get on login, so clear the cache here.
+
         final Map<String, ConfigDesyncPacket.DesyncTypes> desyncs = configHashes
                 .entrySet()
                 .stream()
@@ -236,7 +250,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
         if (!(event.getPlayer() instanceof ServerPlayerEntity)) return;
 
         // Make sure all our needs are initialized
-        loaded.forEach((n) -> n.setInitial(event.getPlayer()));
+        instances.forEach((n) -> n.setInitial(event.getPlayer()));
 
         // Only run config sync when on the dedicated server; if you manage to desync configs on a client... how?
         DistExecutor.runWhenOn(Dist.DEDICATED_SERVER, () -> () -> NetworkManager.INSTANCE.send(
@@ -260,11 +274,21 @@ public class NeedRegistry extends TypedRegistry<Need> {
      */
     public void onConfigSynced(final PlayerEntity player, final BiConsumer<Need, Double> callback) {
         // TODO: I'd prefer to sync slowly instead of all at once; figure out a way to appropriately run later
-        loaded.forEach((n) -> {
+        instances.forEach((n) -> {
             // Only sync the need values if it's required on the clietn
             if(!n.shouldSync()) return;
 
             callback.accept(n, n.getValue(player));
         });
+    }
+
+    public void onServerStarted(@SuppressWarnings("unused") final FMLServerStartedEvent event) {
+        instances.forEach(Need::finishLoad);
+    }
+
+    @SuppressWarnings("unused")
+    public void onServerStopped(final FMLServerStoppedEvent event) {
+        localCache.clear(); // This only applies to the local side
+        instances.forEach(Need::beginUnload);
     }
 }

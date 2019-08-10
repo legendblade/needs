@@ -121,7 +121,7 @@ public class UiMixin extends BaseMixin {
         need.enableSyncing();
 
         if (icon != null && !icon.isEmpty()) {
-            if (!icon.contains("\\.")) icon += ".png";
+            if (!icon.contains(".")) icon += ".png";
             final String[] split = icon.split(":");
 
             if (split.length <= 0) iconTexture = GENERIC_ICON;

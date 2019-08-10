@@ -62,18 +62,34 @@ public abstract class Need {
         return false;
     }
 
+    public final void beginValidate() throws IllegalArgumentException
+    {
+        getManipulators().forEach((m) -> m.validate(this));
+        getMixins().forEach((m) -> m.validate(this));
+
+        // Ensure our levels are properly defined and don't overlap:
+        for (final NeedLevel l : levelList) {
+            final RangeMap<Double, NeedLevel> subRange = levels.subRangeMap(l.getRange());
+            if (0 < subRange.asMapOfRanges().size()) {
+                throw new IllegalArgumentException("This need has overlapping levels; ensure that min/max ranges do not overlap");
+            }
+
+            levels.put(l.getRange(), l);
+        }
+
+        for (final Map.Entry<Range<Double>,NeedLevel> kv : getLevels().entrySet()) {
+            kv.getValue().validate(this);
+        }
+
+        validate();
+    }
+
     /**
      * Called after deserialization to validate the need has everything it needs
      * to function.
      * @throws IllegalArgumentException If a parameter is invalid
      */
     public void validate() throws IllegalArgumentException {
-        getManipulators().forEach((m) -> m.validate(this));
-        getMixins().forEach((m) -> m.validate(this));
-
-        for (final Map.Entry<Range<Double>,NeedLevel> kv : getLevels().entrySet()) {
-            kv.getValue().validate(this);
-        }
     }
 
     /**
@@ -83,16 +99,6 @@ public abstract class Need {
         // Freeze our manipulator list
         manipulators = ImmutableList.copyOf(manipulators);
         mixins = ImmutableList.copyOf(mixins);
-
-        // Ensure our levels are properly defined and don't overlap:
-        for (final NeedLevel l : levelList) {
-            final RangeMap<Double, NeedLevel> subRange = levels.subRangeMap(l.getRange());
-            if (0 < subRange.asMapOfRanges().size()) {
-                throw new JsonParseException("This need has overlapping levels; ensure that min/max ranges do not overlap");
-            }
-
-            levels.put(l.getRange(), l);
-        }
         levels = ImmutableRangeMap.copyOf(levels);
 
         // Finalize creating everything:
@@ -152,9 +158,6 @@ public abstract class Need {
         onUnloaded();
 
         // Bye-bye
-        manipulators = Collections.emptyList();
-        mixins = Collections.emptyList();
-        levels = TreeRangeMap.create();
         MinecraftForge.EVENT_BUS.unregister(this);
     }
 
