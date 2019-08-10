@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { cloneDeep, clone, startCase, snakeCase, union, unionBy, map, sortBy, differenceBy } from 'lodash';
+import { cloneDeep, clone, startCase, snakeCase, union, unionBy, map, sortBy, differenceBy, isString } from 'lodash';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import js from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
 import vs from 'react-syntax-highlighter/dist/esm/styles/hljs/vs';
@@ -223,7 +223,7 @@ class App extends React.Component {
     }
 
     getData() {
-        if (this.state.localData !== '###LOCALDATA###') {
+        if (!isString(this.state.localData)) {
             new Promise((resolve) => resolve(this.state.localData))
                 .then((response) => this.parseData(response));
             return;
