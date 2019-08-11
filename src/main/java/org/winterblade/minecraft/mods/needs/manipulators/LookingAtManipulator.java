@@ -10,6 +10,7 @@ import net.minecraft.util.math.Vec3d;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
+import org.winterblade.minecraft.mods.needs.api.manipulators.BlockCheckingManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "Triggered while the player is looking at, every 5 ticks.")
@@ -39,6 +40,7 @@ public class LookingAtManipulator extends BlockCheckingManipulator {
     }
 
     private void onTick(final PlayerEntity player) {
+        if (failsDimensionCheck(player)) return;
         // Get start and end points:
         final Vec3d startingPosition = new Vec3d(player.posX, player.posY + player.getEyeHeight(), player.posZ);
         final Vec3d endingPosition = startingPosition.add(player.getLookVec().scale(distance));

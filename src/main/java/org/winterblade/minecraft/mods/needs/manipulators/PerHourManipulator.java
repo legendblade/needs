@@ -7,11 +7,12 @@ import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.DimensionBasedManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "Fired every in-game hour that passes in a world after the first; will multiply its amount " +
         "by the number of hours that have passed if time skips forward. May not work if time is set back.")
-public class PerHourManipulator extends BaseManipulator {
+public class PerHourManipulator extends DimensionBasedManipulator {
     @Expose
     @Document(description = "The amount to set per hour")
     private NeedExpressionContext amount;
@@ -43,6 +44,8 @@ public class PerHourManipulator extends BaseManipulator {
         lastFired = worldHour;
 
         evt.world.getPlayers().forEach((p) -> {
+            if (failsDimensionCheck(p)) return;
+
             final double adjust;
             amount.setCurrentNeedValue(parent, p);
 

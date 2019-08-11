@@ -1,6 +1,5 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
-import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -17,6 +16,7 @@ import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.BlockCheckingManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.util.blocks.BlockStatePredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.IBlockPredicate;
@@ -141,6 +141,11 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
 
         TickManager.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
         super.onLoaded();
+
+        if (checkDims) {
+            final Function<PlayerEntity, Double> prevTickFn = onTickFn;
+            onTickFn = (p) -> dimensions.contains(p.world.getDimension().getType().getId()) ? prevTickFn.apply(p) : 0d;
+        }
     }
 
     @Override

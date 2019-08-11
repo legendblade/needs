@@ -8,6 +8,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.DamageExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.DamageBasedManipulator;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,7 @@ public class HurtManipulator extends DamageBasedManipulator {
         if (event.getSource() instanceof EntityDamageSource && doesNotMatchFilters(event.getSource().getTrueSource())) return;
 
         final PlayerEntity player = (PlayerEntity) event.getEntity();
+        if (failsDimensionCheck(player)) return;
 
         amount.setCurrentNeedValue(parent, player);
         amount.setIfRequired(DamageExpressionContext.AMOUNT, () -> (double)event.getAmount());

@@ -9,6 +9,7 @@ import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.TooltipManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
 
@@ -83,6 +84,7 @@ public class HoldingManipulator extends TooltipManipulator {
      * @param player The player
      */
     private void onTick(@Nonnull final PlayerEntity player) {
+        if (failsDimensionCheck(player)) return;
         Function<IIngredient, Double> test;
 
         // TODO: This can be optimized

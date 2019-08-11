@@ -101,6 +101,7 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
     @Override
     public void onItemUsed(final LivingEntityUseItemEvent.Finish evt) {
         if (evt.getEntity().world.isRemote || !(evt.getEntityLiving() instanceof PlayerEntity)) return;
+        if (failsDimensionCheck((PlayerEntity) evt.getEntityLiving())) return;
         final WeakReference<PlayerEntity> playerRef = new WeakReference<>((PlayerEntity) evt.getEntityLiving());
 
         // This is a bit heavier; we want to put it off until after the player is done with the item.

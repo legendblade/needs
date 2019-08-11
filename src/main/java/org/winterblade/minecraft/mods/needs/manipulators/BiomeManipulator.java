@@ -14,6 +14,7 @@ import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.DimensionBasedManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 import java.util.*;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("WeakerAccess")
 @Document(description = "Triggers while the player is in one of the specified biomes/biome types; at least one or the " +
         "other must be specified.")
-public class BiomeManipulator extends BaseManipulator {
+public class BiomeManipulator extends DimensionBasedManipulator {
     @Expose
     @Document(description = "The amount to change by")
     protected NeedExpressionContext amount;
@@ -93,6 +94,7 @@ public class BiomeManipulator extends BaseManipulator {
     }
 
     private void onTick(final PlayerEntity player) {
+        if (failsDimensionCheck(player)) return;
         final Biome biome = player.world.getBiome(new BlockPos(player));
 
         //noinspection ConstantConditions - I don't believe you.

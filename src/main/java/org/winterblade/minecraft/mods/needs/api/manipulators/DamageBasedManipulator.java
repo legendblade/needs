@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.manipulators;
+package org.winterblade.minecraft.mods.needs.api.manipulators;
 
 import com.google.gson.annotations.Expose;
 import net.minecraft.entity.Entity;
@@ -14,7 +14,7 @@ import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "A collection of manipulators based on damage (in or out)")
-public abstract class DamageBasedManipulator extends BaseManipulator {
+public abstract class DamageBasedManipulator extends DimensionBasedManipulator {
     @Expose
     @Document(description = "The amount to change by when triggered")
     protected DamageExpressionContext amount;

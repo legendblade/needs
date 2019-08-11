@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.manipulators;
+package org.winterblade.minecraft.mods.needs.api.manipulators;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
@@ -21,9 +21,8 @@ import net.minecraftforge.fml.DistExecutor;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.util.RangeHelper;
 
@@ -37,7 +36,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("WeakerAccess")
 @Document(description = "A collection of manipulators that can display their effect in the tooltip when hovering " +
         "over the item in an inventory")
-public abstract class TooltipManipulator extends BaseManipulator {
+public abstract class TooltipManipulator extends DimensionBasedManipulator {
     @Expose
     @OptionalField(defaultValue = "False")
     @Document(description = "If true, show the tooltip. Note that doing so will incur a slight performance penalty on" +

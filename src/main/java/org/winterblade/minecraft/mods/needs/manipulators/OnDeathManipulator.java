@@ -7,10 +7,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.DimensionBasedManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "Triggered when the player dies.")
-public class OnDeathManipulator extends BaseManipulator {
+public class OnDeathManipulator extends DimensionBasedManipulator {
     @Expose
     @Document(description = "The amount to change by.")
     private NeedExpressionContext amount;
@@ -23,9 +24,11 @@ public class OnDeathManipulator extends BaseManipulator {
 
     @SubscribeEvent
     protected void onDeath(final LivingDeathEvent event) {
-        if (event.getEntity().world.isRemote || !(event.getEntity() instanceof PlayerEntity)) return;
+        if (event.getEntity().world.isRemote || !(event.getEntity() instanceof PlayerEntity) || event.isCanceled()) return;
 
-        amount.setCurrentNeedValue(parent, (PlayerEntity) event.getEntity());
-        if (!event.isCanceled()) parent.adjustValue(event.getEntity(), amount.get(), this);
+        final PlayerEntity pl = (PlayerEntity) event.getEntity();
+        if (failsDimensionCheck(pl)) return;
+        amount.setCurrentNeedValue(parent, pl);
+        parent.adjustValue(pl, amount.get(), this);
     }
 }

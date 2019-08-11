@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.manipulators;
+package org.winterblade.minecraft.mods.needs.api.manipulators;
 
 import com.google.gson.annotations.Expose;
 import net.minecraft.block.Block;

@@ -8,6 +8,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.DamageExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.DamageBasedManipulator;
 
 @Document(description = "Triggered when the player attacks another entity.")
 public class AttackingManipulator extends DamageBasedManipulator {
@@ -21,7 +22,7 @@ public class AttackingManipulator extends DamageBasedManipulator {
 
         final PlayerEntity player = (PlayerEntity) source.getTrueSource();
         final Entity target = event.getEntity();
-        if (doesNotMatchFilters(target)) return;
+        if (doesNotMatchFilters(target) || failsDimensionCheck(player)) return;
 
         amount.setCurrentNeedValue(parent, player);
         amount.setIfRequired(DamageExpressionContext.AMOUNT, () -> (double)event.getAmount());
