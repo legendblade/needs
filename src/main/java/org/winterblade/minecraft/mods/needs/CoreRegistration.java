@@ -2,6 +2,7 @@ package org.winterblade.minecraft.mods.needs;
 
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import org.winterblade.minecraft.mods.needs.actions.AdjustNeedLevelAction;
+import org.winterblade.minecraft.mods.needs.actions.CommandLevelAction;
 import org.winterblade.minecraft.mods.needs.actions.PotionEffectLevelAction;
 import org.winterblade.minecraft.mods.needs.actions.TestingTickLevelAction;
 import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
@@ -92,6 +93,7 @@ public class CoreRegistration {
     private static void registerActions() {
         // Actions
         LevelActionRegistry.INSTANCE.register("minecraft", "potionEffect", PotionEffectLevelAction.class);
+        LevelActionRegistry.INSTANCE.register("minecraft", "command", CommandLevelAction.class);
         LevelActionRegistry.INSTANCE.register(NeedsMod.MODID, "adjustNeed", AdjustNeedLevelAction.class);
     }
 
