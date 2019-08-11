@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screen.inventory.InventoryScreen;
 import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraft.util.text.StringTextComponent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.client.gui.Texture;
@@ -69,6 +70,8 @@ public class NeedDisplayScreen extends ComponentScreen {
                     );
 
                     c.setLevel(localNeed.getLevel(), localNeed.hasLevels());
+
+                    mixin.getIconTexture().setAndRecalculate(NeedExpressionContext.CURRENT_NEED_VALUE, localNeed::getValue);
                     c.setIcon(mixin.getIconTexture(), mixin.getIconOffsetX(), mixin.getIconOffsetY());
                 }
         ));

@@ -14,10 +14,10 @@ public class Texture {
     private final int drawWidth;
     private final int drawHeight;
 
-    private final float u1;
-    private final float u2;
-    private final float v1;
-    private final float v2;
+    private float u1;
+    private float u2;
+    private float v1;
+    private float v2;
 
     /**
      * Create a 256x256 texture resource
@@ -67,10 +67,8 @@ public class Texture {
         this.drawHeight = drawHeight;
 
         // Store props for blit
-        this.u1 = (xOffset + 0F) / (float)texWidth;
-        this.u2 = (xOffset + (float)drawWidth) / (float)texWidth;
-        this.v1 = (yOffset + 0F) / (float)texHeight;
-        this.v2 = (yOffset + (float)drawHeight) / (float)texHeight;
+        this.updateXOffset(xOffset);
+        this.updateYOffset(yOffset);
     }
 
     /**
@@ -128,5 +126,15 @@ public class Texture {
 
     public int getDrawHeight() {
         return drawHeight;
+    }
+
+    public void updateYOffset(final double yOffset) {
+        this.v1 = (float) ((yOffset + 0F) / (float)height);
+        this.v2 = (float) ((yOffset + (float)drawHeight) / (float)height);
+    }
+
+    public void updateXOffset(final double xOffset) {
+        this.u1 = (float) ((xOffset + 0F) / (float)width);
+        this.u2 = (float) ((xOffset + (float)drawWidth) / (float)width);
     }
 }
