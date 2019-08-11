@@ -23,6 +23,6 @@ public abstract class DimensionBasedManipulator extends BaseManipulator {
     }
 
     protected boolean failsDimensionCheck(final PlayerEntity player) {
-        return checkDims && !dimensions.contains(player.world.getDimension().getType().getId());
+        return !player.world.isRemote && checkDims && !dimensions.contains(player.world.getDimension().getType().getId());
     }
 }

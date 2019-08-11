@@ -81,6 +81,7 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register("minecraft", "heal", HealManipulator.class, "healed");
         ManipulatorRegistry.INSTANCE.register("minecraft", "biome", BiomeManipulator.class, "inBiome", "inBiomeType", "biomeType");
         ManipulatorRegistry.INSTANCE.register("minecraft", "lookingAt", LookingAtManipulator.class, "lookingAtBlock");
+        ManipulatorRegistry.INSTANCE.register("minecraft", "slept", SleepingManipulator.class, "woken");
 
         // Need specifics
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "onNeedChanged", OnNeedChangedManipulator.class);
