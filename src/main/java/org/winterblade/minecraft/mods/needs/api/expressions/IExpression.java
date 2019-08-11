@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.api;
+package org.winterblade.minecraft.mods.needs.api.expressions;
 
 import java.util.function.Supplier;
 

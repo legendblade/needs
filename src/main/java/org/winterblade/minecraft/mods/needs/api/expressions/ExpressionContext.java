@@ -6,7 +6,6 @@ import com.google.gson.annotations.JsonAdapter;
 import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
 import org.mariuszgromada.math.mxparser.PrimitiveElement;
-import org.winterblade.minecraft.mods.needs.api.IExpression;
 import org.winterblade.minecraft.mods.needs.api.documentation.IDocumentedContext;
 
 import java.lang.reflect.Type;
