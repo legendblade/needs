@@ -377,7 +377,7 @@ class App extends React.Component {
                                     ... or this:
                                 </p>
                                 <p class="text-center">
-                                    <code>min(current,4) + max(-2,current)</code>
+                                    <code>min(current,4) + max(-2,need(Some Other Need))</code>
                                 </p>
                                 <p>
                                     Or anything else you can find over at <a href="http://mathparser.org/mxparser-math-collection/">http://mathparser.org/mxparser-math-collection/</a>
@@ -386,6 +386,11 @@ class App extends React.Component {
                                 <p>
                                     Do note that each individual expression may have different variables you can use - be sure to read the description of each to check
                                     what it supports. When an expression is available, it'll be marked like this: <span class='badge badge-success'>Expression</span>
+                                </p>
+                                <p>
+                                    In addition to any functions from the base mXparser library, there's a special function <code>need(Name)</code> <small class='text-muted'>(okay,
+                                    technically it's actually a variable - internally the mod will remap need(Name) to 'needA', 'needB', etc in order to parse the expression)
+                                    </small>. When used in your expressions, you can retrieve the current value of any other named need.
                                 </p>
                                 <p>
                                     One last thing - you don't <i>have</i> to use an expression if you don't want to. And you don't necessarily have to use any of the variables
@@ -403,6 +408,11 @@ class App extends React.Component {
                                         The loader will figure out which variables you're using, and only ever parse those during gameplay; this will have a gameplay performance
                                         impact compared to the above two cases, but we're talking nanoseconds. Unless you have hundreds of needs, or the variable itself
                                         takes excessively long to calculate, you shouldn't worry too much about it.
+                                    </li>
+                                    <li>
+                                        <b>Does the expression use one or more linked needs?</b> -
+                                        If using another need in your expression, the loader will parse these out like variables above. Do note that this will incur an even
+                                        higher performance impact than a normal variable, but it should still be negligible in almost all cases.
                                     </li>
                                 </ul>
                             </dl>
