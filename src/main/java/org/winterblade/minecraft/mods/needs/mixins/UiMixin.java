@@ -79,7 +79,7 @@ public class UiMixin extends BaseMixin {
     @Document(description = "Adjust this if you want to adjust the X offset of the icon in the UI; by default, it " +
             "will be (32-iconWidth)/2")
     @SuppressWarnings("FieldMayBeFinal")
-    private int iconOffsetX = 0;
+    private int iconOffsetX = Integer.MIN_VALUE;
 
     @Expose
     @OptionalField(defaultValue = "(32-iconHeight)/2")
@@ -92,7 +92,7 @@ public class UiMixin extends BaseMixin {
     @OptionalField(defaultValue = "0")
     @Document(description = "Sets the number of decimal places displayed in the UI; by default, this is 0")
     @SuppressWarnings("FieldMayBeFinal")
-    private int precision = Integer.MIN_VALUE;
+    private int precision = 0;
 
     @Expose
     @JsonAdapter(ColorAdapter.class)
@@ -164,7 +164,7 @@ public class UiMixin extends BaseMixin {
 
     @Nonnull
     public String getDisplayName() {
-        return displayName == null || displayName.isEmpty() ? need.getName() : displayName;
+        return displayName != null && !displayName.isEmpty() ? displayName : need != null ? need.getName() : "Loading...";
     }
 
     @Nonnull

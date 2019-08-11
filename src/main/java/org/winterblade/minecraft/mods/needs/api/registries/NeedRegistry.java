@@ -240,6 +240,16 @@ public class NeedRegistry extends TypedRegistry<Need> {
                 ? new ConfigSyncedPacket()
                 : new ConfigDesyncPacket(desyncs)
         );
+
+        if (desyncs.isEmpty()) {
+            instances.forEach(need -> {
+                try {
+                    need.finishLoad();
+                } catch (final Exception e) {
+                    NeedsMod.LOGGER.error("Error loading need.", e);
+                }
+            });
+        }
     }
 
     /**

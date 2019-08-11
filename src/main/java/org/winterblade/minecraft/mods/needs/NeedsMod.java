@@ -1,6 +1,8 @@
 package org.winterblade.minecraft.mods.needs;
 
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -45,6 +47,6 @@ public class NeedsMod
     }
 
     private void imc(final InterModProcessEvent event) {
-        DocumentationBuilder.buildDocumentation();
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> DocumentationBuilder::buildDocumentation);
     }
 }

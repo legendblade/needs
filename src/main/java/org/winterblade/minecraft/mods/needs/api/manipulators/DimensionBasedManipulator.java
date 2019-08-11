@@ -19,7 +19,7 @@ public abstract class DimensionBasedManipulator extends BaseManipulator {
     @Override
     public void onLoaded() {
         super.onLoaded();
-        checkDims = !dimensions.isEmpty();
+        checkDims = dimensions != null && !dimensions.isEmpty();
     }
 
     protected boolean failsDimensionCheck(final PlayerEntity player) {

@@ -20,7 +20,6 @@ import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 import javax.annotation.Nonnull;
-import java.lang.ref.WeakReference;
 
 @Document(description = "Runs a command when entering or exiting the level, optionally re-running it on respawn.")
 public class CommandLevelAction extends LevelAction implements IReappliedOnDeathLevelAction, ICommandSource {
@@ -40,9 +39,6 @@ public class CommandLevelAction extends LevelAction implements IReappliedOnDeath
     @OptionalField(defaultValue = "False")
     private boolean log = false;
 
-
-    private WeakReference<MinecraftServer> server;
-
     @Override
     public String getName() {
         return "Command";
@@ -57,18 +53,16 @@ public class CommandLevelAction extends LevelAction implements IReappliedOnDeath
     @Override
     public void onLoaded(final Need parentNeed, final NeedLevel parentLevel) {
         super.onLoaded(parentNeed, parentLevel);
-        server = new WeakReference<>(LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER));
     }
 
     @Override
     public void onUnloaded() {
         super.onUnloaded();
-        server = null;
     }
 
     @Override
     public void onEntered(final Need need, final NeedLevel level, final PlayerEntity player) {
-        final MinecraftServer server = this.server.get();
+        final MinecraftServer server = LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER);
         if (server == null) {
             NeedsMod.LOGGER.warn("Unable to find command manager to run level command: " + command);
             return;
