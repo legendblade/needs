@@ -64,7 +64,7 @@ public class LookingAtManipulator extends BlockCheckingManipulator {
         if (!isMatch(target)) return;
 
         amount.setCurrentNeedValue(parent, player);
-        parent.adjustValue(player, amount.get(), this);
+        parent.adjustValue(player, amount.apply(player), this);
     }
 
 }

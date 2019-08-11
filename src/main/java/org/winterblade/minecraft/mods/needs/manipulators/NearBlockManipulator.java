@@ -42,7 +42,7 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
-        if (radius.isConstant() && radius.get() < 0) throw new IllegalArgumentException("Constant radius must be greater than zero.");
+        if (radius.isConstant() && radius.apply(null) < 0) throw new IllegalArgumentException("Constant radius must be greater than zero.");
         super.validate(need);
     }
 
@@ -106,7 +106,8 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
         // Predetermine the most expedient function to use:
         final String amountType = amount.isConstant() || !amount.isRequired(CountedExpressionContext.COUNT) ? "" : ", Per";
         if (radius.isConstant()) {
-            final long radius = Math.round(Math.abs(this.radius.get()));
+            // This is only okay because we've checked that it's constant
+            final long radius = Math.round(Math.abs(this.radius.apply(null)));
 
             // Much precompile, very wow
             if (radius <= 0) {
@@ -127,7 +128,7 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
                 : this::variableAmountVariableRadius;
             postFormat = (sb, player) -> {
                 radius.setCurrentNeedValue(parent, player);
-                final int radius = (int)Math.floor(this.radius.get());
+                final int radius = (int)Math.floor(this.radius.apply(player));
                 return sb.append("  (Within ").append(this.radius).append(" Block").append(radius == 1 ? "" : "s").append(amountType).append(")").toString();
             };
         }
@@ -181,7 +182,7 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
         final BlockPos center = getBlockAtFeet(player);
         final BlockState state = player.world.getBlockState(center);
 
-        return matchFn.apply(state) ? amount.get() : 0;
+        return matchFn.apply(state) ? amount.apply(player) : 0;
     }
 
     /**
@@ -195,7 +196,7 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
         final BlockState state = player.world.getBlockState(center);
 
         amount.setIfRequired(CountedExpressionContext.COUNT, () -> matchFn.apply(state) ? 1d : 0);
-        return amount.get();
+        return amount.apply(player);
     }
 
     /**
@@ -206,7 +207,7 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      * @return 1 if the block matches, 0 otherwise
      */
     private double constantAmountConstantRadius(final PlayerEntity player, final long radius) {
-        return isWithin(player.world, radius, getBlockAtFeet(player)) ? amount.get() : 0;
+        return isWithin(player.world, radius, getBlockAtFeet(player)) ? amount.apply(player) : 0;
     }
 
     /**
@@ -218,7 +219,7 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      */
     private double variableAmountConstantRadius(final PlayerEntity player, final long radius) {
         amount.setIfRequired(CountedExpressionContext.COUNT, () -> (double) getCountWithin(player.world, radius, getBlockAtFeet(player)));
-        return amount.get();
+        return amount.apply(player);
     }
 
     /**
@@ -229,8 +230,8 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      */
     private double constantAmountVariableRadius(final PlayerEntity player) {
         radius.setCurrentNeedValue(parent, player);
-        final Double radius = this.radius.get();
-        return isWithin(player.world, radius, getBlockAtFeet(player)) ? amount.get() : 0;
+        final Double radius = this.radius.apply(player);
+        return isWithin(player.world, radius, getBlockAtFeet(player)) ? amount.apply(player) : 0;
     }
 
     /**
@@ -240,8 +241,8 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      */
     private double variableAmountVariableRadius(final PlayerEntity player) {
         radius.setCurrentNeedValue(parent, player);
-        amount.setIfRequired(CountedExpressionContext.COUNT, () -> (double) getCountWithin(player.world, radius.get(), getBlockAtFeet(player)));
-        return amount.get();
+        amount.setIfRequired(CountedExpressionContext.COUNT, () -> (double) getCountWithin(player.world, radius.apply(player), getBlockAtFeet(player)));
+        return amount.apply(player);
     }
 
     /**

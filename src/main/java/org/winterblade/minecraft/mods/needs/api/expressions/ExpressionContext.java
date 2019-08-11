@@ -3,6 +3,7 @@ package org.winterblade.minecraft.mods.needs.api.expressions;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.*;
 import com.google.gson.annotations.JsonAdapter;
+import net.minecraft.entity.player.PlayerEntity;
 import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
 import org.mariuszgromada.math.mxparser.PrimitiveElement;
@@ -36,8 +37,8 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
 
 
     @Override
-    public Double get() {
-        return expression.get();
+    public Double apply(final PlayerEntity player) {
+        return expression.apply(player);
     }
 
     public boolean isRequired(final String arg) {
@@ -56,10 +57,6 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
 
     public abstract List<String> getElements();
 
-    private void testSomething() {
-        final PrimitiveElement primitiveElement = new PrimitiveElement(Argument.TYPE_ID);
-    }
-
     private IExpression deserializeExpression(final JsonElement json, final List<String> elements) {
         return deserializeExpression(
             json,
@@ -72,7 +69,6 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
 
     private IExpression deserializeExpression(final JsonElement json, final Argument[] elements) {
         if (!json.isJsonPrimitive()) throw new JsonParseException("Expression must be a string or an integer");
-        testSomething();
 
         final JsonPrimitive primitive = json.getAsJsonPrimitive();
 
@@ -139,7 +135,7 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
         }
 
         @Override
-        public Double get() {
+        public Double apply(final PlayerEntity player) {
             return adjust;
         }
 
@@ -165,7 +161,7 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
         }
 
         @Override
-        public Double get() {
+        public Double apply(final PlayerEntity player) {
             return expression.calculate();
         }
 

@@ -102,7 +102,7 @@ public class OnNeedChangedManipulator extends BaseManipulator {
         amount.setIfRequired(OtherNeedChangedExpressionContext.CHANGE, () -> diff);
 
         // TODO: Determine best way to prevent loops
-        TickManager.INSTANCE.doLater(() -> parent.adjustValue(event.getPlayer(), amount.get(), this));
+        TickManager.INSTANCE.doLater(() -> parent.adjustValue(event.getPlayer(), amount.apply(event.getPlayer()), this));
     }
 
     public void onNonexistentNeed() {

@@ -85,10 +85,10 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
-        if (uses.isConstant() && uses.get() <= 0) throw new IllegalArgumentException("Uses must be a positive whole number if it's constant.");
-        if (numberStored.isConstant() && numberStored.get() <= 0) throw new IllegalArgumentException("Number stored must be a positive whole number if it's constant.");
+        if (uses.isConstant() && uses.apply(null) <= 0) throw new IllegalArgumentException("Uses must be a positive whole number if it's constant.");
+        if (numberStored.isConstant() && numberStored.apply(null) <= 0) throw new IllegalArgumentException("Number stored must be a positive whole number if it's constant.");
         if (id == null || id.isEmpty()) throw new IllegalArgumentException("ID must be provided.");
-        checkNumberStored = numberStored.isConstant() && numberStored.get() < Integer.MAX_VALUE;
+        checkNumberStored = numberStored.isConstant() && numberStored.apply(null) < Integer.MAX_VALUE;
         super.validate(need);
     }
 
@@ -129,7 +129,7 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
 
             // Get the max number
             uses.setCurrentNeedValue(parent, player);
-            double maxUse = Math.floor(uses.get());
+            double maxUse = Math.floor(uses.apply(player));
             if (maxUse <= 0) return;
 
             if (!checkNumberStored) {
@@ -144,7 +144,7 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
 
             // Now get into the larger pain...
             numberStored.setCurrentNeedValue(parent, player);
-            double count = numberStored.get();
+            double count = numberStored.apply(player);
 
             // If it's an expression that uses need, it's possible, and easier...
             if (count < 1) {

@@ -36,6 +36,6 @@ public class TickManipulator extends DimensionBasedManipulator {
         if (failsDimensionCheck(player)) return;
 
         amount.setCurrentNeedValue(parent, player);
-        parent.adjustValue(player, amount.get() * TickManager.INSTANCE.getBucketCount(), this);
+        parent.adjustValue(player, amount.apply(player) * TickManager.INSTANCE.getBucketCount(), this);
     }
 }

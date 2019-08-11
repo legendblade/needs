@@ -114,6 +114,6 @@ public class HoldingManipulator extends TooltipManipulator {
         }
 
         amount.setCurrentNeedValue(parent, player);
-        parent.adjustValue(player, amount.get(), this);
+        parent.adjustValue(player, amount.apply(player), this);
     }
 }

@@ -5,7 +5,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
-import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.DimensionBasedManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
@@ -29,6 +28,6 @@ public class OnDeathManipulator extends DimensionBasedManipulator {
         final PlayerEntity pl = (PlayerEntity) event.getEntity();
         if (failsDimensionCheck(pl)) return;
         amount.setCurrentNeedValue(parent, pl);
-        parent.adjustValue(pl, amount.get(), this);
+        parent.adjustValue(pl, amount.apply(pl), this);
     }
 }

@@ -1,5 +1,6 @@
 package org.winterblade.minecraft.mods.needs.client.gui;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 
@@ -29,7 +30,7 @@ public class ExpressionPositionedTexture extends Texture {
 
     public void setAndRecalculate(final String var, final Supplier<Double> val) {
         if (isConstant) return;
-        if (yOffsetExpression != null) updateYOffset(yOffsetExpression.setIfRequired(var, val).get());
-        if (xOffsetExpression != null) updateXOffset(xOffsetExpression.setIfRequired(var, val).get());
+        if (yOffsetExpression != null) updateYOffset(yOffsetExpression.setIfRequired(var, val).apply(Minecraft.getInstance().player));
+        if (xOffsetExpression != null) updateXOffset(xOffsetExpression.setIfRequired(var, val).apply(Minecraft.getInstance().player));
     }
 }

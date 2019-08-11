@@ -154,7 +154,7 @@ public class LinkedNeedManipulator extends BaseManipulator {
                     .setIfRequired(OtherNeedChangedExpressionContext.PREVIOUS, () -> previous);
 
             // Do the adjustment and continue the chain
-            final double c2 = lh.instance.adjustValue(player, lh.amount.get(), tangle);
+            final double c2 = lh.instance.adjustValue(player, lh.amount.apply(player), tangle);
             linker(lh.instance, c2, p2, player, unravels.get(lh.instance), onceEver ? visited : new HashSet<>(visited), sb2, tangle);
         }
     }

@@ -93,7 +93,7 @@ public class ItemUsedManipulator extends TooltipManipulator {
      */
     protected void handle(final PlayerEntity player, final ItemStack item, final ExpressionContext expr) {
         setupExpression(() -> parent.getValue(player), player, item, expr);
-        parent.adjustValue(player, expr.get(), this);
+        parent.adjustValue(player, expr.apply(player), this);
     }
 
     @Override

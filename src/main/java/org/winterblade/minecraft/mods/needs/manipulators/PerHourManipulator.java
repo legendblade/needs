@@ -5,7 +5,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.event.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
-import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.DimensionBasedManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
@@ -50,7 +49,7 @@ public class PerHourManipulator extends DimensionBasedManipulator {
             amount.setCurrentNeedValue(parent, p);
 
             try {
-                adjust = delta * amount.get();
+                adjust = delta * amount.apply(p);
             } catch (final Exception e) {
                 NeedsMod.LOGGER.error("Unable to calculate adjustment amount because it's too large.");
                 return;

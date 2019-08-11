@@ -94,7 +94,7 @@ public class AdjustNeedLevelAction extends LevelAction {
         }
         amount.setCurrentNeedValue(other, player);
 
-        final double output = amount.get();
+        final double output = amount.apply(player);
         TickManager.INSTANCE.doLater(() -> other.adjustValue(player, output, BaseManipulator.EXTERNAL));
 
         return output;

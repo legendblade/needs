@@ -39,6 +39,6 @@ public class SleepingManipulator extends DimensionBasedManipulator {
         if ((!slept || !event.shouldSetSpawn()) && (!woken || event.shouldSetSpawn())) return;
 
         amount.setCurrentNeedValue(parent, event.getPlayer());
-        parent.adjustValue(event.getPlayer(), amount.get(), this);
+        parent.adjustValue(event.getPlayer(), amount.apply(event.getPlayer()), this);
     }
 }

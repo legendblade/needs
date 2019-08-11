@@ -40,6 +40,6 @@ public class HurtManipulator extends DamageBasedManipulator {
 
         amount.setCurrentNeedValue(parent, player);
         amount.setIfRequired(DamageExpressionContext.AMOUNT, () -> (double)event.getAmount());
-        parent.adjustValue(player, amount.get(), this);
+        parent.adjustValue(player, amount.apply(player), this);
     }
 }

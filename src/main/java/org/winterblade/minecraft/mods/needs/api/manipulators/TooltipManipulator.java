@@ -117,8 +117,8 @@ public abstract class TooltipManipulator extends DimensionBasedManipulator {
 
             // If we need to update and recalculate continuously because the need might have changed:
             final Supplier<String> msgGetter = () -> {
-                setupExpression(() -> getLocalCachedNeed().getValue(), event.getEntityPlayer(), event.getItemStack(), valueExpr);
-                return formatOutput(valueExpr.get(), event.getEntityPlayer());
+                setupExpression(() -> getLocalCachedNeed().getValue(), event.getPlayer(), event.getItemStack(), valueExpr);
+                return formatOutput(valueExpr.apply(event.getPlayer()), event.getEntityPlayer());
             };
             itemCache.put(event.getItemStack(), msgGetter);
 
@@ -182,7 +182,7 @@ public abstract class TooltipManipulator extends DimensionBasedManipulator {
         final double adjustedValue;
         if (displayFormat != null) {
             displayFormat.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> value);
-            adjustedValue = displayFormat.get();
+            adjustedValue = displayFormat.apply(player);
         }
         else adjustedValue = value;
 
