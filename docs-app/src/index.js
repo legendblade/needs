@@ -245,7 +245,7 @@ class App extends React.Component {
         const navroot = {
             "title": "Needs, Wants, and Desires",
             "root": "#",
-            "class": "navbar-brand",
+            "class": "navbar-brand d-block text-wrap",
             "children": [
                 { "title": "Needs", "root": "#needs" },
                 { "title": "Need Types", "root": "#needTypes", "children": map(sortEntries(response.needs), (c) => convertToNav(c, "needTypes")) },
@@ -282,13 +282,13 @@ class App extends React.Component {
     render() {
         return (
             <div class="row">
-                <div class="col-3">
+                <div class="col-xl-3 col-lg-4 d-none d-lg-block">
                     <nav id="scrollnav" class="navbar navbar-light">
                         <NavBar value={this.state.navroot} />
                     </nav>
                 </div>
 
-                <div class="col-8 pl-4" style={{'border-left': '1px solid #DEDEDE'}}>
+                <div class="col-12 col-lg-8 px-4" style={{'border-left': '1px solid #DEDEDE'}}>
                     <div>
                         <h2>Overview</h2>
                         <p class="lead">
