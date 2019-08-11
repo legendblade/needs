@@ -93,12 +93,6 @@ public class DocumentationBuilder {
         }
     }
 
-    private static String getTemplate(final String template) throws IOException {
-        final ResourceLocation location = new ResourceLocation(NeedsMod.MODID, "templates/" + template + ".txt");
-        final IResource resource = Minecraft.getInstance().getResourceManager().getResource(location);
-        return IOUtils.toString(resource.getInputStream(), Charset.defaultCharset());
-    }
-
     private static <T> List<DocumentationEntry> document(final String documentType, final TypedRegistry<T> registry, final Class<? extends T> root, final Class<T> intf) {
         final String docTag = NeedsMod.MODID + "." + documentType + ".";
 
@@ -250,7 +244,8 @@ public class DocumentationBuilder {
                 field.isExpression = true;
                 try {
                     final ExpressionContext ctx = (ExpressionContext) fieldType.getConstructor().newInstance();
-                    field.expressionVars = ctx.getElementDocumentation();
+                    field.expressionVars = new HashMap<>(ctx.getElementDocumentation());
+                    field.expressionVars.put("need(Name)", "The current value of the given need by its name.");
                 } catch (
                         final Exception | NoClassDefFoundError e) {
                     NeedsMod.LOGGER.warn("Unable to create new expression context " + fieldType.getCanonicalName());
@@ -321,7 +316,7 @@ public class DocumentationBuilder {
                     .map(documentField(fieldType, docTag, subclass))
                     .collect(Collectors.toList());
 
-            if (!fieldList.isEmpty() && subdoc == null) return field;
+            if (fieldList.isEmpty() && subdoc == null) return field;
 
             subclass.description = subdoc != null ? subdoc.description() : "";
             subclass.fields = fieldList;
