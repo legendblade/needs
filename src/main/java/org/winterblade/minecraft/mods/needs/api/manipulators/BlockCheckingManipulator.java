@@ -35,6 +35,12 @@ public abstract class BlockCheckingManipulator extends TooltipManipulator {
         super.validate(need);
     }
 
+    @Override
+    public void onLoaded() {
+        amount.syncAll();
+        super.onLoaded();
+    }
+
     @Nullable
     @Override
     protected ExpressionContext getItemTooltipExpression(final ItemStack item) {

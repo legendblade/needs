@@ -127,6 +127,13 @@ public class UiMixin extends BaseMixin {
     private String precisionFormat;
 
     @Override
+    public void validate(final Need need) throws IllegalArgumentException {
+        super.validate(need);
+        if (iconX == null) throw new IllegalArgumentException("iconX cannot be null.");
+        if (iconY == null) throw new IllegalArgumentException("iconY cannot be null.");
+    }
+
+    @Override
     public void onLoaded(final Need need) {
         super.onLoaded(need);
         need.enableSyncing();
@@ -158,6 +165,11 @@ public class UiMixin extends BaseMixin {
             iconTexture = GENERIC_ICON;
         }
         precisionFormat = "%." + precision + "f";
+
+        // If we have any dependent needs, make sure they're synced.
+        iconX.syncAll();
+        iconY.syncAll();
+        if (displayFormat != null) displayFormat.syncAll();
     }
 
     public boolean shouldDisplay() {
@@ -220,7 +232,7 @@ public class UiMixin extends BaseMixin {
 
         // This will happen if a config update pulls out a need (which isn't possible yet, but Soon TM)
         NeedRegistry.INSTANCE.getLocalCache().forEach((key, value) -> {
-            final Need need = NeedRegistry.INSTANCE.getByName(key);
+            final Need need = value.getNeed().get();
             if (need == null) return;
 
             final UiMixin mixin = getInstance(need);

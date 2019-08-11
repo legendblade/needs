@@ -1,19 +1,22 @@
 package org.winterblade.minecraft.mods.needs.api.expressions;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.*;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
+import org.apache.commons.lang3.ArrayUtils;
 import org.mariuszgromada.math.mxparser.Argument;
 import org.mariuszgromada.math.mxparser.Expression;
-import org.mariuszgromada.math.mxparser.PrimitiveElement;
 import org.winterblade.minecraft.mods.needs.api.documentation.IDocumentedContext;
+import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @JsonAdapter(ExpressionContext.Deserializer.class)
@@ -51,6 +54,15 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
         return this;
     }
 
+    @Override
+    public List<LazyNeed> getNeeds() {
+        return expression.getNeeds();
+    }
+
+    public void syncAll() {
+        expression.getNeeds().forEach((n) -> n.get(Need::enableSyncing, () -> {}));
+    }
+
     public boolean isConstant() {
         return expression instanceof ConstantAdjustmentWrappedExpression;
     }
@@ -67,7 +79,7 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
         );
     }
 
-    private IExpression deserializeExpression(final JsonElement json, final Argument[] elements) {
+    private IExpression deserializeExpression(final JsonElement json, Argument[] elements) {
         if (!json.isJsonPrimitive()) throw new JsonParseException("Expression must be a string or an integer");
 
         final JsonPrimitive primitive = json.getAsJsonPrimitive();
@@ -77,7 +89,43 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
         }
 
         // Going to a primitive then a string avoids string builder'ing it all
-        final String exp = json.getAsJsonPrimitive().getAsString().trim();
+        String exp = json.getAsJsonPrimitive().getAsString().trim();
+
+        final Map<String, LazyNeed> needs = new HashMap<>();
+        final Set<String> matched = new HashSet<>();
+        if (exp.contains("need(")) {
+            final Matcher match = Pattern.compile("need\\(([a-zA-Z0-9 ]+)\\)").matcher(exp);
+            char current = 'A';
+            final StringBuilder prefix = new StringBuilder("need");
+
+            while (match.find()) {
+                final String name = match.group(1).toLowerCase();
+                if (!matched.add(name)) continue; // We've already handled it
+
+                // Do the swap
+                final String rep = prefix.toString() + current;
+                needs.put(rep, new LazyNeed(name));
+                exp = exp.replaceAll("need\\(" + match.group(1) + "\\)", rep); // TODO: Fix edge case based on two separate capitalizations...
+
+                // Increment our stuff
+                current++;
+                if ('Z' < current) {
+                    current = 'A';
+                    prefix.append('A'); // I mean, yeah, this makes it 'needAAAAAA' but, pls. needAZ is already 52 needs.
+                }
+            }
+
+            // Add our fancy new elements in...
+            elements = ArrayUtils.addAll(
+                        elements,
+                        needs
+                            .entrySet()
+                            .stream()
+                            .map((kv) -> new Argument(kv.getKey(), 0))
+                            .toArray(Argument[]::new)
+            );
+        }
+
         final Expression expression = new Expression(exp, elements);
 
         if (!expression.checkSyntax()) {
@@ -94,6 +142,7 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
 
         if (elements.length <= 0) return new ConstantAdjustmentWrappedExpression(expression.calculate());
 
+
         final String expr = expression.getExpressionString();
         final Map<String, Argument> elemMap = Arrays
                 .stream(elements)
@@ -105,7 +154,9 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
 
         return elemMap.isEmpty()
             ? new ConstantAdjustmentWrappedExpression(expression.calculate())
-            : new ParsedWrappedExpression(expression, elemMap);
+            : needs.isEmpty()
+                ? new ParsedWrappedExpression(expression, elemMap)
+                : new NeedWrappedExpression(expression, elemMap, needs);
     }
 
     public static class Deserializer implements JsonDeserializer<ExpressionContext> {
@@ -149,6 +200,11 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
         public boolean isRequired(final String arg) {
             return false;
         }
+
+        @Override
+        public List<LazyNeed> getNeeds() {
+            return Collections.emptyList();
+        }
     }
 
     private static class ParsedWrappedExpression implements IExpression {
@@ -177,6 +233,34 @@ public abstract class ExpressionContext implements IExpression, IDocumentedConte
         @Override
         public boolean isRequired(final String arg) {
             return elements.containsKey(arg);
+        }
+
+        @Override
+        public List<LazyNeed> getNeeds() {
+            return Collections.emptyList();
+        }
+    }
+
+    private static class NeedWrappedExpression extends ParsedWrappedExpression {
+        private final Map<String, LazyNeed> needs;
+
+        NeedWrappedExpression(final Expression expression, final Map<String, Argument> elements, final Map<String, LazyNeed> needs) {
+            super(expression, elements);
+            this.needs = needs;
+        }
+
+        @Override
+        public Double apply(final PlayerEntity player) {
+            for (final Map.Entry<String, LazyNeed> kv : needs.entrySet()) {
+                setIfRequired(kv.getKey(), () -> kv.getValue().getValueFor(player));
+            }
+
+            return super.apply(player);
+        }
+
+        @Override
+        public List<LazyNeed> getNeeds() {
+            return ImmutableList.copyOf(needs.values());
         }
     }
 }

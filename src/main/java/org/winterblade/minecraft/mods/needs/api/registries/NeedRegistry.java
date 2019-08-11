@@ -189,7 +189,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param max   The max value of the need for this player
      */
     public void setLocalNeed(final String name, final double value, final double min, final double max) {
-        localCache.compute(name, (k, v) -> {
+        localCache.compute(name.toLowerCase(), (k, v) -> {
             if (v != null) {
                 v.setValue(value);
                 v.setMin(min);
@@ -207,11 +207,19 @@ public class NeedRegistry extends TypedRegistry<Need> {
     }
 
     /**
-     * Gets an immutable copy of the local cahce
+     * Gets an immutable copy of the local cache
      * @return The cache
      */
     public Map<String, LocalCachedNeed> getLocalCache() {
         return ImmutableMap.copyOf(localCache);
+    }
+
+    /**
+     * Gets a need from the local cache
+     * @return The local need
+     */
+    public LocalCachedNeed getLocalNeed(final String name) {
+        return localCache.get(name.toLowerCase());
     }
 
     /**

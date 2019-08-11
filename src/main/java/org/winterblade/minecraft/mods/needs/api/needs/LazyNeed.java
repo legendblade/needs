@@ -2,6 +2,9 @@ package org.winterblade.minecraft.mods.needs.api.needs;
 
 import com.google.gson.*;
 import com.google.gson.annotations.JsonAdapter;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 
 import java.lang.reflect.Type;
@@ -119,6 +122,28 @@ public class LazyNeed {
     private void getInstance() {
         instance = NeedRegistry.INSTANCE.getByName(name);
         checked = true;
+    }
+
+    /**
+     * Gets the value for the given player, returning 0 if the need doesn't exist.
+     *
+     * This will get the local cached value if not called for a {@link ServerPlayerEntity}
+     * @param player The player
+     * @return The value of the need or 0 if it doesn't exist
+     */
+    public double getValueFor(final PlayerEntity player) {
+        if (!(player instanceof ServerPlayerEntity)) {
+            final LocalCachedNeed cachedNeed = NeedRegistry.INSTANCE.getLocalNeed(name);
+            return cachedNeed != null ? cachedNeed.getValue() : 0;
+        }
+
+        if (!checked) getInstance();
+        if (instance == null) {
+            NeedsMod.LOGGER.error("There is no need " + name);
+            return 0;
+        }
+
+        return instance.getValue(player);
     }
 
     protected static class Deserializer implements JsonDeserializer<LazyNeed> {

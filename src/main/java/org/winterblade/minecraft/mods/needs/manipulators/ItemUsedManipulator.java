@@ -56,6 +56,7 @@ public class ItemUsedManipulator extends TooltipManipulator {
         super.onLoaded();
         getItems().entrySet().forEach((kv) -> {
             if (kv.getValue() == null) kv.setValue(getDefaultAmount());
+            kv.getValue().syncAll();
         });
     }
 

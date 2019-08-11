@@ -23,6 +23,7 @@ import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.util.RangeHelper;
 
@@ -89,6 +90,8 @@ public abstract class TooltipManipulator extends DimensionBasedManipulator {
             formatting.put(Range.greaterThan(0d), TextFormatting.GREEN.toString());
             formatting.put(Range.lessThan(0d), TextFormatting.RED.toString());
         }
+
+        if (displayFormat != null) displayFormat.syncAll();
     }
 
     @Override
@@ -201,7 +204,7 @@ public abstract class TooltipManipulator extends DimensionBasedManipulator {
     private LocalCachedNeed getLocalCachedNeed() {
         if (localCachedNeed != null) return localCachedNeed;
 
-        localCachedNeed = NeedRegistry.INSTANCE.getLocalCache().get(parent.getName());
+        localCachedNeed = NeedRegistry.INSTANCE.getLocalNeed(parent.getName());
         return localCachedNeed;
     }
 

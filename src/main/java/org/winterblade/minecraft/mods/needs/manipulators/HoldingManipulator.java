@@ -64,6 +64,7 @@ public class HoldingManipulator extends TooltipManipulator {
         }
 
         postFormat = (sb, player) -> sb.append(suffix).toString();
+        amount.syncAll();
     }
 
     @Override
