@@ -39,6 +39,19 @@ public class PotionEffectLevelAction extends LevelAction implements IReappliedOn
             "applies when this is used as an entry or exit action, continuous effects will always reapply on death.")
     private boolean persistOnDeath;
 
+    @Expose
+    @SuppressWarnings({"FieldMayBeFinal"})
+    @OptionalField(defaultValue = "True")
+    @Document(description = "If true, potion effects from this action will stack with others of the same type from " +
+            "other actions. This should generally be kept the same amongst all uses of the same effect, otherwise " +
+            "things will become... interesting.")
+    private boolean additive = true;
+
+    @Expose
+    @OptionalField(defaultValue = "False")
+    @Document(description = "Set if the potion effect should show particles or not.")
+    private boolean particles;
+
     private Effect theEffect;
 
     @Override
@@ -73,7 +86,24 @@ public class PotionEffectLevelAction extends LevelAction implements IReappliedOn
         final Effect eff = getTheEffect();
         if (eff == null) return;
 
-        player.addPotionEffect(new EffectInstance(eff, duration, amplifier));
+        if (!additive) {
+            player.addPotionEffect(new EffectInstance(eff, duration, amplifier, false, particles));
+            return;
+        }
+
+        final EffectInstance old = player.getActivePotionEffect(eff);
+        if (old == null) {
+            player.addPotionEffect(new EffectInstance(eff, duration, amplifier, false, particles));
+            return;
+        }
+
+        final EffectInstance inst = new EffectInstance(
+                eff,
+                duration == Integer.MAX_VALUE ? duration : (duration + old.getDuration()),
+                (amplifier == 0 ? amplifier + 1 : amplifier) + old.getAmplifier(),
+                false,
+                particles);
+        player.addPotionEffect(inst);
     }
 
     @Override
@@ -83,10 +113,8 @@ public class PotionEffectLevelAction extends LevelAction implements IReappliedOn
 
     @Override
     public void onContinuousStart(final Need need, final NeedLevel level, final PlayerEntity player) {
-        final Effect eff = getTheEffect();
-        if (eff == null) return;
-
-        player.addPotionEffect(new EffectInstance(eff, Integer.MAX_VALUE, amplifier));
+        duration = Integer.MAX_VALUE;
+        onEntered(need, level, player);
     }
 
     @Override
@@ -94,7 +122,17 @@ public class PotionEffectLevelAction extends LevelAction implements IReappliedOn
         final Effect eff = getTheEffect();
         if (eff == null) return;
 
+        // Get the old instance:
+        final EffectInstance inst = player.getActivePotionEffect(eff);
+        if (inst == null) return;
+
+        // Remove it from the player...
         player.removePotionEffect(eff);
+        if (!additive || inst.getAmplifier() <= amplifier) return;
+
+        // If we need to, let's reduce the amplifier...
+        final int newAmp = inst.getAmplifier() - (amplifier == 0 ? 1 : amplifier);
+        player.addPotionEffect(new EffectInstance(eff, inst.getDuration(), newAmp, false, particles));
     }
 
     @Override
