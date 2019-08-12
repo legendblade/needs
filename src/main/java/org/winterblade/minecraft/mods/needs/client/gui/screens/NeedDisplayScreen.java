@@ -3,6 +3,7 @@ package org.winterblade.minecraft.mods.needs.client.gui.screens;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.inventory.InventoryScreen;
 import net.minecraft.client.renderer.Rectangle2d;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.text.StringTextComponent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
@@ -59,13 +60,14 @@ public class NeedDisplayScreen extends ComponentScreen {
                     c.setVisible(true);
                     c.setTitle(mixin.getDisplayName());
 
+                    final PlayerEntity player = Minecraft.getInstance().player;
                     c.setBarValues(
-                        mixin.doFormat(localNeed.getMin()),
-                        mixin.doFormat(localNeed.getMax()),
-                        mixin.doFormat(localNeed.getValue()),
+                        mixin.doFormat(localNeed.getMin(), player),
+                        mixin.doFormat(localNeed.getMax(), player),
+                        mixin.doFormat(localNeed.getValue(), player),
                         mixin.getColor(),
-                        mixin.doFormat(localNeed.getLower()),
-                        mixin.doFormat(localNeed.getUpper()),
+                        mixin.doFormat(localNeed.getLower(), player),
+                        mixin.doFormat(localNeed.getUpper(), player),
                         mixin.getPrecision()
                     );
 

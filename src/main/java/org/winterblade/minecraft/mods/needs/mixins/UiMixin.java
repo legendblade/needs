@@ -2,10 +2,9 @@ package org.winterblade.minecraft.mods.needs.mixins;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
-import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.DistExecutor;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
@@ -220,11 +219,11 @@ public class UiMixin extends BaseMixin {
         return precisionFormat;
     }
 
-    public double doFormat(final double input) {
+    public double doFormat(final double input, final PlayerEntity player) {
         if (displayFormat == null) return input;
 
         displayFormat.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> input);
-        return displayFormat.apply(DistExecutor.runForDist(() -> () -> Minecraft.getInstance().player, () -> () -> null));
+        return displayFormat.apply(player);
     }
 
     /**
