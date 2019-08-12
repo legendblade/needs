@@ -21,6 +21,16 @@ public class ExpressionPositionedTexture extends Texture {
         isConstant = yOffsetExpression.isConstant() && xOffsetExpression.isConstant();
     }
 
+    public ExpressionPositionedTexture(final Supplier<ResourceLocation> loc, final int texWidth, final int texHeight,
+                                       final ExpressionContext xOffsetExpression, final ExpressionContext yOffsetExpression,
+                                       final int drawWidth, final int drawHeight) {
+        super(loc, texWidth, texHeight, 0, 0, drawWidth, drawHeight);
+
+        this.yOffsetExpression = yOffsetExpression;
+        this.xOffsetExpression = xOffsetExpression;
+        isConstant = yOffsetExpression.isConstant() && xOffsetExpression.isConstant();
+    }
+
     public ExpressionPositionedTexture(final ResourceLocation location, final int texWidth, final int texHeight) {
         super(location, texWidth, texHeight);
         yOffsetExpression = null;

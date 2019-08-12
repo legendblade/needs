@@ -17,11 +17,13 @@ import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.client.gui.ExpressionPositionedTexture;
 import org.winterblade.minecraft.mods.needs.util.ColorAdapter;
+import org.winterblade.minecraft.mods.needs.util.DynamicTextureUtil;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Supplier;
 
 @SuppressWarnings("WeakerAccess")
 @Document(description = "Adds the need to a UI display so players can easily track their current level")
@@ -143,7 +145,22 @@ public class UiMixin extends BaseMixin {
         if (iconTextureWidth == Integer.MIN_VALUE) iconTextureWidth = iconWidth;
         if (iconTextureHeight == Integer.MIN_VALUE) iconTextureHeight = iconHeight;
 
-        if (icon != null && !icon.isEmpty()) {
+        if (icon != null && icon.startsWith("file:")) {
+            iconTexture = GENERIC_ICON;
+            final Supplier<ResourceLocation> dynamicLoc = DynamicTextureUtil.getDynamicTexture(icon);
+
+            if (dynamicLoc != null) {
+                iconTexture = new ExpressionPositionedTexture(
+                        dynamicLoc,
+                        iconTextureWidth,
+                        iconTextureHeight,
+                        iconX,
+                        iconY,
+                        iconWidth,
+                        iconHeight
+                );
+            }
+        } else if (icon != null && !icon.isEmpty()) {
             if (!icon.contains(".")) icon += ".png";
             final String[] split = icon.split(":");
 

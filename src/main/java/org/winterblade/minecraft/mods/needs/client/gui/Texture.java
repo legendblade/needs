@@ -6,9 +6,12 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 
+import java.util.function.Supplier;
+
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class Texture {
-    private final ResourceLocation loc;
+    private ResourceLocation loc;
+    private Supplier<ResourceLocation> getLoc;
     private final int width;
     private final int height;
     private final int drawWidth;
@@ -59,8 +62,31 @@ public class Texture {
      * @param drawHeight The height to draw the texture
      */
     public Texture(final ResourceLocation loc, final int texWidth, final int texHeight, final int xOffset,
-                      final int yOffset, final int drawWidth, final int drawHeight) {
+                   final int yOffset, final int drawWidth, final int drawHeight) {
         this.loc = loc;
+        this.width = texWidth;
+        this.height = texHeight;
+        this.drawWidth = drawWidth;
+        this.drawHeight = drawHeight;
+
+        // Store props for blit
+        this.updateXOffset(xOffset);
+        this.updateYOffset(yOffset);
+    }
+
+    /**
+     * Creates a texture at the given location, with the given offsets
+     * @param getLoc     A supplier to get the location
+     * @param texWidth   The width of the texture
+     * @param texHeight  The height of the texture
+     * @param xOffset    The X offset of the texture in the texture PNG
+     * @param yOffset    The Y offset of the texture in the texture PNG
+     * @param drawWidth  The width to draw the texture
+     * @param drawHeight The height to draw the texture
+     */
+    public Texture(final Supplier<ResourceLocation> getLoc, final int texWidth, final int texHeight, final int xOffset,
+                   final int yOffset, final int drawWidth, final int drawHeight) {
+        this.getLoc = getLoc;
         this.width = texWidth;
         this.height = texHeight;
         this.drawWidth = drawWidth;
@@ -75,6 +101,10 @@ public class Texture {
      * Binds the texture to the texture manager
      */
     public void bind() {
+        if (loc == null) {
+            loc = getLoc.get();
+            if (loc == null) loc = new ResourceLocation("minecraft", "givemeamissingtexturepls");
+        }
         Minecraft.getInstance().getTextureManager().bindTexture(loc);
     }
 
@@ -97,7 +127,8 @@ public class Texture {
      * @return  The new texture
      */
     public Texture getSubtexture(final int width, final int height, final int xOffset, final int yOffset) {
-        return new Texture(this.loc, this.width, this.height, xOffset, yOffset, width, height);
+        if (this.loc != null) return new Texture(this.loc, this.width, this.height, xOffset, yOffset, width, height);
+        return new Texture(this.getLoc, this.width, this.height, xOffset, yOffset, width, height);
     }
 
     /**
