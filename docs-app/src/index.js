@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactMarkdown from 'react-markdown';
+import ScrollableAnchor from 'react-scrollable-anchor'
 import { cloneDeep, clone, startCase, snakeCase, union, unionBy, map, sortBy, differenceBy, isString } from 'lodash';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import js from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
@@ -178,24 +179,26 @@ function Entry(props, parentFields) {
     })(props.mod || "");
 
     const output = [(
-        <div class='card mt-4 p-2' style={container} id={props.href}>
-            <div class='row'>
-                <div class='col-9'>
-                    <Tag class='card-title'>{name}<small>{props.depth.map((d) => (<a class='entry-path' href={'#' + d.href}>{d.name}</a>)).reverse()}</small></Tag>
+        <ScrollableAnchor  id={props.href}>
+            <div class='card mt-4 p-2' style={container}>
+                <div class='row'>
+                    <div class='col-9'>
+                        <Tag class='card-title'>{name}<small>{props.depth.map((d) => (<a class='entry-path' href={'#' + d.href}>{d.name}</a>)).reverse()}</small></Tag>
+                    </div>
+                    <div class='col-3 text-right'>
+                        {
+                            props.aliases.length 
+                                ? (<div class="badge badge-pill text-white" style={{"backgroundColor": modColor}}>{props.mod || "Unknown"}</div>) 
+                                : (<div class="badge badge-pill badge-dark">Abstract</div>)
+                        }
+                    </div>
                 </div>
-                <div class='col-3 text-right'>
-                    {
-                        props.aliases.length 
-                            ? (<div class="badge badge-pill text-white" style={{"backgroundColor": modColor}}>{props.mod || "Unknown"}</div>) 
-                            : (<div class="badge badge-pill badge-dark">Abstract</div>)
-                    }
-                </div>
-            </div>
-            <ReactMarkdown source={props.description || noDesc} linkTarget='_blank' />
+                <ReactMarkdown source={props.description || noDesc} linkTarget='_blank' />
 
-            <AliasList aliases={props.aliases} />
-            {FieldList(union(parentFields, props.fields))}
-        </div>
+                <AliasList aliases={props.aliases} />
+                {FieldList(union(parentFields, props.fields))}
+            </div>
+        </ScrollableAnchor>
     )];
 
     const pfields = unionBy(parentFields || [], cloneDeep(props.fields).map((f) => {
