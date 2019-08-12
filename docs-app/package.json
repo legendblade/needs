@@ -6,7 +6,9 @@
     "lodash": "^4.17.15",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-markdown": "^4.1.0",
     "react-scripts": "3.0.1",
+    "react-scrollable-anchor": "^0.6.1",
     "react-syntax-highlighter": "^11.0.2"
   },
   "scripts": {

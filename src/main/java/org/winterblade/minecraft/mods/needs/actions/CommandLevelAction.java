@@ -24,7 +24,7 @@ import javax.annotation.Nonnull;
 @Document(description = "Runs a command when entering or exiting the level, optionally re-running it on respawn.")
 public class CommandLevelAction extends LevelAction implements IReappliedOnDeathLevelAction, ICommandSource {
     @Expose
-    @Document(description = "The command to run; @p will target the player affected")
+    @Document(description = "The command to run; `@p` will target the player affected")
     private String command;
 
     @Expose

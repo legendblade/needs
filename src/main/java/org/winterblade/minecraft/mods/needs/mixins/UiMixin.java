@@ -45,10 +45,10 @@ public class UiMixin extends BaseMixin {
     private String displayName;
 
     @Expose
-    @Document(description = "A path to an icon to use; Needs comes with a large preset amount, which can be specified " +
-            "with just the icon name (e.g. 'w_sword001'), a texture from another mod by using the full path " +
-            "(e.g. 'minecraft:textures/item/iron_helmet'), or a local image placed in the 'config/needs/textures' " +
-            "directory (e.g. 'file:path/to/image.png')")
+    @Document(description = "A path to an icon to use. Icon can be:\n\n- One of the builtin icons, which can be specified " +
+            "with just the icon name (e.g. `'w_sword001'`)\n- A texture from another mod by using the full path " +
+            "(e.g. `'minecraft:textures/item/iron_helmet'`)\n- A local image placed in the `'config/needs/textures'` " +
+            "directory (e.g. `'file:path/to/image.png'`)")
     @SuppressWarnings("FieldMayBeFinal")
     private String icon;
 
@@ -81,14 +81,14 @@ public class UiMixin extends BaseMixin {
     @Expose
     @OptionalField(defaultValue = "(32-iconWidth)/2")
     @Document(description = "Adjust this if you want to adjust the X offset of the icon in the UI; by default, it " +
-            "will be (32-iconWidth)/2")
+            "will be `(32-iconWidth)/2`")
     @SuppressWarnings("FieldMayBeFinal")
     private int iconOffsetX = Integer.MIN_VALUE;
 
     @Expose
     @OptionalField(defaultValue = "(32-iconHeight)/2")
     @Document(description = "Adjust this if you want to adjust the Y offset of the icon in the UI; by default, it " +
-            "will be (32-iconHeight)/2")
+            "will be `(32-iconHeight)/2`")
     @SuppressWarnings("FieldMayBeFinal")
     private int iconOffsetY = Integer.MIN_VALUE;
 
@@ -102,7 +102,7 @@ public class UiMixin extends BaseMixin {
     @JsonAdapter(ColorAdapter.class)
     @Document(description = "Sets the RGB color of the bar; this can either be the integer representation of the color, " +
             "or you can specify a hexidecimal string starting with either # or 0x - when specifying it as hex, you " +
-            "may use shorthand (e.g. '#777' will expand to '#777777').")
+            "may use shorthand (e.g. `'#777'` will expand to `'#777777'`).")
     private int color;
 
     @Expose

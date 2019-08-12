@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import ReactMarkdown from 'react-markdown';
 import { cloneDeep, clone, startCase, snakeCase, union, unionBy, map, sortBy, differenceBy, isString } from 'lodash';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import js from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
@@ -104,9 +105,9 @@ function Field(props) {
                 {d}
             </th>
             <td class='col-md-8 p-2'>                
-                {props.description || noDesc}
+                <ReactMarkdown source={props.description || noDesc} linkTarget='_blank' />
                 {props.isExpression ? (<div class='mt-4'><span class='badge badge-success'>Expression</span> The following variables are available for this expression</div>) : ""}
-                {hasSubfield ? (<div class='mt-4'><strong>{startCase(props.type)}</strong>: {props.listOrMapClass.description || noDesc}</div>) : ""}
+                {hasSubfield ? (<div class='mt-4'><strong>{startCase(props.type)}</strong>: <ReactMarkdown source={props.listOrMapClass.description || noDesc} linkTarget='_blank' /></div>) : ""}
             </td>
         </tr>
     );
@@ -190,7 +191,7 @@ function Entry(props, parentFields) {
                     }
                 </div>
             </div>
-            <p class='card-subtitle'>{props.description || noDesc}</p>
+            <ReactMarkdown source={props.description || noDesc} linkTarget='_blank' />
 
             <AliasList aliases={props.aliases} />
             {FieldList(union(parentFields, props.fields))}

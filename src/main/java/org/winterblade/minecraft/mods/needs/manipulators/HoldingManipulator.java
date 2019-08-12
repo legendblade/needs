@@ -37,7 +37,7 @@ public class HoldingManipulator extends TooltipManipulator {
     @Expose
     @JsonAdapter(IIngredient.ToListDeserializer.class)
     @Document(type = IIngredient.class, description = "An array of items to check against, specified either as a single " +
-            "item (e.g. 'minecraft:cobblestone') or a tag (e.g. 'tag:minecraft:leaves')")
+            "item (e.g. `'minecraft:cobblestone'`) or a tag (e.g. `'tag:minecraft:leaves'`)")
     protected List<IIngredient> items;
 
     @Override

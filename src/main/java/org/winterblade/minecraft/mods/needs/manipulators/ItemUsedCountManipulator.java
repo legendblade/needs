@@ -67,9 +67,9 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
     protected NeedExpressionContext uses = ExpressionContext.makeConstant(new NeedExpressionContext(), 1);
 
     @Expose
-    @Document(description = "The number of items to remember. Items will fall off the list in order of the least recently " +
+    @Document(description = "The number of items to remember.\n\nItems will fall off the list in order of the least recently " +
             "benefited from; e.g. if uses is 2, and numberStored is also 2, then using Item A, then item B, then Item A, if you were " +
-            "to use Item C, then item B would fall off the list, because Item A was benefited from more recently. If this is an " +
+            "to use Item C, then item B would fall off the list, because Item A was benefited from more recently.\n\nIf this is an " +
             "expression, the return value will be rounded down to the nearest whole number (e.g. 0.9 -> 0); if this is less than the size " +
             "of the list at the time the list is being checked, items will automatically be dropped until the list is down to the proper size.")
     @OptionalField(defaultValue = "No limit(ish)")

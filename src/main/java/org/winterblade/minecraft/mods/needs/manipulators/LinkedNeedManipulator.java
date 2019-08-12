@@ -32,9 +32,9 @@ public class LinkedNeedManipulator extends BaseManipulator {
 
     @Expose
     @Document(description = "Changes the functionality to only ever visit a linked need once ever when following every " +
-            "chain. By default, if Need A, B, and C were all linked together, a chain could go from A -> B -> C, and then " +
+            "chain.\n\nBy default, if Need A, B, and C were all linked together, a chain could go from A -> B -> C, and then " +
             "also from A -> C. When this is set to true, the second chain wouldn't happen as it would detect C had been " +
-            "visited once already. In all cases, the first chain (A -> B -> C) could never go back to A or B, as they " +
+            "visited once already.\n\nIn all cases, the first chain (A -> B -> C) could never go back to A or B, as they " +
             "have been visited in that specific chain.")
     @OptionalField(defaultValue = "False")
     protected boolean onceEver = false;
