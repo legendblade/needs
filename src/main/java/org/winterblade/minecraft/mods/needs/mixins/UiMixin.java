@@ -47,8 +47,9 @@ public class UiMixin extends BaseMixin {
 
     @Expose
     @Document(description = "A path to an icon to use; Needs comes with a large preset amount, which can be specified " +
-            "with just the icon name (e.g. 'w_sword001'), or a texture from another mod by using the full path " +
-            "(e.g. 'minecraft:textures/item/iron_helmet')")
+            "with just the icon name (e.g. 'w_sword001'), a texture from another mod by using the full path " +
+            "(e.g. 'minecraft:textures/item/iron_helmet'), or a local image placed in the 'config/needs/textures' " +
+            "directory (e.g. 'file:path/to/image.png')")
     @SuppressWarnings("FieldMayBeFinal")
     private String icon;
 
