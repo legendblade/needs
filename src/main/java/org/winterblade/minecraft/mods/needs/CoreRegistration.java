@@ -8,10 +8,7 @@ import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.manipulators.*;
-import org.winterblade.minecraft.mods.needs.mixins.ChatLevelMixin;
-import org.winterblade.minecraft.mods.needs.mixins.ChatMixin;
-import org.winterblade.minecraft.mods.needs.mixins.ScoreboardMixin;
-import org.winterblade.minecraft.mods.needs.mixins.UiMixin;
+import org.winterblade.minecraft.mods.needs.mixins.*;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 import org.winterblade.minecraft.mods.needs.needs.INeedCapability;
 import org.winterblade.minecraft.mods.needs.needs.NeedCapability;
@@ -65,6 +62,7 @@ public class CoreRegistration {
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "chatOnChanged", ChatMixin.class);
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "chatOnLevel", ChatLevelMixin.class, "chat");
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "ui", UiMixin.class, "gui");
+        MixinRegistry.INSTANCE.register(NeedsMod.MODID, "bar", BarMixin.class);
     }
 
     private static void registerManipulators() {

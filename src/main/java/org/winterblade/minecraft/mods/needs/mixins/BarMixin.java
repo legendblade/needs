@@ -2,11 +2,15 @@ package org.winterblade.minecraft.mods.needs.mixins;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.DistExecutor;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.client.Icon;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
+import org.winterblade.minecraft.mods.needs.client.gui.BarRenderer;
 import org.winterblade.minecraft.mods.needs.util.ColorAdapter;
 
 @Document(description = "Adds bars to the HUD")
@@ -34,22 +38,15 @@ public class BarMixin extends BaseMixin {
 
     @Expose
     @SuppressWarnings("FieldMayBeFinal")
-    @Document(description = "What element to anchor the bar to; valid values are: SCREEN, HEALTH, BREATH, ARMOR, or FOOD; " +
-            "the latter four represent the respective bars.")
-    @OptionalField(defaultValue = "SCREEN")
-    private ScreenItem anchorTo = ScreenItem.SCREEN;
-
-    @Expose
-    @SuppressWarnings("FieldMayBeFinal")
-    @Document(description = "Where to position the bar relative to the anchor point; valid values are LEFT, CENTER, or RIGHT.")
+    @Document(description = "Where to position the bar relative to the screen; valid values are LEFT, CENTER, or RIGHT.")
     @OptionalField(defaultValue = "LEFT")
-    private AnchorPoint horizontalAnchor = AnchorPoint.LEFT;
+    private HorizontalAnchor horizontalAnchor = HorizontalAnchor.LEFT;
 
     @Expose
     @SuppressWarnings("FieldMayBeFinal")
-    @Document(description = "Where to position the bar relative to the anchor point; valid values are TOP, CENTER, or BOTTOM.")
+    @Document(description = "Where to position the bar relative to the screen; valid values are TOP, CENTER, or BOTTOM.")
     @OptionalField(defaultValue = "TOP")
-    private AnchorPoint verticalAnchor = AnchorPoint.TOP;
+    private VerticalAnchor verticalAnchor = VerticalAnchor.TOP;
 
     @Expose
     @Document(description = "Optional icon to add to the left or right of the bar (depending on `iconOnRight`).")
@@ -111,21 +108,25 @@ public class BarMixin extends BaseMixin {
         if (filledIcon != null) filledIcon.onLoaded();
         if (emptyIcon != null) emptyIcon.onLoaded();
         if (icon != null) icon.onLoaded();
+
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(BarRenderer.class));
     }
 
-    public enum ScreenItem {
-        SCREEN,
-        HEALTH,
-        BREATH,
-        ARMOR,
-        FOOD
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.unregister(BarRenderer.class));
     }
 
-    public enum AnchorPoint {
-        TOP,
+    public enum HorizontalAnchor {
         LEFT,
         CENTER,
-        BOTTOM,
+        RIGHT
+    }
+
+    public enum VerticalAnchor {
+        TOP,
+        CENTER,
         RIGHT
     }
 }
