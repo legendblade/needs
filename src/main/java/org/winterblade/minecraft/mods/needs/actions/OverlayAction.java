@@ -14,7 +14,7 @@ import org.winterblade.minecraft.mods.needs.api.events.LocalNeedLevelEvent;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.client.gui.OverlayRenderer;
-import org.winterblade.minecraft.mods.needs.client.TextureResource;
+import org.winterblade.minecraft.mods.needs.api.client.TextureResource;
 
 @Document(description = "Renders an overlay on the player's UI while they're in this level")
 public class OverlayAction extends LevelAction {

@@ -8,7 +8,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
-import org.winterblade.minecraft.mods.needs.client.TextureResource;
+import org.winterblade.minecraft.mods.needs.api.client.TextureResource;
 
 import javax.annotation.Nullable;
 import java.io.IOException;

@@ -7,16 +7,15 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
+import org.winterblade.minecraft.mods.needs.api.client.Icon;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
-import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.client.gui.ExpressionPositionedTexture;
 import org.winterblade.minecraft.mods.needs.util.ColorAdapter;
-import org.winterblade.minecraft.mods.needs.client.TextureResource;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -27,8 +26,6 @@ import java.util.List;
 @Document(description = "Adds the need to a UI display so players can easily track their current level")
 public class UiMixin extends BaseMixin {
     public static final UiMixin NONE;
-    public static final ExpressionPositionedTexture GENERIC_ICON =
-            new ExpressionPositionedTexture(new ResourceLocation(NeedsMod.MODID, "gui/generic_need.png"), 34, 34);
     private static List<LocalCachedNeed> sortedLocalCache;
 
     static {
@@ -44,49 +41,8 @@ public class UiMixin extends BaseMixin {
     private String displayName;
 
     @Expose
-    @Document(description = "A path to an icon to use.")
-    @SuppressWarnings("FieldMayBeFinal")
-    private TextureResource icon;
-
-    @Expose
-    @OptionalField(defaultValue = "32")
-    @Document(description = "The width of the icon; this defaults to 32px")
-    @SuppressWarnings("FieldMayBeFinal")
-    private int iconWidth = 32;
-
-    @Expose
-    @OptionalField(defaultValue = "32")
-    @Document(description = "The height of the icon; this defaults to 32px")
-    @SuppressWarnings("FieldMayBeFinal")
-    private int iconHeight = 32;
-
-    @Expose
-    @OptionalField(defaultValue = "0")
-    @Document(description = "If your icon path points to a texture sheet, instead of a single icon, use this to " +
-            "specify the X coordinate of the icon on the texture sheet.")
-    @SuppressWarnings("FieldMayBeFinal")
-    private NeedExpressionContext iconX = ExpressionContext.makeConstant(new NeedExpressionContext(), 0);
-
-    @Expose
-    @OptionalField(defaultValue = "0")
-    @Document(description = "If your icon path points to a texture sheet, instead of a single icon, use this to " +
-            "specify the Y coordinate of the icon on the texture sheet.")
-    @SuppressWarnings("FieldMayBeFinal")
-    private NeedExpressionContext iconY = ExpressionContext.makeConstant(new NeedExpressionContext(), 0);
-
-    @Expose
-    @OptionalField(defaultValue = "(32-iconWidth)/2")
-    @Document(description = "Adjust this if you want to adjust the X offset of the icon in the UI; by default, it " +
-            "will be `(32-iconWidth)/2`")
-    @SuppressWarnings("FieldMayBeFinal")
-    private int iconOffsetX = Integer.MIN_VALUE;
-
-    @Expose
-    @OptionalField(defaultValue = "(32-iconHeight)/2")
-    @Document(description = "Adjust this if you want to adjust the Y offset of the icon in the UI; by default, it " +
-            "will be `(32-iconHeight)/2`")
-    @SuppressWarnings("FieldMayBeFinal")
-    private int iconOffsetY = Integer.MIN_VALUE;
+    @Document(description = "The icon to use to represent the need")
+    private Icon icon;
 
     @Expose
     @OptionalField(defaultValue = "0")
@@ -101,17 +57,6 @@ public class UiMixin extends BaseMixin {
             "may use shorthand (e.g. `'#777'` will expand to `'#777777'`).")
     private int color;
 
-    @Expose
-    @OptionalField(defaultValue = "Icon Width")
-    @Document(description = "The width of the icon texture; if using a texture sheet, this should be the width of the sheet")
-    @SuppressWarnings("FieldMayBeFinal")
-    private int iconTextureWidth = Integer.MIN_VALUE;
-
-    @Expose
-    @OptionalField(defaultValue = "Icon Height")
-    @Document(description = "The height of the icon texture; if using a texture sheet, this should be the height of the sheet")
-    @SuppressWarnings("FieldMayBeFinal")
-    private int iconTextureHeight = Integer.MIN_VALUE;
 
     @Expose
     @Document(description = "Optional expression that will be used to modify the value prior to displaying it (in case you " +
@@ -121,14 +66,12 @@ public class UiMixin extends BaseMixin {
     protected NeedExpressionContext displayFormat;
 
     private boolean shouldDisplay = true;
-    private ExpressionPositionedTexture iconTexture;
     private String precisionFormat;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
         super.validate(need);
-        if (iconX == null) throw new IllegalArgumentException("iconX cannot be null.");
-        if (iconY == null) throw new IllegalArgumentException("iconY cannot be null.");
+        icon.validate();
     }
 
     @Override
@@ -136,28 +79,9 @@ public class UiMixin extends BaseMixin {
         super.onLoaded(need);
         need.enableSyncing();
 
-        if (iconOffsetX == Integer.MIN_VALUE) iconOffsetX = (32 - iconWidth) / 2;
-        if (iconOffsetY == Integer.MIN_VALUE) iconOffsetY = (32 - iconHeight) / 2;
-        if (iconTextureWidth == Integer.MIN_VALUE) iconTextureWidth = iconWidth;
-        if (iconTextureHeight == Integer.MIN_VALUE) iconTextureHeight = iconHeight;
-
-        iconTexture = icon != null
-                ? new ExpressionPositionedTexture(
-                        icon,
-                        iconTextureWidth,
-                        iconTextureHeight,
-                        iconX,
-                        iconY,
-                        iconWidth,
-                        iconHeight
-                ) : GENERIC_ICON;
-
         precisionFormat = "%." + precision + "f";
-
-        // If we have any dependent needs, make sure they're synced.
-        iconX.syncAll();
-        iconY.syncAll();
         if (displayFormat != null) displayFormat.syncAll();
+        icon.onLoaded();
     }
 
     public boolean shouldDisplay() {
@@ -171,15 +95,15 @@ public class UiMixin extends BaseMixin {
 
     @Nonnull
     public ExpressionPositionedTexture getIconTexture() {
-        return iconTexture != null ? iconTexture : GENERIC_ICON;
+        return icon.getTexture();
     }
 
     public int getIconOffsetX() {
-        return iconOffsetX;
+        return icon.getOffsetX();
     }
 
     public int getIconOffsetY() {
-        return iconOffsetY;
+        return icon.getOffsetY();
     }
 
     public int getColor() {

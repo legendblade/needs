@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.client;
+package org.winterblade.minecraft.mods.needs.api.client;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
