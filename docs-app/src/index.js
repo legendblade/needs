@@ -75,7 +75,7 @@ function Field(props) {
                             : "";
     const suffix = showArray ? "s" : ""
 
-    const hasSubfield = props.listOrMapClass && props.listOrMapClass.fields && props.listOrMapClass.fields.length;
+    const hasSubfield = props.listOrMapClass && (props.listOrMapClass.description || (props.listOrMapClass.fields && props.listOrMapClass.fields.length));
 
     let d = (
         <div class='p-2'>
