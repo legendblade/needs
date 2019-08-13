@@ -16,13 +16,12 @@ import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.client.gui.ExpressionPositionedTexture;
 import org.winterblade.minecraft.mods.needs.util.ColorAdapter;
-import org.winterblade.minecraft.mods.needs.util.DynamicTextureUtil;
+import org.winterblade.minecraft.mods.needs.client.TextureResource;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Supplier;
 
 @SuppressWarnings("WeakerAccess")
 @Document(description = "Adds the need to a UI display so players can easily track their current level")
@@ -45,12 +44,9 @@ public class UiMixin extends BaseMixin {
     private String displayName;
 
     @Expose
-    @Document(description = "A path to an icon to use. Icon can be:\n\n- One of the builtin icons, which can be specified " +
-            "with just the icon name (e.g. `'w_sword001'`)\n- A texture from another mod by using the full path " +
-            "(e.g. `'minecraft:textures/item/iron_helmet'`)\n- A local image placed in the `'config/needs/textures'` " +
-            "directory (e.g. `'file:path/to/image.png'`)")
+    @Document(description = "A path to an icon to use.")
     @SuppressWarnings("FieldMayBeFinal")
-    private String icon;
+    private TextureResource icon;
 
     @Expose
     @OptionalField(defaultValue = "32")
@@ -145,42 +141,17 @@ public class UiMixin extends BaseMixin {
         if (iconTextureWidth == Integer.MIN_VALUE) iconTextureWidth = iconWidth;
         if (iconTextureHeight == Integer.MIN_VALUE) iconTextureHeight = iconHeight;
 
-        if (icon != null && icon.startsWith("file:")) {
-            iconTexture = GENERIC_ICON;
-            final Supplier<ResourceLocation> dynamicLoc = DynamicTextureUtil.getDynamicTexture(icon);
-
-            if (dynamicLoc != null) {
-                iconTexture = new ExpressionPositionedTexture(
-                        dynamicLoc,
+        iconTexture = icon != null
+                ? new ExpressionPositionedTexture(
+                        icon,
                         iconTextureWidth,
                         iconTextureHeight,
                         iconX,
                         iconY,
                         iconWidth,
                         iconHeight
-                );
-            }
-        } else if (icon != null && !icon.isEmpty()) {
-            if (!icon.contains(".")) icon += ".png";
-            final String[] split = icon.split(":");
+                ) : GENERIC_ICON;
 
-            if (split.length <= 0) iconTexture = GENERIC_ICON;
-            else if (split.length <= 1) {
-                iconTexture = new ExpressionPositionedTexture(new ResourceLocation(NeedsMod.MODID, "textures/gui/needs/" + icon),32,32);
-            } else {
-                iconTexture = new ExpressionPositionedTexture(
-                    new ResourceLocation(split[0], split[1]),
-                    iconTextureWidth,
-                    iconTextureHeight,
-                    iconX,
-                    iconY,
-                    iconWidth,
-                    iconHeight
-                );
-            }
-        } else {
-            iconTexture = GENERIC_ICON;
-        }
         precisionFormat = "%." + precision + "f";
 
         // If we have any dependent needs, make sure they're synced.

@@ -4,11 +4,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.NativeImage;
 import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.loading.FMLPaths;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.client.TextureResource;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -16,7 +16,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.Supplier;
 
 public class DynamicTextureUtil {
     private static final Path root = Paths.get(FMLPaths.CONFIGDIR.get().toString(), "needs", "textures");
@@ -32,7 +31,7 @@ public class DynamicTextureUtil {
      * @return A supplier for a dynamic resource location or null if one could not be obtained
      */
     @Nullable
-    public static Supplier<ResourceLocation> getDynamicTexture(final String icon) {
+    public static TextureResource getDynamicTexture(final String icon) {
         return DistExecutor.callWhenOn(Dist.CLIENT, () -> () -> {
             final Path path = Paths.get(root.toString(), icon.substring(5)).normalize();
 
@@ -54,10 +53,10 @@ public class DynamicTextureUtil {
             }
 
             final String name = icon.substring(5).replaceAll("[/.]", "_");
-            return () -> Minecraft
+            return new TextureResource(() -> Minecraft
                     .getInstance()
                     .getTextureManager()
-                    .getDynamicTextureLocation(name, new DynamicTexture(logo));
+                    .getDynamicTextureLocation(name, new DynamicTexture(logo)));
         });
     }
 }

@@ -1,10 +1,8 @@
 package org.winterblade.minecraft.mods.needs;
 
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import org.winterblade.minecraft.mods.needs.actions.AdjustNeedLevelAction;
-import org.winterblade.minecraft.mods.needs.actions.CommandLevelAction;
-import org.winterblade.minecraft.mods.needs.actions.PotionEffectLevelAction;
-import org.winterblade.minecraft.mods.needs.actions.TestingTickLevelAction;
+import org.winterblade.minecraft.mods.needs.actions.*;
+import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
 import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
@@ -95,6 +93,7 @@ public class CoreRegistration {
         LevelActionRegistry.INSTANCE.register("minecraft", "potionEffect", PotionEffectLevelAction.class);
         LevelActionRegistry.INSTANCE.register("minecraft", "command", CommandLevelAction.class);
         LevelActionRegistry.INSTANCE.register(NeedsMod.MODID, "adjustNeed", AdjustNeedLevelAction.class);
+        LevelActionRegistry.INSTANCE.register(NeedsMod.MODID, "overlay", OverlayAction.class, "vignette");
     }
 
     private static void registerDebug() {

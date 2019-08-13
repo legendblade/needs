@@ -2,7 +2,10 @@ package org.winterblade.minecraft.mods.needs.client.gui.components;
 
 import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraftforge.common.util.TextTable;
+import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 import org.winterblade.minecraft.mods.needs.client.gui.Texture;
+
+import java.lang.ref.WeakReference;
 
 public class NeedComponent extends TexturedComponent {
     private static final int BAR_WIDTH = 242;
@@ -114,14 +117,15 @@ public class NeedComponent extends TexturedComponent {
      * @param level         The name of the current level
      * @param shouldDisplay If we should display the level or not
      */
-    public void setLevel(final String level, final boolean shouldDisplay) {
-        if (!shouldDisplay) {
+    public void setLevel(final WeakReference<NeedLevel> level, final boolean shouldDisplay) {
+        final NeedLevel lvl = level.get();
+        if (!shouldDisplay || lvl == null) {
             this.level.setVisible(false);
             return;
         }
 
         this.level.setVisible(true);
-        this.level.setText(level);
+        this.level.setText(lvl.getName());
     }
 
     /**

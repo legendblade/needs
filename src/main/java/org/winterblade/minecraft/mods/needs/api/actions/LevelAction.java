@@ -68,5 +68,33 @@ public abstract class LevelAction implements ILevelAction {
     public void onContinuousEnd(final Need need, final NeedLevel level, final PlayerEntity player) {
 
     }
+
+    /**
+     * Returns true if the need and level provided match the parents of this action
+     * @param need  The need to check
+     * @param level The level to check
+     * @return True if they match, false otherwise.
+     */
+    protected boolean matches(final Need need, final NeedLevel level) {
+        return parentNeed.equals(need) && parentLevel.equals(level);
+    }
+
+    /**
+     * Returns true if the need provided match the parents of this action
+     * @param need  The need to check
+     * @return True if they match, false otherwise.
+     */
+    protected boolean matches(final Need need) {
+        return parentNeed.equals(need);
+    }
+
+    /**
+     * Returns true if the level provided matches the parents of this action
+     * @param level The level to check
+     * @return True if they match, false otherwise.
+     */
+    protected boolean matches(final NeedLevel level) {
+        return parentLevel.equals(level);
+    }
 }
 

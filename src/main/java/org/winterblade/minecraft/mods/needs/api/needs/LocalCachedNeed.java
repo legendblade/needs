@@ -1,6 +1,8 @@
 package org.winterblade.minecraft.mods.needs.api.needs;
 
 import com.google.common.collect.Range;
+import net.minecraftforge.common.MinecraftForge;
+import org.winterblade.minecraft.mods.needs.api.events.LocalNeedLevelEvent;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 
 import javax.annotation.Nonnull;
@@ -20,7 +22,7 @@ public class LocalCachedNeed {
     private final String name;
 
     private boolean hasLevels;
-    private String level;
+    private WeakReference<NeedLevel> level;
     private double lower;
     private double upper;
 
@@ -32,6 +34,7 @@ public class LocalCachedNeed {
         setMax(min);
         setMax(max);
     }
+
 
     /**
      * The local cached need; this need is not guaranteed to remain valid through configuration reloads
@@ -62,7 +65,8 @@ public class LocalCachedNeed {
 
         // Cache this too:
         final NeedLevel level = need.getLevel(value);
-        this.level = level.getName();
+        final boolean changedLevels = this.level == null || level.equals(this.level.get());
+        this.level = new WeakReference<>(level);
 
         if (level == NeedLevel.UNDEFINED) {
             // We need to get the next bound in another way
@@ -98,6 +102,10 @@ public class LocalCachedNeed {
             this.upper = range.hasUpperBound() ? range.upperEndpoint() : Double.POSITIVE_INFINITY;
             this.hasLevels = true;
         }
+
+        if (changedLevels) {
+            MinecraftForge.EVENT_BUS.post(new LocalNeedLevelEvent(need, level));
+        }
     }
 
     /**
@@ -124,7 +132,7 @@ public class LocalCachedNeed {
         this.max = max;
     }
 
-    public String getLevel() {
+    public WeakReference<NeedLevel> getLevel() {
         return level;
     }
 
