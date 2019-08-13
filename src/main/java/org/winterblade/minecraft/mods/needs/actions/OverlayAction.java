@@ -2,6 +2,7 @@ package org.winterblade.minecraft.mods.needs.actions;
 
 import com.google.gson.annotations.Expose;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -54,6 +55,8 @@ public class OverlayAction extends LevelAction {
     private boolean isVignette = true;
 
     private boolean display = false;
+
+    @OnlyIn(Dist.CLIENT)
     private OverlayRenderer overlayRenderer;
 
     @Override
@@ -65,7 +68,9 @@ public class OverlayAction extends LevelAction {
     public void validate(final Need parentNeed, final NeedLevel parentLevel) throws IllegalArgumentException {
         super.validate(parentNeed, parentLevel);
 
-        if (overlay == null) throw new IllegalArgumentException("Overlay action must have an overlay texture.");
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            if (overlay == null) throw new IllegalArgumentException("Overlay action must have an overlay texture.");
+        });
         if (width <= 0) throw new IllegalArgumentException("Width must be greater than 0.");
         if (height <= 0) throw new IllegalArgumentException("Height must be greater than 0.");
     }
@@ -88,6 +93,7 @@ public class OverlayAction extends LevelAction {
     }
 
     @SubscribeEvent
+    @OnlyIn(Dist.CLIENT)
     protected void onOverlayRender(final RenderGameOverlayEvent.Post event) {
         if (!display || overlayRenderer == null ||
                 !(isVignette && event.getType() == RenderGameOverlayEvent.ElementType.VIGNETTE) &&

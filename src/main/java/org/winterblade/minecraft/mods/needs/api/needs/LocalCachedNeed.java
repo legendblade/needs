@@ -65,7 +65,7 @@ public class LocalCachedNeed {
 
         // Cache this too:
         final NeedLevel level = need.getLevel(value);
-        final boolean changedLevels = this.level == null || level.equals(this.level.get());
+        final boolean changedLevels = this.level == null || !level.equals(this.level.get());
         this.level = new WeakReference<>(level);
 
         if (level == NeedLevel.UNDEFINED) {

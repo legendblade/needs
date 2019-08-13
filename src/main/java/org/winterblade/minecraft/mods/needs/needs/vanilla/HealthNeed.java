@@ -18,12 +18,12 @@ public class HealthNeed extends CachedTickingNeed {
 
     @Override
     public double getMax(final PlayerEntity player) {
-        return Math.round(player.getMaxHealth());
+        return player.getMaxHealth();
     }
 
     @Override
     public double getValue(final PlayerEntity player) {
-        return Math.round(player.getHealth());
+        return player.getHealth();
     }
 
     @Override
