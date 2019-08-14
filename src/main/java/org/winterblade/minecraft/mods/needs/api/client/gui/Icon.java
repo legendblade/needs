@@ -148,15 +148,15 @@ public class Icon {
             final JsonObject obj = json.getAsJsonObject();
             if (!obj.has("icon")) throw new JsonParseException("Icon must have icon path.");
 
-            out.icon = context.deserialize(obj.get("icon"), TextureResource.class);
-            out.width = context.deserialize(obj.get("width"), Integer.class);
-            out.height = context.deserialize(obj.get("height"), Integer.class);
-            out.textureX = context.deserialize(obj.get("textureX"), NeedExpressionContext.class);
-            out.textureY = context.deserialize(obj.get("textureY"), NeedExpressionContext.class);
-            out.x = context.deserialize(obj.get("x"), Integer.class);
-            out.y = context.deserialize(obj.get("y"), Integer.class);
-            out.textureWidth = context.deserialize(obj.get("textureWidth"), Integer.class);
-            out.textureHeight = context.deserialize(obj.get("textureHeight"), Integer.class);
+            if (obj.has("icon")) out.icon = context.deserialize(obj.get("icon"), TextureResource.class);
+            if (obj.has("width")) out.width = context.deserialize(obj.get("width"), Integer.class);
+            if (obj.has("height")) out.height = context.deserialize(obj.get("height"), Integer.class);
+            if (obj.has("textureX")) out.textureX = context.deserialize(obj.get("textureX"), NeedExpressionContext.class);
+            if (obj.has("textureY")) out.textureY = context.deserialize(obj.get("textureY"), NeedExpressionContext.class);
+            if (obj.has("x")) out.x = context.deserialize(obj.get("x"), Integer.class);
+            if (obj.has("y")) out.y = context.deserialize(obj.get("y"), Integer.class);
+            if (obj.has("textureWidth")) out.textureWidth = context.deserialize(obj.get("textureWidth"), Integer.class);
+            if (obj.has("textureHeight")) out.textureHeight = context.deserialize(obj.get("textureHeight"), Integer.class);
 
             return out;
         }

@@ -138,8 +138,50 @@ public class Texture {
      * @param z The z-depth of the texture
      */
     public void draw(final int x, final int y, final int z) {
-        final int x2 = x + drawWidth;
-        final int y2 = y + drawHeight;
+        draw(x, y, z, 1, 1);
+    }
+
+    /**
+     * Draw the texture at the given coordinates
+     * @param x The left
+     * @param y The top
+     * @param z The z-depth of the texture
+     * @param u The percent of the width of the texture to draw
+     * @param v The percent of the height of the texture to draw
+     */
+    public void draw(int x, int y, final int z, double u, double v) {
+        final boolean fromRight = u < 0;
+        final boolean fromBottom = v < 0;
+        u = Math.min(1, Math.abs(u));
+        v = Math.min(1, Math.abs(v));
+
+        final int x2;
+        final double u1;
+        final double u2;
+        if (fromRight) {
+            x2 = x + drawWidth;
+            x = (int) Math.round(x2 - (drawWidth * u));
+            u2 = this.u2;
+            u1 = u2 - ((this.u2 - this.u1) * u);
+        } else {
+            x2 = (int) Math.round(x + (drawWidth * u));
+            u1 = this.u1;
+            u2 = ((this.u2 - u1) * u) + u1;
+        }
+
+        final int y2;
+        final double v1;
+        final double v2;
+        if (fromBottom) {
+            y2 = y + drawHeight;
+            y = (int) Math.round(y2 - (drawHeight * v));
+            v2 = this.v2;
+            v1 = v2 - ((this.v2 - this.v1) * v);
+        } else {
+            y2 = (int) Math.round(y + (drawHeight * v));
+            v1 = this.v1;
+            v2 = ((this.v2 - v1) * v) + v1;
+        }
 
         final Tessellator tessellator = Tessellator.getInstance();
         final BufferBuilder bufferbuilder = tessellator.getBuffer();

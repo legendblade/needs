@@ -191,9 +191,9 @@ public class NeedRegistry extends TypedRegistry<Need> {
     public void setLocalNeed(final String name, final double value, final double min, final double max) {
         localCache.compute(name.toLowerCase(), (k, v) -> {
             if (v != null) {
-                v.setValue(value);
                 v.setMin(min);
                 v.setMax(max);
+                v.setValue(value);
                 return v;
             }
 

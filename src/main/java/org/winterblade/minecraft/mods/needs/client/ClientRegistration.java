@@ -2,8 +2,10 @@ package org.winterblade.minecraft.mods.needs.client;
 
 import net.minecraftforge.common.MinecraftForge;
 import org.winterblade.minecraft.mods.needs.api.client.gui.BarRenderDispatcher;
+import org.winterblade.minecraft.mods.needs.client.gui.IconBarRenderer;
 import org.winterblade.minecraft.mods.needs.client.gui.ProgressBarRenderer;
 import org.winterblade.minecraft.mods.needs.client.gui.widgets.NeedsUiButton;
+import org.winterblade.minecraft.mods.needs.mixins.IconBarMixin;
 import org.winterblade.minecraft.mods.needs.mixins.ProgressBarMixin;
 
 public class ClientRegistration {
@@ -15,5 +17,6 @@ public class ClientRegistration {
         MinecraftForge.EVENT_BUS.addListener(NeedsUiButton::onUiOpened);
 
         BarRenderDispatcher.registerBarRenderer(ProgressBarMixin.class, ProgressBarRenderer::getRenderer);
+        BarRenderDispatcher.registerBarRenderer(IconBarMixin.class, IconBarRenderer::getRenderer);
     }
 }

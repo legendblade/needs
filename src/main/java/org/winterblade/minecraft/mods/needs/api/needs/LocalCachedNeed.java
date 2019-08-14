@@ -30,9 +30,9 @@ public class LocalCachedNeed {
         this.name = need.getName();
         this.need = new WeakReference<>(need);
 
-        setValue(value);
-        setMax(min);
+        setMin(min);
         setMax(max);
+        setValue(value);
     }
 
 
