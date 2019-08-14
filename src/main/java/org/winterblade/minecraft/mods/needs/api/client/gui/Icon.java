@@ -52,18 +52,16 @@ public class Icon {
     private NeedExpressionContext textureY = ExpressionContext.makeConstant(new NeedExpressionContext(), 0);
 
     @Expose
-    @OptionalField(defaultValue = "(32-width)/2")
-    @Document(description = "Adjust this if you want to adjust the X offset of the icon in the UI; by default, it " +
-            "will be `(32-width)/2`")
+    @OptionalField(defaultValue = "0")
+    @Document(description = "Adjust this if you want to adjust the X offset of the icon in the UI.")
     @SuppressWarnings("FieldMayBeFinal")
-    private int x = Integer.MIN_VALUE;
+    private int x = 0;
 
     @Expose
-    @OptionalField(defaultValue = "(32-height)/2")
-    @Document(description = "Adjust this if you want to adjust the Y offset of the icon in the UI; by default, it " +
-            "will be `(32-height)/2`")
+    @OptionalField(defaultValue = "0")
+    @Document(description = "Adjust this if you want to adjust the Y offset of the icon in the UI.")
     @SuppressWarnings("FieldMayBeFinal")
-    private int y = Integer.MIN_VALUE;
+    private int y = 0;
 
     @Expose
     @OptionalField(defaultValue = "Icon Width")
@@ -85,8 +83,6 @@ public class Icon {
     private ExpressionPositionedTexture texture;
 
     public void onLoaded() {
-        if (x == Integer.MIN_VALUE) x = (32 - width) / 2;
-        if (y == Integer.MIN_VALUE) y = (32 - height) / 2;
         if (textureWidth == Integer.MIN_VALUE) textureWidth = width;
         if (textureHeight == Integer.MIN_VALUE) textureHeight = height;
 

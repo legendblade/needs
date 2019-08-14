@@ -1,13 +1,16 @@
 package org.winterblade.minecraft.mods.needs.api.client.gui;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
+import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
+import org.winterblade.minecraft.mods.needs.client.gui.ExpressionPositionedTexture;
 import org.winterblade.minecraft.mods.needs.mixins.BarMixin;
 
 import javax.annotation.Nonnull;
@@ -84,10 +87,26 @@ public class BarRenderDispatcher {
                             break;
                     }
 
+                    // This works if here, and doesn't work if we move it to _outside_ the loop, and I have
+                    // no idea why? Is it because we're using separate z-levels for drawing textures?
+                    GlStateManager.disableDepthTest();
+                    GlStateManager.depthMask(false);
+
+                    final Icon bgIcon = theBar.getBackground();
+                    if (bgIcon != null) {
+                        final ExpressionPositionedTexture bg = bgIcon.getTexture();
+                        bg.setAndRecalculate(NeedExpressionContext.CURRENT_NEED_VALUE, n::getValue);
+                        bg.bind();
+                        bg.draw(x + theBar.getX() + bgIcon.getX(), y + theBar.getY() + bgIcon.getY(), -90);
+                    }
+
                     renderers
                             .computeIfAbsent(theBar,
                                     (bi) -> renderRegistry.getOrDefault(bi.getClass(), (n2, b2) -> NOOP).apply(need, bi))
                             .render(n, theBar,x + theBar.getX(), y + theBar.getY());
+
+                    GlStateManager.depthMask(true);
+                    GlStateManager.enableDepthTest();
                 });
         }
     }

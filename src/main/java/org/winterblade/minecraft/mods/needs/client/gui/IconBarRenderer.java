@@ -59,6 +59,11 @@ public class IconBarRenderer implements IBarRenderer {
         if (value < min) value = min;
         else if (max < value) value = max;
 
+        // Find the point at which to start drawing from:
+        final int center = min < 0
+                ? (int) (((-min) / iconValue) * nx)
+                : 0;
+
         // Draw the background:
         if (showEmpty) {
             final ExpressionPositionedTexture texture = emptyIcon.getTexture();
@@ -72,11 +77,6 @@ public class IconBarRenderer implements IBarRenderer {
                         -50);
             }
         }
-
-        // Find the point at which to start drawing from:
-        final int center = min < 0
-                ? (int) (((-min) / iconValue) * nx)
-                : 0;
 
         // Setup our variables:
         final Icon icon;
@@ -105,7 +105,7 @@ public class IconBarRenderer implements IBarRenderer {
 
         while (0 < leftToDraw) {
             texture.draw(
-                    (x + (i++ * xi)) + icon.getX() + center,
+                    x + i++ * xi + icon.getX() + center,
                     y + icon.getY(),
                     -49,
                     leftToDraw / iconValue * dir,

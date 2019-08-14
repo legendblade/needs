@@ -14,9 +14,14 @@ import org.winterblade.minecraft.mods.needs.api.client.gui.BarRenderDispatcher;
 @Document(description = "A collection of options for displaying bars on the user's HUD")
 public abstract class BarMixin extends BaseMixin {
     @Expose
-    @Document(description = "Optional icon to add to the left or right of the bar (depending on `iconOnRight`).")
+    @Document(description = "Optional icon to add to the left or right of the bar (depending on `iconOnRight`); not all bars may display that.")
     @OptionalField(defaultValue = "None")
     protected Icon icon;
+
+    @Expose
+    @Document(description = "Optional background to add behind the bar.")
+    @OptionalField(defaultValue = "None")
+    protected Icon background;
 
     @Expose
     @SuppressWarnings("FieldMayBeFinal")
@@ -58,12 +63,14 @@ public abstract class BarMixin extends BaseMixin {
     public void validate(final Need need) throws IllegalArgumentException {
         super.validate(need);
         if (icon != null) icon.validate();
+        if (background != null) background.validate();
     }
 
     @Override
     public void onLoaded(final Need need) {
         super.onLoaded(need);
         if (icon != null) icon.onLoaded();
+        if (background != null) background.onLoaded();
 
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(BarRenderDispatcher.class));
     }
@@ -100,6 +107,10 @@ public abstract class BarMixin extends BaseMixin {
 
     public NeedExpressionContext getDisplayFormat() {
         return displayFormat;
+    }
+
+    public Icon getBackground() {
+        return background;
     }
 
     public enum HorizontalAnchor {
