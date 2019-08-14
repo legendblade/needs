@@ -113,17 +113,16 @@ function Field(props) {
         </tr>
     );
 
-    if (!hasSubfield && !props.isExpression) return field;
+    if ((!hasSubfield || props.visited[props.type]) && !props.isExpression) return field;
 
-    if (hasSubfield) {
-        const hasVisited = {};
+    if (!props.isExpression) {
+        props.visited[props.type] = true;
         return [field,map(props.listOrMapClass.fields, (f) => {
             f.isParent = props.isParent;
             f.parent = props.parent;
             f.depth = props.depth + 1;
+            f.visited = props.visited;
 
-            if (hasVisited[f.type]) delete f.listOrMapClass;
-            hasVisited[f.type] = true;
             return Field(f);
         })];
     }
@@ -143,11 +142,15 @@ function Field(props) {
 }
 
 function FieldList(props) {
+    const hasVisited = {};
     if (!props || props.length <= 0) return ('');
     return (
         <table class='table table-striped table-borderless'>
             <tbody>
-                {props.map((f) => Field(f))}
+                {props.map((f) => {
+                    f.visited = hasVisited;
+                    return Field(f);
+                })}
             </tbody>
         </table>
     );
@@ -421,6 +424,14 @@ class App extends React.Component {
                                 </ul>
                             </dl>
                         </dl>
+                        <p>
+                            When reading through the properties that you can use for everything, each one will list off what type the property is with
+                            a <span class='badge badge-info'>Type Badge</span> like that. Many of these will be simple properties - strings of text, numbers,
+                            true/false Boolean values, etc - but if they're more complicated objects, the documentation will expand out the various subproperties
+                            (which themselves may have complex objects under them, and so on).  In order to reduce clutter in each section, only the first
+                            object of a certain type under each entry will be listed out like this. So if you have two <span class='badge badge-info'>Icon</span>'s,
+                            then only the first one will list the dozen or so subproperties it has, and the rest will just refer you back to the original one.
+                        </p>
                         <p>
                             With all that out of the way, let's dive in to the various sections to see what all can be accomplished.
                         </p>
