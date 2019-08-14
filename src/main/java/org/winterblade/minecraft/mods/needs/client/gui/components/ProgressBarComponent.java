@@ -13,6 +13,7 @@ public class ProgressBarComponent extends ColorBarComponent {
     private final FontRenderer fontRenderer = Minecraft.getInstance().fontRenderer;
     private int valueWidth;
     private String valueText;
+    private final float fontOffset;
 
     public ProgressBarComponent(final Rectangle2d bounds) {
         this(bounds, true);
@@ -22,6 +23,7 @@ public class ProgressBarComponent extends ColorBarComponent {
         super(bounds);
         // TODO: Directions other than left-to-right
         this.showText = showText;
+        fontOffset = (bounds.getHeight() - fontRenderer.FONT_HEIGHT) / 2f;
     }
 
     public double getValue() {
@@ -68,6 +70,6 @@ public class ProgressBarComponent extends ColorBarComponent {
         drawBar(y, x, right);
 
         if (!showText) return;
-        fontRenderer.drawStringWithShadow(valueText, Math.max(right - valueWidth - 1, x + 1), y + 1, 0xFFFFFF);
+        fontRenderer.drawStringWithShadow(valueText, Math.max(right - valueWidth - 1, x + 1), y + fontOffset + 0.5f, 0xFFFFFF);
     }
 }

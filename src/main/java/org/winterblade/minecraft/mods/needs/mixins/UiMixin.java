@@ -5,7 +5,7 @@ import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
-import org.winterblade.minecraft.mods.needs.api.client.Icon;
+import org.winterblade.minecraft.mods.needs.api.client.gui.Icon;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
@@ -97,11 +97,11 @@ public class UiMixin extends BaseMixin {
     }
 
     public int getIconOffsetX() {
-        return icon.getOffsetX();
+        return icon.getX();
     }
 
     public int getIconOffsetY() {
-        return icon.getOffsetY();
+        return icon.getY();
     }
 
     public int getColor() {

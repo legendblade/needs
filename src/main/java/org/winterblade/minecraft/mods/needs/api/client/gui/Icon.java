@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.api.client;
+package org.winterblade.minecraft.mods.needs.api.client.gui;
 
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
@@ -42,28 +42,28 @@ public class Icon {
     @Document(description = "If your icon path points to a texture sheet, instead of a single icon, use this to " +
             "specify the X coordinate of the icon on the texture sheet.")
     @SuppressWarnings("FieldMayBeFinal")
-    private NeedExpressionContext x = ExpressionContext.makeConstant(new NeedExpressionContext(), 0);
+    private NeedExpressionContext textureX = ExpressionContext.makeConstant(new NeedExpressionContext(), 0);
 
     @Expose
     @OptionalField(defaultValue = "0")
     @Document(description = "If your icon path points to a texture sheet, instead of a single icon, use this to " +
             "specify the Y coordinate of the icon on the texture sheet.")
     @SuppressWarnings("FieldMayBeFinal")
-    private NeedExpressionContext y = ExpressionContext.makeConstant(new NeedExpressionContext(), 0);
+    private NeedExpressionContext textureY = ExpressionContext.makeConstant(new NeedExpressionContext(), 0);
 
     @Expose
     @OptionalField(defaultValue = "(32-width)/2")
     @Document(description = "Adjust this if you want to adjust the X offset of the icon in the UI; by default, it " +
             "will be `(32-width)/2`")
     @SuppressWarnings("FieldMayBeFinal")
-    private int offsetX = Integer.MIN_VALUE;
+    private int x = Integer.MIN_VALUE;
 
     @Expose
     @OptionalField(defaultValue = "(32-height)/2")
     @Document(description = "Adjust this if you want to adjust the Y offset of the icon in the UI; by default, it " +
             "will be `(32-height)/2`")
     @SuppressWarnings("FieldMayBeFinal")
-    private int offsetY = Integer.MIN_VALUE;
+    private int y = Integer.MIN_VALUE;
 
     @Expose
     @OptionalField(defaultValue = "Icon Width")
@@ -78,15 +78,15 @@ public class Icon {
     private int textureHeight = Integer.MIN_VALUE;
 
     public void validate() throws IllegalArgumentException {
-        if (x == null) throw new IllegalArgumentException("x cannot be null.");
-        if (y == null) throw new IllegalArgumentException("y cannot be null.");
+        if (textureX == null) throw new IllegalArgumentException("textureX cannot be null.");
+        if (textureY == null) throw new IllegalArgumentException("textureY cannot be null.");
     }
 
     private ExpressionPositionedTexture texture;
 
     public void onLoaded() {
-        if (offsetX == Integer.MIN_VALUE) offsetX = (32 - width) / 2;
-        if (offsetY == Integer.MIN_VALUE) offsetY = (32 - height) / 2;
+        if (x == Integer.MIN_VALUE) x = (32 - width) / 2;
+        if (y == Integer.MIN_VALUE) y = (32 - height) / 2;
         if (textureWidth == Integer.MIN_VALUE) textureWidth = width;
         if (textureHeight == Integer.MIN_VALUE) textureHeight = height;
 
@@ -95,27 +95,35 @@ public class Icon {
                 icon,
                 textureWidth,
                 textureHeight,
-                x,
-                y,
+                textureX,
+                textureY,
                 width,
                 height
         ) : GENERIC_ICON;
 
         // If we have any dependent needs, make sure they're synced.
-        x.syncAll();
-        y.syncAll();
+        textureX.syncAll();
+        textureY.syncAll();
     }
 
     public ExpressionPositionedTexture getTexture() {
         return texture != null ? texture : GENERIC_ICON;
     }
 
-    public int getOffsetX() {
-        return offsetX;
+    public int getX() {
+        return x;
     }
 
-    public int getOffsetY() {
-        return offsetY;
+    public int getY() {
+        return y;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public boolean isNotGeneric() {
@@ -143,10 +151,10 @@ public class Icon {
             out.icon = context.deserialize(obj.get("icon"), TextureResource.class);
             out.width = context.deserialize(obj.get("width"), Integer.class);
             out.height = context.deserialize(obj.get("height"), Integer.class);
-            out.x = context.deserialize(obj.get("x"), NeedExpressionContext.class);
-            out.y = context.deserialize(obj.get("y"), NeedExpressionContext.class);
-            out.offsetX = context.deserialize(obj.get("offsetX"), Integer.class);
-            out.offsetY = context.deserialize(obj.get("offsetY"), Integer.class);
+            out.textureX = context.deserialize(obj.get("textureX"), NeedExpressionContext.class);
+            out.textureY = context.deserialize(obj.get("textureY"), NeedExpressionContext.class);
+            out.x = context.deserialize(obj.get("x"), Integer.class);
+            out.y = context.deserialize(obj.get("y"), Integer.class);
             out.textureWidth = context.deserialize(obj.get("textureWidth"), Integer.class);
             out.textureHeight = context.deserialize(obj.get("textureHeight"), Integer.class);
 

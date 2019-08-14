@@ -2,7 +2,6 @@ package org.winterblade.minecraft.mods.needs;
 
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import org.winterblade.minecraft.mods.needs.actions.*;
-import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
 import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
@@ -62,7 +61,8 @@ public class CoreRegistration {
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "chatOnChanged", ChatMixin.class);
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "chatOnLevel", ChatLevelMixin.class, "chat");
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "ui", UiMixin.class, "gui");
-        MixinRegistry.INSTANCE.register(NeedsMod.MODID, "bar", BarMixin.class);
+        MixinRegistry.INSTANCE.register(NeedsMod.MODID, "iconBar", IconBarMixin.class);
+        MixinRegistry.INSTANCE.register(NeedsMod.MODID, "progressBar", ProgressBarMixin.class, "bar");
     }
 
     private static void registerManipulators() {
