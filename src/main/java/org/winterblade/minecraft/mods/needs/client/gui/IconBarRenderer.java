@@ -78,41 +78,40 @@ public class IconBarRenderer implements IBarRenderer {
                 ? (int) (((-min) / iconValue) * nx)
                 : 0;
 
-        if (negativeIcon != null && value < 0) {
-            final ExpressionPositionedTexture texture = negativeIcon.getTexture();
-            texture.setAndRecalculate(NeedExpressionContext.CURRENT_NEED_VALUE, need::getValue);
-            texture.bind();
+        // Setup our variables:
+        final Icon icon;
+        final int xi;
+        final double dir;
+        double leftToDraw;
+        int i = 0;
 
-            double leftToDraw = value;
-            int i = 0;
-            while (leftToDraw < 0) {
-                // Yes, the prefix decrement is intentional here.
-                texture.draw(
-                        (x + (--i * negativeIcon.getWidth())) + negativeIcon.getX() + center,
-                        y + negativeIcon.getY(),
-                        -49,
-                        leftToDraw / iconValue,
-                        1.0);
+        if (value < 0) {
+            icon = negativeIcon != null ? negativeIcon : fullIcon;
+            xi = -icon.getWidth();
+            leftToDraw = -1 * value;
+            i++;
+            dir = -1;
+        } else {
+            icon = fullIcon;
+            xi = icon.getWidth();
+            leftToDraw = value;
+            dir = 1;
+        }
 
-                leftToDraw += iconValue;
-            }
-        } else if (0 < value) {
-            final ExpressionPositionedTexture texture = fullIcon.getTexture();
-            texture.setAndRecalculate(NeedExpressionContext.CURRENT_NEED_VALUE, need::getValue);
-            texture.bind();
+        // Do the render thing
+        final ExpressionPositionedTexture texture = icon.getTexture();
+        texture.setAndRecalculate(NeedExpressionContext.CURRENT_NEED_VALUE, need::getValue);
+        texture.bind();
 
-            double leftToDraw = value;
-            int i = 0;
-            while (0 < leftToDraw) {
-                texture.draw(
-                        (x + (i++ * fullIcon.getWidth())) + fullIcon.getX() + center,
-                        y + fullIcon.getY(),
-                        -49,
-                        leftToDraw / iconValue,
-                        1.0);
+        while (0 < leftToDraw) {
+            texture.draw(
+                    (x + (i++ * xi)) + icon.getX() + center,
+                    y + icon.getY(),
+                    -49,
+                    leftToDraw / iconValue * dir,
+                    1.0);
 
-                leftToDraw -= iconValue;
-            }
+            leftToDraw -= iconValue;
         }
     }
 }
