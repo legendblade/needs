@@ -2,6 +2,7 @@ package org.winterblade.minecraft.mods.needs;
 
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import org.winterblade.minecraft.mods.needs.actions.*;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
@@ -84,6 +85,7 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "onNeedChanged", OnNeedChangedManipulator.class);
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "linkChain", LinkedNeedManipulator.class, "link", "chain");
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "tick", TickManipulator.class, "onTick");
+        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "or", ConditionalManipulator.class);
     }
 
     private static void registerActions() {

@@ -6,7 +6,6 @@ import net.minecraftforge.event.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.manipulators.DimensionBasedManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "Fired every in-game hour that passes in a world after the first; will multiply its amount " +

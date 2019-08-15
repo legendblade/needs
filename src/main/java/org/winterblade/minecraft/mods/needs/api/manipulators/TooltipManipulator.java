@@ -23,8 +23,8 @@ import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
-import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
+import org.winterblade.minecraft.mods.needs.manipulators.DimensionBasedManipulator;
 import org.winterblade.minecraft.mods.needs.util.RangeHelper;
 
 import javax.annotation.Nullable;

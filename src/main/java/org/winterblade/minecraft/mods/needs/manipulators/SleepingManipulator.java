@@ -6,7 +6,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.manipulators.DimensionBasedManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 public class SleepingManipulator extends DimensionBasedManipulator {

@@ -7,16 +7,16 @@ import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.passive.AmbientEntity;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import org.winterblade.minecraft.mods.needs.api.ITrigger;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.DamageExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "A collection of manipulators based on damage (in or out)")
-public abstract class DamageBasedManipulator extends DimensionBasedManipulator {
+public abstract class DamageBasedManipulator extends BaseManipulator implements ITrigger {
     @Expose
-    @Document(description = "The amount to change by when triggered")
+    @Document(description = "The amount to change by when triggered; optional if used as a trigger.")
     protected DamageExpressionContext amount;
 
     @Expose
@@ -44,10 +44,22 @@ public abstract class DamageBasedManipulator extends DimensionBasedManipulator {
     @Document(description = "The maximum amount of damage required to trigger this")
     protected double maxAmount = Double.POSITIVE_INFINITY;
 
+    protected ConditionalManipulator parentCondition;
+
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
         if (amount == null) throw new IllegalArgumentException("Amount must be specified.");
         super.validate(need);
+    }
+
+    @Override
+    public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
+        // No need
+    }
+
+    @Override
+    public void onTriggerLoaded(final ConditionalManipulator parent) {
+        this.parentCondition = parent;
     }
 
     @SuppressWarnings("WeakerAccess")
