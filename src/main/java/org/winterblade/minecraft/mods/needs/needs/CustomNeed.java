@@ -10,6 +10,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
+import org.winterblade.minecraft.mods.needs.capabilities.customneed.INeedCapability;
 
 @SuppressWarnings("WeakerAccess")
 @Document(description = "A completely custom need specified by you")

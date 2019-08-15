@@ -15,7 +15,7 @@ import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.needs.ReadOnlyNeed;
-import org.winterblade.minecraft.mods.needs.needs.INeedCapability;
+import org.winterblade.minecraft.mods.needs.capabilities.customneed.INeedCapability;
 
 @SuppressWarnings("WeakerAccess")
 @Document(description = "Adjusts the value of either the parent need, or the target need")

@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.needs;
+package org.winterblade.minecraft.mods.needs.capabilities.customneed;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -15,12 +15,12 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"unused", "WeakerAccess"})

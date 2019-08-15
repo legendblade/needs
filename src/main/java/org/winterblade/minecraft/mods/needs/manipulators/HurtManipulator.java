@@ -3,11 +3,13 @@ package org.winterblade.minecraft.mods.needs.manipulators;
 import com.google.gson.annotations.Expose;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.EntityDamageSource;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.DamageExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.api.manipulators.DamageBasedManipulator;
 
 import java.util.Collections;
@@ -20,26 +22,69 @@ public class HurtManipulator extends DamageBasedManipulator {
     @Document(type = String.class, description = "An array of damage sources which will trigger this event.")
     protected List<String> sources = Collections.emptyList();
 
-    protected boolean shouldCheckSource = false;
+    private boolean shouldCheckSource = false;
+    private float damage;
 
     @Override
     public void onLoaded() {
         super.onLoaded();
-        shouldCheckSource = (0 < sources.size());
+        loadCommon();
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asManipulator);
     }
 
-    @SubscribeEvent
-    protected void onDamaged(final LivingDamageEvent event) {
-        if (!(event.getEntity() instanceof PlayerEntity)) return;
-        if (event.getAmount() < minAmount || maxAmount < event.getAmount()) return;
-        if (shouldCheckSource && !sources.contains(event.getSource().damageType)) return;
-        if (event.getSource() instanceof EntityDamageSource && doesNotMatchFilters(event.getSource().getTrueSource())) return;
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        onTriggerUnloaded();
+    }
 
-        final PlayerEntity player = (PlayerEntity) event.getEntity();
-        if (failsDimensionCheck(player)) return;
+    @Override
+    public void onTriggerLoaded(final ConditionalManipulator parent) {
+        super.onTriggerLoaded(parent);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asTrigger);
+    }
 
+    @Override
+    public void onTriggerUnloaded() {
+        MinecraftForge.EVENT_BUS.unregister(this);
+    }
+
+    @Override
+    public double getAmount(final PlayerEntity player) {
+        if (amount == null) return 0;
         amount.setCurrentNeedValue(parent, player);
-        amount.setIfRequired(DamageExpressionContext.AMOUNT, () -> (double)event.getAmount());
-        parent.adjustValue(player, amount.apply(player), this);
+        amount.setIfRequired(DamageExpressionContext.AMOUNT, () -> (double) damage);
+        return amount.apply(player);
+    }
+
+    private void asManipulator(final LivingDamageEvent event) {
+        if (failsMatch(event)) return;
+        final PlayerEntity player = (PlayerEntity) event.getEntity();
+
+        damage = event.getAmount();
+        parent.adjustValue(player, getAmount(player), this);
+    }
+
+    private void asTrigger(final LivingDamageEvent event) {
+        if (failsMatch(event)) return;
+        final PlayerEntity player = (PlayerEntity) event.getEntity();
+
+        damage = event.getAmount();
+        parentCondition.trigger(player, this);
+    }
+
+    private boolean failsMatch(final LivingDamageEvent event) {
+        return
+            !(event.getEntity() instanceof PlayerEntity) ||
+                (event.getAmount() < minAmount) ||
+                (maxAmount < event.getAmount()) ||
+                (shouldCheckSource &&
+                    !sources.contains(event.getSource().damageType)) ||
+                ((event.getSource() instanceof EntityDamageSource) &&
+                    doesNotMatchFilters(event.getSource().getTrueSource()));
+    }
+
+    private void loadCommon() {
+        shouldCheckSource = (0 < sources.size());
     }
 }

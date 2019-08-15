@@ -7,11 +7,13 @@ import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
+import org.winterblade.minecraft.mods.needs.capabilities.itemuse.IItemUsedCountCapability;
+import org.winterblade.minecraft.mods.needs.capabilities.itemuse.ItemUsedCountCapability;
 import org.winterblade.minecraft.mods.needs.manipulators.*;
 import org.winterblade.minecraft.mods.needs.mixins.*;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
-import org.winterblade.minecraft.mods.needs.needs.INeedCapability;
-import org.winterblade.minecraft.mods.needs.needs.NeedCapability;
+import org.winterblade.minecraft.mods.needs.capabilities.customneed.INeedCapability;
+import org.winterblade.minecraft.mods.needs.capabilities.customneed.NeedCapability;
 import org.winterblade.minecraft.mods.needs.needs.attributes.AttackDamageNeed;
 import org.winterblade.minecraft.mods.needs.needs.attributes.LuckNeed;
 import org.winterblade.minecraft.mods.needs.needs.attributes.MaxHealthNeed;
@@ -22,9 +24,9 @@ public class CoreRegistration {
     public static void register() {
         CapabilityManager.INSTANCE.register(INeedCapability.class, NeedCapability.Storage.INSTANCE, NeedCapability::new);
         CapabilityManager.INSTANCE.register(
-                ItemUsedCountManipulator.IItemUsedCountCapability.class,
-                ItemUsedCountManipulator.ItemUsedCountCapability.Storage.INSTANCE,
-                ItemUsedCountManipulator.ItemUsedCountCapability::new
+                IItemUsedCountCapability.class,
+                ItemUsedCountCapability.Storage.INSTANCE,
+                ItemUsedCountCapability::new
         );
 
         registerNeeds();

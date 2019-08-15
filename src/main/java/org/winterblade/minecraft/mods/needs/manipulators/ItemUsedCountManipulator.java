@@ -1,43 +1,36 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.common.capabilities.CapabilityProvider;
-import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import org.apache.commons.lang3.StringUtils;
-import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
+import org.winterblade.minecraft.mods.needs.capabilities.itemuse.IItemUsedCountCapability;
+import org.winterblade.minecraft.mods.needs.capabilities.itemuse.ItemUseStorage;
+import org.winterblade.minecraft.mods.needs.capabilities.itemuse.ItemUsedCountCapability;
+import org.winterblade.minecraft.mods.needs.expressions.CountedFoodExpressionContext;
+import org.winterblade.minecraft.mods.needs.expressions.FoodExpressionContext;
+import org.winterblade.minecraft.mods.needs.util.items.FoodItemValueDeserializer;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings("ALL")
 @Document(description = "A version of Item Used that limits the number of times the player can benefit from the effect per item")
 public class ItemUsedCountManipulator extends ItemUsedManipulator {
     static {
@@ -45,7 +38,7 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
     }
 
     @CapabilityInject(IItemUsedCountCapability.class)
-    protected static Capability<IItemUsedCountCapability> CAPABILITY;
+    public static Capability<IItemUsedCountCapability> CAPABILITY;
 
     @Expose
     @Document(description = "The default amount to apply if not specified on an item level")
@@ -57,7 +50,9 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
     protected final Map<Predicate<ItemStack>, ExpressionContext> items = new HashMap<>();
 
     @Expose
-    @Document(description = "A unique key that will be used to store data about item usage; only letters, underscores, and numbers will be recognized")
+    @Document(description = "A key that will be used to store data about item usage; only letters, underscores, and " +
+            "numbers will be recognized. Generally keys should be unique unless you intend to share use counts across " +
+            "multiple instances.")
     protected String id;
 
     @Expose
@@ -67,9 +62,11 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
     protected NeedExpressionContext uses = ExpressionContext.makeConstant(new NeedExpressionContext(), 1);
 
     @Expose
-    @Document(description = "The number of items to remember.\n\nItems will fall off the list in order of the least recently " +
+    @Document(description = "The number of items to remember.\n\n" +
+            "Items will fall off the list in order of the least recently " +
             "benefited from; e.g. if uses is 2, and numberStored is also 2, then using Item A, then item B, then Item A, if you were " +
-            "to use Item C, then item B would fall off the list, because Item A was benefited from more recently.\n\nIf this is an " +
+            "to use Item C, then item B would fall off the list, because Item A was benefited from more recently.\n\n" +
+            "If this is an " +
             "expression, the return value will be rounded down to the nearest whole number (e.g. 0.9 -> 0); if this is less than the size " +
             "of the list at the time the list is being checked, items will automatically be dropped until the list is down to the proper size.")
     @OptionalField(defaultValue = "No limit(ish)")
@@ -85,23 +82,31 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
-        if (uses.isConstant() && uses.apply(null) <= 0) throw new IllegalArgumentException("Uses must be a positive whole number if it's constant.");
-        if (numberStored.isConstant() && numberStored.apply(null) <= 0) throw new IllegalArgumentException("Number stored must be a positive whole number if it's constant.");
-        if (id == null || id.isEmpty()) throw new IllegalArgumentException("ID must be provided.");
-        checkNumberStored = numberStored.isConstant() && numberStored.apply(null) < Integer.MAX_VALUE;
+        validateUsesCommon();
         super.validate(need);
     }
 
     @Override
     public void onLoaded() {
         super.onLoaded();
-        storageKey = "itemusedcount_" + StringUtils.lowerCase(id).replaceAll("[^a-z 0-9]", "").replaceAll(" ", "_");
+        onLoadUsesCommon();
     }
 
     @Override
-    public void onItemUsed(final LivingEntityUseItemEvent.Finish evt) {
+    public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
+        super.validateTrigger(parent);
+        validateUsesCommon();
+    }
+
+    @Override
+    public void onTriggerLoaded(final ConditionalManipulator parent) {
+        super.onTriggerLoaded(parent);
+        onLoadUsesCommon();
+    }
+
+    @Override
+    public void asCommon(final LivingEntityUseItemEvent.Finish evt, final Consumer<PlayerEntity> callback) {
         if (evt.getEntity().world.isRemote || !(evt.getEntityLiving() instanceof PlayerEntity)) return;
-        if (failsDimensionCheck((PlayerEntity) evt.getEntityLiving())) return;
         final WeakReference<PlayerEntity> playerRef = new WeakReference<>((PlayerEntity) evt.getEntityLiving());
 
         // This is a bit heavier; we want to put it off until after the player is done with the item.
@@ -110,12 +115,12 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
             if (player == null) return; // If the player has gone away since we queued this, exit early.
 
             // Make sure the item itself matches:
-            final ItemStack item = evt.getItem();
-            final ExpressionContext expr = checkItem(item);
-            if (expr == null) return;
+            lastItem = evt.getItem();
+            lastMatch = checkItem(lastItem);
+            if (lastMatch == null) return;
 
             // Get a bunch of stuff that we're going to need to unravel this mess
-            final String key = ItemUseStorage.getKeyFrom(item, trackDamage);
+            final String key = ItemUseStorage.getKeyFrom(lastItem, trackDamage);
             final IItemUsedCountCapability cap = player.getCapability(CAPABILITY).orElse(new ItemUsedCountCapability());
             final Map<String, ItemUseStorage> storage = cap.getStorage(storageKey);
 
@@ -129,7 +134,7 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
 
             // Get the max number
             uses.setCurrentNeedValue(parent, player);
-            double maxUse = Math.floor(uses.apply(player));
+            final double maxUse = Math.floor(uses.apply(player));
             if (maxUse <= 0) return;
 
             if (!checkNumberStored) {
@@ -138,19 +143,19 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
 
                 // Let's get out of here.
                 if (!existed) storage.put(key, itemStore);
-                prepHandle(player, item, expr, itemStore);
+                prepHandle(player, itemStore, callback);
                 return;
             }
 
             // Now get into the larger pain...
             numberStored.setCurrentNeedValue(parent, player);
-            double count = numberStored.apply(player);
+            final double count = numberStored.apply(player);
 
             // If it's an expression that uses need, it's possible, and easier...
             if (count < 1) {
                 if (!storage.isEmpty()) storage.clear();
                 if (maxUse <= itemStore.getCount()) return;
-                prepHandle(player, item, expr, itemStore);
+                prepHandle(player, itemStore, callback);
                 return;
             }
 
@@ -159,14 +164,14 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
             if (storage.isEmpty()) {
                 if (maxUse <= itemStore.getCount()) return;
                 storage.put(key, itemStore);
-                prepHandle(player, item, expr, itemStore);
+                prepHandle(player, itemStore, callback);
                 return;
             }
 
             // If we're already in the list, don't worry about it.
             if (existed && storage.size() < count) {
                 if (maxUse <= itemStore.getCount()) return;
-                prepHandle(player, item, expr, itemStore);
+                prepHandle(player, itemStore, callback);
                 return;
             }
 
@@ -174,9 +179,12 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
             if (!existed && storage.size() < count - 1) {
                 if (maxUse <= itemStore.getCount()) return;
                 storage.put(key, itemStore);
-                prepHandle(player, item, expr, itemStore);
+                prepHandle(player, itemStore, callback);
                 return;
             }
+
+            // This will pop it to the front
+            itemStore.setLastBenefitTick(player.world.getGameTime());
 
             // Build up our stream...
             Stream<ItemUseStorage> stream = storage
@@ -185,18 +193,15 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
                 .sorted(Comparator.comparing(ItemUseStorage::getLastBenefitTick).reversed())
                 .limit((long) Math.floor(count));
 
-            // This will pop it to the front
-            itemStore.setLastBenefitTick(player.world.getGameTime());
-
             final AtomicBoolean inReducedSet = new AtomicBoolean();
             if (existed) {
-                ItemUseStorage dawnOfTheFinalStore = itemStore;
+                final ItemUseStorage dawnOfTheFinalStore = itemStore;
                 stream = stream.peek((i) -> inReducedSet.set(i.equals(dawnOfTheFinalStore)));
             } else {
                 inReducedSet.set(false);
             }
 
-            LinkedList<ItemUseStorage> reducedList = stream.collect(Collectors.toCollection(LinkedList::new));
+            final LinkedList<ItemUseStorage> reducedList = stream.collect(Collectors.toCollection(LinkedList::new));
 
             if (!inReducedSet.get()) {
                 // If we're going to add it, we need to trim off the oldest element
@@ -205,12 +210,10 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
 
                 // Reset its count, and handle it.
                 itemStore.setCount(0);
-                handle(player, item, expr);
-                itemStore.incrementCount();
+                prepHandle(player, itemStore, callback);
             } else if (itemStore.getCount() < maxUse) {
                 // Otherwise, if we still have a use, use it here
-                handle(player, item, expr);
-                itemStore.incrementCount();
+                prepHandle(player, itemStore, callback);
             }
 
             // Reduce the list...
@@ -219,23 +222,28 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
         });
     }
 
-    /**
-     * Preps and handles the expressions
-     * @param player    The player
-     * @param item      The item
-     * @param expr      The expression
-     * @param itemStore The item store to update
-     */
-    protected void prepHandle(PlayerEntity player, ItemStack item, ExpressionContext expr, ItemUseStorage itemStore) {
-        itemStore.setLastBenefitTick(player.world.getGameTime());
-        handle(player, item, expr);
-        itemStore.incrementCount();
+    @Override
+    protected void setupExpression(final Supplier<Double> currentValue, final PlayerEntity player, final ItemStack item, final ExpressionContext expr) {
+        super.setupExpression(currentValue, player, item, expr);
+        if (!expr.isRequired(CountedFoodExpressionContext.COUNT)) return;
+
+        final String key = ItemUseStorage.getKeyFrom(lastItem, trackDamage);
+        final IItemUsedCountCapability cap = player.getCapability(CAPABILITY).orElse(new ItemUsedCountCapability());
+        final Map<String, ItemUseStorage> storage = cap.getStorage(storageKey);
+
+        final ItemUseStorage itemStore = storage.get(key);
+        expr.setIfRequired(CountedFoodExpressionContext.COUNT, itemStore != null ? (() -> (double) itemStore.getCount()) : (() -> 0d));
     }
 
-    @Override
-    protected void setupExpression(Supplier<Double> currentValue, PlayerEntity player, ItemStack item, ExpressionContext expr) {
+    private void validateUsesCommon() {
+        if (uses.isConstant() && uses.apply(null) <= 0) throw new IllegalArgumentException("Uses must be a positive whole number if it's constant.");
+        if (numberStored.isConstant() && numberStored.apply(null) <= 0) throw new IllegalArgumentException("Number stored must be a positive whole number if it's constant.");
+        if (id == null || id.isEmpty()) throw new IllegalArgumentException("ID must be provided.");
+    }
 
-        super.setupExpression(currentValue, player, item, expr);
+    private void onLoadUsesCommon() {
+        storageKey = "itemusedcount_" + StringUtils.lowerCase(id).replaceAll("[^a-z 0-9]", "").replaceAll(" ", "_");
+        checkNumberStored = numberStored.isConstant() && numberStored.apply(null) < Integer.MAX_VALUE;
     }
 
     @Override
@@ -248,193 +256,15 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
         return items;
     }
 
-    protected static class FoodItemValueDeserializer extends ItemValueDeserializer {
-        @Override
-        public Map<Predicate<ItemStack>, ExpressionContext> deserialize(final JsonElement itemsEl, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
-            return super.deserialize(itemsEl, context, CountedFoodExpressionContext.class);
-        }
+    /**
+     * Preps and handles the expressions
+     * @param player    The player
+     * @param itemStore The item store to update
+     */
+    private static void prepHandle(final PlayerEntity player, final ItemUseStorage itemStore, final Consumer<PlayerEntity> callback) {
+        itemStore.setLastBenefitTick(player.world.getGameTime());
+        callback.accept(player);
+        itemStore.incrementCount();
     }
 
-    @JsonAdapter(ExpressionContext.Deserializer.class)
-    public static class CountedFoodExpressionContext extends FoodExpressionContext {
-        public static final String COUNT = "count";
-
-        protected static final Map<String, String> docs = new HashMap<>(FoodExpressionContext.docs);
-        static {
-            docs.put(COUNT, "The number of times this item has been used prior.");
-        }
-
-        public CountedFoodExpressionContext() {
-        }
-
-        @Override
-        public List<String> getElements() {
-            final List<String> elements = super.getElements();
-            elements.add(COUNT);
-            return elements;
-        }
-
-        @Override
-        public Map<String, String> getElementDocumentation() {
-            return docs;
-        }
-    }
-
-    protected static class ItemUseStorage implements Comparable<ItemUseStorage>, INBTSerializable<CompoundNBT> {
-        private String key;
-        private long lastBenefitTick;
-        private int count = 0;
-
-        public static String getKeyFrom(ItemStack item, boolean trackMeta) {
-            String key = item.getItem().getRegistryName().toString();
-            if (trackMeta) key += ":" + item.getDamage();
-            return key;
-        }
-
-        @Override
-        public int compareTo(ItemUseStorage o) {
-            if (o == null) return -1;
-            return Long.compare(this.lastBenefitTick, o.lastBenefitTick);
-        }
-
-        @Override
-        public CompoundNBT serializeNBT() {
-            final CompoundNBT nbt = new CompoundNBT();
-
-            nbt.putString("key", key);
-            nbt.putLong("lastBenefitTick", lastBenefitTick);
-            nbt.putInt("count", count);
-
-            return nbt;
-        }
-
-        @Override
-        public void deserializeNBT(CompoundNBT nbt) {
-            key = nbt.getString("key");
-            lastBenefitTick = nbt.getLong("lastBenefitTick");
-            count = nbt.getInt("count");
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public void setKey(String key) {
-            this.key = key;
-        }
-
-        public int getCount() {
-            return count;
-        }
-
-        public void incrementCount() {
-            count++;
-        }
-
-        public void setCount(final int count) {
-            this.count = count;
-        }
-
-        public long getLastBenefitTick() {
-            return lastBenefitTick;
-        }
-
-        public void setLastBenefitTick(long lastBenefitTick) {
-            this.lastBenefitTick = lastBenefitTick;
-        }
-    }
-
-    public interface IItemUsedCountCapability {
-        Map<String, Map<String, ItemUseStorage>> getStorage();
-
-        Map<String, ItemUseStorage> getStorage(String key);
-    }
-
-    public static class ItemUsedCountCapability implements IItemUsedCountCapability {
-        private final Map<String, Map<String, ItemUseStorage>> storage = new HashMap<>();
-
-        @Override
-        public Map<String, Map<String, ItemUseStorage>> getStorage() {
-            return storage;
-        }
-
-        @Override
-        public Map<String, ItemUseStorage> getStorage(final String key) {
-            return storage.computeIfAbsent(key, (k) -> new HashMap<>());
-        }
-
-        public static class Storage implements Capability.IStorage<IItemUsedCountCapability> {
-            public static final Storage INSTANCE = new Storage();
-
-            @Nullable
-            @Override
-            public CompoundNBT writeNBT(final Capability<IItemUsedCountCapability> capability, final IItemUsedCountCapability instance, final Direction side) {
-                CompoundNBT out = new CompoundNBT();
-
-                instance
-                    .getStorage()
-                    .forEach((k, v) -> {
-                        if (v.isEmpty()) return;
-                        out.put(k,
-                            v
-                                .values()
-                                .stream()
-                                .map(ItemUseStorage::serializeNBT)
-                                .collect(Collectors.toCollection(ListNBT::new))
-                        );
-                    });
-
-                return out;
-            }
-
-            @Override
-            public void readNBT(final Capability<IItemUsedCountCapability> capability, final IItemUsedCountCapability instance, final Direction side, final INBT nbt) {
-                if (!(nbt instanceof CompoundNBT)) {
-                    NeedsMod.LOGGER.error("Unable to deserialize item use storage; NBT data is not a compound tag");
-                    return;
-                }
-
-                final CompoundNBT holder = (CompoundNBT) nbt;
-                final Map<String, Map<String, ItemUseStorage>> storage = instance.getStorage();
-                holder.keySet().forEach((k) -> {
-                    ListNBT list = holder.getList(k, 10); // Magic number? Isn't there an enum for this somewhere?
-                    storage.put(k,
-                        list
-                            .stream()
-                            .map((v) -> {
-                                final ItemUseStorage item = new ItemUseStorage();
-                                item.deserializeNBT((CompoundNBT)v);
-                                return item;
-                            })
-                            .collect(Collectors.toMap(ItemUseStorage::getKey, (i) -> i))
-                    );
-                });
-            }
-        }
-
-        protected static class Provider extends CapabilityProvider<Provider> implements INBTSerializable<CompoundNBT> {
-            private final IItemUsedCountCapability instance = new ItemUsedCountCapability();
-            private final LazyOptional<IItemUsedCountCapability> capability = LazyOptional.of(() -> instance);
-
-            protected Provider() {
-                super(Provider.class);
-            }
-
-            @Nonnull
-            @Override
-            public <T> LazyOptional<T> getCapability(@Nonnull final Capability<T> cap, @Nullable final Direction side) {
-                return cap == CAPABILITY ? capability.cast() : super.getCapability(cap, side);
-            }
-
-            @Override
-            public CompoundNBT serializeNBT() {
-                return Storage.INSTANCE.writeNBT(CAPABILITY, instance, null);
-            }
-
-            @Override
-            public void deserializeNBT(final CompoundNBT nbt) {
-                Storage.INSTANCE.readNBT(CAPABILITY, instance, null, nbt);
-            }
-        }
-    }
 }

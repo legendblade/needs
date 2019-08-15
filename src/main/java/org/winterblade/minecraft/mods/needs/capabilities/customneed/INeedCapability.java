@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.needs;
+package org.winterblade.minecraft.mods.needs.capabilities.customneed;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
