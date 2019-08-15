@@ -5,6 +5,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.events.NeedInitializationEvent;
+import org.winterblade.minecraft.mods.needs.api.mixins.BaseMixin;
 import org.winterblade.minecraft.mods.needs.util.ScoreHelper;
 
 @Document(description = "Use this mixin to mirror the need to a scoreboard entry of the same name as the need; the " +

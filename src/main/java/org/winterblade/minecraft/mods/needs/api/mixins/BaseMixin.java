@@ -1,4 +1,4 @@
-package org.winterblade.minecraft.mods.needs.mixins;
+package org.winterblade.minecraft.mods.needs.api.mixins;
 
 import net.minecraftforge.fml.common.Mod;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;

@@ -5,6 +5,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
+import org.winterblade.minecraft.mods.needs.api.mixins.BaseMixin;
 
 @Document(description = "Use this mixin to print every, single, individual, precise change to the player's chat. I don't " +
         "know why you would use it, but, it's here in case u li3k ann0y1ng people.")

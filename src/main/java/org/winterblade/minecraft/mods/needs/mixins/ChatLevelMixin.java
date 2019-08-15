@@ -6,6 +6,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.events.NeedLevelEvent;
+import org.winterblade.minecraft.mods.needs.api.mixins.BaseMixin;
 
 @Document(description = "Display a notification in chat anytime the need changes from one level to another")
 public class ChatLevelMixin extends BaseMixin {
