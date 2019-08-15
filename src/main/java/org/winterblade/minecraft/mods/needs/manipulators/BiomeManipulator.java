@@ -9,10 +9,14 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeManager;
 import net.minecraftforge.registries.RegistryManager;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.ICondition;
+import org.winterblade.minecraft.mods.needs.api.ITrigger;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 import java.util.*;
@@ -21,9 +25,9 @@ import java.util.stream.Collectors;
 @SuppressWarnings("WeakerAccess")
 @Document(description = "Triggers while the player is in one of the specified biomes/biome types; at least one or the " +
         "other must be specified.")
-public class BiomeManipulator extends DimensionBasedManipulator {
+public class BiomeManipulator extends BaseManipulator implements ICondition, ITrigger {
     @Expose
-    @Document(description = "The amount to change by")
+    @Document(description = "The amount to change by; optional when used as a condition or trigger")
     protected NeedExpressionContext amount;
 
     @Expose
@@ -42,11 +46,89 @@ public class BiomeManipulator extends DimensionBasedManipulator {
 
     protected boolean trackTypes = false;
     protected boolean trackBiomes = false;
+    private ConditionalManipulator parentCondition;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
         if (amount == null) throw new IllegalArgumentException("Amount must be specified.");
+        validateCommon();
+    }
 
+    @Override
+    public void onLoaded() {
+        super.onLoaded();
+        loadCommon();
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::tickNeed);
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        TickManager.INSTANCE.removePlayerTickUpdate(this);
+        types = Collections.emptyList();
+    }
+
+    @Override
+    public void validateCondition(final ConditionalManipulator parent) throws IllegalArgumentException {
+        validateCommon();
+    }
+
+    @Override
+    public void onConditionLoaded(final ConditionalManipulator parent) {
+        loadCommon();
+    }
+
+    @Override
+    public void onConditionUnloaded() {
+        types = Collections.emptyList();
+    }
+
+    @Override
+    public double getAmount(final PlayerEntity player) {
+        if (amount == null) return 0;
+        amount.setCurrentNeedValue(parent, player);
+        return amount.apply(player);
+    }
+
+    @Override
+    public boolean test(final PlayerEntity player) {
+        final Biome biome = player.world.getBiome(new BlockPos(player));
+
+        //noinspection ConstantConditions - I don't believe you.
+        if (biome == null) return false;
+
+        // This is a mess, but, simple
+        return (trackBiomes && biomeMap.computeIfAbsent(biome, (kv) -> {
+                final ResourceLocation key = RegistryManager.ACTIVE.getRegistry(Biome.class).getKey(biome);
+                return key != null && biomes.contains(key.toString());
+            }))
+            ||
+            (trackTypes && biomeTypeMap.computeIfAbsent(biome,
+                    (kv) -> types.stream().anyMatch((t) -> {
+                        final ImmutableList<BiomeManager.BiomeEntry> biomes = BiomeManager.getBiomes(t);
+                        return biomes != null && biomes.stream().anyMatch((b) -> b.biome.equals(biome));
+            })));
+    }
+
+    @Override
+    public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
+        validateCommon();
+    }
+
+    @Override
+    public void onTriggerLoaded(final ConditionalManipulator parent) {
+        parentCondition = parent;
+        loadCommon();
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::tickTrigger);
+    }
+
+    @Override
+    public void onTriggerUnloaded() {
+        TickManager.INSTANCE.removePlayerTickUpdate(this);
+        types = Collections.emptyList();
+    }
+
+    protected void validateCommon() {
         // Check if we have biomes; don't store them, as they may change between
         if (!biomeTypes.isEmpty()) {
             biomeTypes = biomeTypes.stream().filter((b) -> {
@@ -62,8 +144,7 @@ public class BiomeManipulator extends DimensionBasedManipulator {
         if (biomes.isEmpty() && biomeTypes.isEmpty()) throw new IllegalArgumentException("At least one valid biome or biome type must be specified.");
     }
 
-    @Override
-    public void onLoaded() {
+    protected void loadCommon() {
         if (!biomeTypes.isEmpty()) {
             types = biomeTypes.stream().map((b) -> {
                 try {
@@ -74,44 +155,22 @@ public class BiomeManipulator extends DimensionBasedManipulator {
                     return null;
                 }
             }).filter(Objects::nonNull)
-            .collect(Collectors.toList());
+                    .collect(Collectors.toList());
         }
 
         if (!biomes.isEmpty()) trackBiomes = true;
         if (!types.isEmpty()) trackTypes = true;
 
-        super.onLoaded();
-        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
+        if (amount != null) amount.syncAll();
     }
 
-    @Override
-    public void onUnloaded() {
-        super.onUnloaded();
-        TickManager.INSTANCE.removePlayerTickUpdate(this);
-        types = Collections.emptyList();
+    private void tickNeed(final PlayerEntity player) {
+        if (!test(player)) return;
+        parent.adjustValue(player, getAmount(player), this);
     }
 
-    private void onTick(final PlayerEntity player) {
-        if (failsDimensionCheck(player)) return;
-        final Biome biome = player.world.getBiome(new BlockPos(player));
-
-        //noinspection ConstantConditions - I don't believe you.
-        if (biome == null) return;
-
-        // This is a mess, but, simple
-        if (
-            (!trackBiomes || !biomeMap.computeIfAbsent(biome, (kv) -> {
-                final ResourceLocation key = RegistryManager.ACTIVE.getRegistry(Biome.class).getKey(biome);
-                return key != null && biomes.contains(key.toString());
-            })) &&
-            (!trackTypes || !biomeTypeMap.computeIfAbsent(biome,
-                (kv) -> types.stream().anyMatch((t) -> {
-                    final ImmutableList<BiomeManager.BiomeEntry> biomes = BiomeManager.getBiomes(t);
-                    return biomes != null && biomes.stream().anyMatch((b) -> b.biome.equals(biome));
-            })))
-        ) return;
-
-        amount.setCurrentNeedValue(parent, player);
-        parent.adjustValue(player, amount.apply(player), this);
+    private void tickTrigger(final PlayerEntity player) {
+        if (!test(player)) return;
+        parentCondition.trigger(player, this);
     }
 }

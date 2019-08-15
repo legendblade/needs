@@ -53,12 +53,19 @@ public abstract class DamageBasedManipulator extends BaseManipulator implements 
     }
 
     @Override
+    public void onLoaded() {
+        super.onLoaded();
+        amount.syncAll();
+    }
+
+    @Override
     public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
         // No need
     }
 
     @Override
     public void onTriggerLoaded(final ConditionalManipulator parent) {
+        if (amount != null) amount.syncAll();
         this.parentCondition = parent;
     }
 

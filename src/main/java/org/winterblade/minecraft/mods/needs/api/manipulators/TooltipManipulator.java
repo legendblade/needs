@@ -37,7 +37,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("WeakerAccess")
 @Document(description = "A collection of manipulators that can display their effect in the tooltip when hovering " +
         "over the item in an inventory")
-public abstract class TooltipManipulator extends DimensionBasedManipulator {
+public abstract class TooltipManipulator extends BaseManipulator {
     @Expose
     @OptionalField(defaultValue = "False")
     @Document(description = "If true, show the tooltip. Note that doing so will incur a slight performance penalty on" +
