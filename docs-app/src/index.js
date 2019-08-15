@@ -254,6 +254,7 @@ class App extends React.Component {
             "root": "#",
             "class": "navbar-brand d-block text-wrap",
             "children": [
+                { "title": "Overview", "root": "#overview" },
                 { "title": "Needs", "root": "#needs" },
                 { "title": "Need Types", "root": "#needTypes", "children": map(sortEntries(response.needs), (c) => convertToNav(c, "needTypes")) },
                 { "title": "Mixins", "root": "#mixins", "children": map(sortEntries(response.mixins), (c) => convertToNav(c, "mixins")) },
@@ -297,6 +298,37 @@ class App extends React.Component {
 
                 <div class="col-12 col-lg-8 px-4" style={{'border-left': '1px solid #DEDEDE'}}>
                     <div>
+                        <h2>Foreward</h2>
+                        <p class="lead">
+                            Needs, Wants, and Desires (or Needs for short) is a work of <del>love</del> <del>like</del> insanity borne 
+                            from a desire to allow Minecraft pack makers to have the tools available to them to define arbitrary stats and 
+                            stat systems that they can use to differentiate their pack, and help bring their world alive.
+                        </p>
+                        <p>
+                            At a core level, it could be seen as a spiritual successor to mods like Nutrition, or in some aspects, Tough as 
+                            Nails, because both the core nutrition system from Nutrition, and the temperature system from TAN could be recreated
+                            through the Needs system. However, the actual possibilities for systems that could be created through Needs are much
+                            larger and, in many ways, much more complicated than that - you can start as simple as one single stat that tracks
+                            along with the number of steps the player has taken, to entire stat trees that all interconnect and provide distinctions
+                            and drawbacks as the player gains (or loses) levels.
+                        </p>
+                        <p>
+                            At its core, the mod is developed by me, Taryn Winterblade (<a href='https://twitter.com/legendblade'>@legendblade</a>),
+                            but I'm completely open to receiving any and all help that experienced mod developers wish to provide. I would like to
+                            make Needs the most optimized and smooth process as possible; if you'd like to help out, please visit the code over
+                            at <a href='https://github.com/legendblade/needs'>https://github.com/legendblade/needs</a>.
+                        </p>
+                        <p>
+                            Lastly, if you find this mod useful, and would like to donate to help feed the three black holes that I call cats, feel
+                            free to pop over to my Patreon at <a href='https://www.patreon.com/TarynWinterblade'>https://www.patreon.com/TarynWinterblade</a>;
+                            any donation is greatly appreciated.
+                        </p>
+                        <p>
+                            Thank you,<br />
+                            - Matt, a.k.a. Taryn Winterblade
+                        </p>
+                    </div>
+                    <div id="overview">
                         <h2>Overview</h2>
                         <p class="lead">
                             There are a couple of major topics that you will need to know when creating needs.
