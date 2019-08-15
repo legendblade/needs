@@ -13,8 +13,6 @@ import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
-import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.capabilities.itemuse.IItemUsedCountCapability;
 import org.winterblade.minecraft.mods.needs.capabilities.itemuse.ItemUseStorage;
 import org.winterblade.minecraft.mods.needs.capabilities.itemuse.ItemUsedCountCapability;
@@ -23,7 +21,10 @@ import org.winterblade.minecraft.mods.needs.expressions.FoodExpressionContext;
 import org.winterblade.minecraft.mods.needs.util.items.FoodItemValueDeserializer;
 
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -79,30 +80,6 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
 
     private String storageKey;
     private boolean checkNumberStored;
-
-    @Override
-    public void validate(final Need need) throws IllegalArgumentException {
-        validateUsesCommon();
-        super.validate(need);
-    }
-
-    @Override
-    public void onLoaded() {
-        super.onLoaded();
-        onLoadUsesCommon();
-    }
-
-    @Override
-    public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
-        super.validateTrigger(parent);
-        validateUsesCommon();
-    }
-
-    @Override
-    public void onTriggerLoaded(final ConditionalManipulator parent) {
-        super.onTriggerLoaded(parent);
-        onLoadUsesCommon();
-    }
 
     @Override
     public void asCommon(final LivingEntityUseItemEvent.Finish evt, final Consumer<PlayerEntity> callback) {
@@ -235,13 +212,17 @@ public class ItemUsedCountManipulator extends ItemUsedManipulator {
         expr.setIfRequired(CountedFoodExpressionContext.COUNT, itemStore != null ? (() -> (double) itemStore.getCount()) : (() -> 0d));
     }
 
-    private void validateUsesCommon() {
+    @Override
+    protected void validateCommon() {
+        super.validateCommon();
         if (uses.isConstant() && uses.apply(null) <= 0) throw new IllegalArgumentException("Uses must be a positive whole number if it's constant.");
         if (numberStored.isConstant() && numberStored.apply(null) <= 0) throw new IllegalArgumentException("Number stored must be a positive whole number if it's constant.");
         if (id == null || id.isEmpty()) throw new IllegalArgumentException("ID must be provided.");
     }
 
-    private void onLoadUsesCommon() {
+    @Override
+    protected void onLoadedCommon() {
+        super.onLoadedCommon();
         storageKey = "itemusedcount_" + StringUtils.lowerCase(id).replaceAll("[^a-z 0-9]", "").replaceAll(" ", "_");
         checkNumberStored = numberStored.isConstant() && numberStored.apply(null) < Integer.MAX_VALUE;
     }
