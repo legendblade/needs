@@ -107,6 +107,6 @@ public abstract class BlockCheckingManipulator extends TooltipManipulator implem
     }
 
     protected void onLoadedCommon() {
-        if (amount != null) amount.syncAll();
+        if (amount != null) amount.build();
     }
 }

@@ -40,7 +40,7 @@ public class PerHourManipulator extends BaseManipulator implements ITrigger {
         super.onLoaded();
         callback = (p) -> parent.adjustValue(p, getAmount(p), this);
         MinecraftForge.EVENT_BUS.addListener(this::onTick);
-        amount.syncAll();
+        amount.build();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class PerHourManipulator extends BaseManipulator implements ITrigger {
         this.parent = parentNeed;
         callback = (p) -> parentCondition.trigger(p, this);
         MinecraftForge.EVENT_BUS.addListener(this::onTick);
-        if (amount != null) amount.syncAll();
+        if (amount != null) amount.build();
     }
 
     @Override

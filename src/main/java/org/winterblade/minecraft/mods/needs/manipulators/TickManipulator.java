@@ -28,7 +28,7 @@ public class TickManipulator extends BaseManipulator implements ITrigger {
     public void onLoaded() {
         TickManager.INSTANCE.requestPlayerTickUpdate(this, this::asManipulator);
         super.onLoaded();
-        amount.syncAll();
+        amount.build();
     }
 
     @Override
@@ -36,7 +36,7 @@ public class TickManipulator extends BaseManipulator implements ITrigger {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         TickManager.INSTANCE.requestPlayerTickUpdate(this, this::asTrigger);
-        if (amount != null) amount.syncAll();
+        if (amount != null) amount.build();
     }
 
     @Override

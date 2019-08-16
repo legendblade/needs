@@ -69,7 +69,7 @@ public class HoldingManipulator extends TooltipManipulator implements ICondition
         }
 
         postFormat = (sb, player) -> sb.append(suffix).toString();
-        amount.syncAll();
+        amount.build();
     }
 
     @Override
@@ -87,7 +87,7 @@ public class HoldingManipulator extends TooltipManipulator implements ICondition
     public void onConditionLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
-        if (amount != null) amount.syncAll();
+        if (amount != null) amount.build();
     }
 
     @Override
@@ -142,7 +142,7 @@ public class HoldingManipulator extends TooltipManipulator implements ICondition
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         TickManager.INSTANCE.requestPlayerTickUpdate(this, this::asTrigger);
-        if (amount != null) amount.syncAll();
+        if (amount != null) amount.build();
     }
 
     @Override

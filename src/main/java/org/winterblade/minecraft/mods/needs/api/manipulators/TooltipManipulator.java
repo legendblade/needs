@@ -24,7 +24,6 @@ import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
-import org.winterblade.minecraft.mods.needs.manipulators.DimensionBasedManipulator;
 import org.winterblade.minecraft.mods.needs.util.RangeHelper;
 
 import javax.annotation.Nullable;
@@ -91,7 +90,7 @@ public abstract class TooltipManipulator extends BaseManipulator {
             formatting.put(Range.lessThan(0d), TextFormatting.RED.toString());
         }
 
-        if (displayFormat != null) displayFormat.syncAll();
+        if (displayFormat != null) displayFormat.build();
     }
 
     @Override

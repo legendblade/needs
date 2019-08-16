@@ -15,10 +15,7 @@ public class AndConditionalExpressionContext extends NeedExpressionContext {
     protected static final Map<String, String> docs = new TreeMap<>(NeedExpressionContext.docs);
 
     static {
-        docs.put("match1", "The amount from the first matched condition, if any.");
-        docs.put("match2", "The amount from the second matched condition, if any.");
-        docs.put("matchN...", "The amount from the Nth matched condition, if any; up to " + MATCH_COUNT + " conditions " +
-                "may be accessed in this format.");
+        docs.put("<condition key>", "The amount from the named condition, if any.");
         docs.put(SOURCE, "The amount from the source trigger, if any.");
     }
 

@@ -164,7 +164,7 @@ public class BiomeManipulator extends BaseManipulator implements ICondition, ITr
         if (!biomes.isEmpty()) trackBiomes = true;
         if (!types.isEmpty()) trackTypes = true;
 
-        if (amount != null) amount.syncAll();
+        if (amount != null) amount.build();
     }
 
     private void tickNeed(final PlayerEntity player) {

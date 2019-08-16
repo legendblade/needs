@@ -55,7 +55,7 @@ public abstract class DamageBasedManipulator extends BaseManipulator implements 
     @Override
     public void onLoaded() {
         super.onLoaded();
-        amount.syncAll();
+        amount.build();
     }
 
     @Override
@@ -65,7 +65,7 @@ public abstract class DamageBasedManipulator extends BaseManipulator implements 
 
     @Override
     public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
-        if (amount != null) amount.syncAll();
+        if (amount != null) amount.build();
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
     }

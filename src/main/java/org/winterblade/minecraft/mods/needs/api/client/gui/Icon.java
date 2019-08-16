@@ -98,8 +98,8 @@ public class Icon {
         ) : GENERIC_ICON;
 
         // If we have any dependent needs, make sure they're synced.
-        textureX.syncAll();
-        textureY.syncAll();
+        textureX.build();
+        textureY.build();
     }
 
     public ExpressionPositionedTexture getTexture() {

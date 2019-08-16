@@ -79,7 +79,7 @@ public class UiMixin extends BaseMixin {
         need.enableSyncing();
 
         precisionFormat = "%." + precision + "f";
-        if (displayFormat != null) displayFormat.syncAll();
+        if (displayFormat != null) displayFormat.build();
         icon.onLoaded();
     }
 

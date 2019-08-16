@@ -53,7 +53,7 @@ public class OrConditionalManipulator extends ConditionalManipulator {
         super.onConditionLoaded(parentNeed, parentCondition);
         conditions.forEach(c -> c.onConditionLoaded(parentNeed, this));
         getMatch = amount == null || amount.isRequired(OrConditionalExpressionContext.MATCHED_VALUE);
-        if (amount != null) amount.syncAll();
+        if (amount != null) amount.build();
     }
 
     /**

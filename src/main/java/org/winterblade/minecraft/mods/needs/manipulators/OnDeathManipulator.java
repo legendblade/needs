@@ -34,7 +34,7 @@ public class OnDeathManipulator extends BaseManipulator implements ITrigger {
     public void onLoaded() {
         super.onLoaded();
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asManipulator);
-        amount.syncAll();
+        amount.build();
     }
 
     @Override
@@ -42,7 +42,7 @@ public class OnDeathManipulator extends BaseManipulator implements ITrigger {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asTrigger);
-        if (amount != null) amount.syncAll();
+        if (amount != null) amount.build();
     }
 
     @Override

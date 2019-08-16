@@ -101,7 +101,7 @@ public class ItemUsedManipulator extends TooltipManipulator implements ITrigger 
     protected void onLoadedCommon() {
         getItems().entrySet().forEach((kv) -> {
             if (kv.getValue() == null) kv.setValue(getDefaultAmount());
-            kv.getValue().syncAll();
+            kv.getValue().build();
         });
     }
 

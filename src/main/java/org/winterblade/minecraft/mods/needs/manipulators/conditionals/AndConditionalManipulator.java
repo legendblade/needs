@@ -9,10 +9,7 @@ import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.expressions.AndConditionalExpressionContext;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Document(description = "Represents a series of conditions that will be tested one after another until the first one " +
@@ -25,8 +22,9 @@ public class AndConditionalManipulator extends ConditionalManipulator {
 
     @Expose
     @SuppressWarnings("FieldMayBeFinal")
-    @Document(description = "The conditions to check when this manipulator is triggered", type = ICondition.class)
-    private List<ICondition> conditions = Collections.emptyList();
+    @Document(description = "The conditions to check when this manipulator is triggered; the key for each condition " +
+            "can be used in the amount expression to retrieve the value of that condition.", type = ICondition.class)
+    private Map<String, ICondition> conditions = Collections.emptyMap();
 
     private boolean getMatch;
     private final Set<Consumer<PlayerEntity>> args = new HashSet<>();
@@ -40,15 +38,12 @@ public class AndConditionalManipulator extends ConditionalManipulator {
     public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
         super.validateCondition(parentNeed, parentCondition);
         if (conditions.isEmpty()) throw new IllegalArgumentException("There must be at least one condition.");
-        conditions.forEach((c) -> c.validateCondition(parentNeed, this));
+        conditions.forEach((k, v) -> {
+            if (amount != null) amount.addArgument(k);
+            v.validateCondition(parentNeed, this);
+        });
 
-        if (amount == null) return;
-        for (int i = conditions.size() + 1; i <= AndConditionalExpressionContext.MATCH_COUNT + 1; i++) {
-            if (amount.isRequired("match" + i)) {
-                throw new IllegalArgumentException("The amount expression uses 'match" + i + "', but you only have " +
-                    conditions.size() + " conditions.");
-            }
-        }
+        if (amount != null) amount.build();
     }
 
     /**
@@ -59,18 +54,13 @@ public class AndConditionalManipulator extends ConditionalManipulator {
     @Override
     public void onConditionLoaded(final Need parentNeed, @Nullable final ConditionalManipulator parentCondition) {
         super.onConditionLoaded(parentNeed, parentCondition);
-        for (int i = 0; i < conditions.size(); i++) {
-            final ICondition c = conditions.get(i);
+        conditions.forEach((key, c) -> {
             c.onConditionLoaded(parentNeed, this);
-
-            if (amount == null) continue;
-
-            final String key = "match" + (i+1);
-            if (!amount.isRequired(key)) continue;
+            if (amount == null || !amount.isRequired(key)) return;
 
             args.add((p) -> amount.setIfRequired(key, () -> c.getAmount(p)));
             getMatch = true;
-        }
+        });
 
         if (amount == null) getMatch = false;
     }
@@ -81,12 +71,12 @@ public class AndConditionalManipulator extends ConditionalManipulator {
     @Override
     public void onConditionUnloaded() {
         super.onUnloaded();
-        conditions.forEach(ICondition::onConditionUnloaded);
+        conditions.values().forEach(ICondition::onConditionUnloaded);
     }
 
     @Override
     public boolean test(final PlayerEntity player) {
-        return conditions.stream().allMatch(condition -> condition.test(player));
+        return conditions.values().stream().allMatch(condition -> condition.test(player));
     }
 
     @Override

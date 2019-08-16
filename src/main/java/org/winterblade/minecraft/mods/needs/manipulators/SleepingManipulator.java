@@ -47,13 +47,13 @@ public class SleepingManipulator extends BaseManipulator implements ITrigger {
     @Override
     public void onLoaded() {
         super.onLoaded();
-        amount.syncAll();
+        amount.build();
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asManipulator);
     }
 
     @Override
     public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
-        if (amount != null) amount.syncAll();
+        if (amount != null) amount.build();
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asTrigger);
