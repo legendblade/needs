@@ -70,7 +70,7 @@ public class AndConditionalManipulator extends ConditionalManipulator {
      */
     @Override
     public void onConditionUnloaded() {
-        super.onUnloaded();
+        super.onConditionUnloaded();
         conditions.values().forEach(ICondition::onConditionUnloaded);
     }
 

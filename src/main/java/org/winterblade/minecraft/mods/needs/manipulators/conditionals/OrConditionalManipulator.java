@@ -61,7 +61,7 @@ public class OrConditionalManipulator extends ConditionalManipulator {
      */
     @Override
     public void onConditionUnloaded() {
-        super.onUnloaded();
+        super.onConditionUnloaded();
         conditions.forEach(ICondition::onConditionUnloaded);
     }
 

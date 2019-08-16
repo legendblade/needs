@@ -57,7 +57,7 @@ public class NotConditionalManipulator extends ConditionalManipulator {
      */
     @Override
     public void onConditionUnloaded() {
-        super.onUnloaded();
+        super.onConditionUnloaded();
         condition.onConditionUnloaded();
     }
 
