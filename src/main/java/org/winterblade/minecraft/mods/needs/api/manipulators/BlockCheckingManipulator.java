@@ -39,12 +39,12 @@ public abstract class BlockCheckingManipulator extends TooltipManipulator implem
     }
 
     @Override
-    public void validateCondition(final ConditionalManipulator parent) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
     @Override
-    public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
@@ -55,13 +55,16 @@ public abstract class BlockCheckingManipulator extends TooltipManipulator implem
     }
 
     @Override
-    public void onConditionLoaded(final ConditionalManipulator parent) {
+    public void onConditionLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+        this.parent = parentNeed;
+        this.parentCondition = parentCondition;
         onLoadedCommon();
     }
 
     @Override
-    public void onTriggerLoaded(final ConditionalManipulator parent) {
-        parentCondition = parent;
+    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+        this.parent = parentNeed;
+        this.parentCondition = parentCondition;
         onLoadedCommon();
     }
 

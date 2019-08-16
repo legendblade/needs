@@ -69,12 +69,14 @@ public class BiomeManipulator extends BaseManipulator implements ICondition, ITr
     }
 
     @Override
-    public void validateCondition(final ConditionalManipulator parent) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
     @Override
-    public void onConditionLoaded(final ConditionalManipulator parent) {
+    public void onConditionLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+        this.parent = parentNeed;
+        this.parentCondition = parentCondition;
         loadCommon();
     }
 
@@ -111,13 +113,14 @@ public class BiomeManipulator extends BaseManipulator implements ICondition, ITr
     }
 
     @Override
-    public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
     @Override
-    public void onTriggerLoaded(final ConditionalManipulator parent) {
-        parentCondition = parent;
+    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+        this.parent = parentNeed;
+        this.parentCondition = parentCondition;
         loadCommon();
         TickManager.INSTANCE.requestPlayerTickUpdate(this, this::tickTrigger);
     }

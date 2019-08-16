@@ -12,7 +12,7 @@ public class ModifierUtils {
      * @param modifierId The modifier UUID
      * @return  The value of the modifier, or 0 if it doesn't exist
      */
-    public static double getCurrentModifier(IAttributeInstance inst, final UUID modifierId) {
+    public static double getCurrentModifier(final IAttributeInstance inst, final UUID modifierId) {
         //noinspection ConstantConditions - Rule #1: Mojang Lies.
         if (inst == null) return 0;
 

@@ -26,7 +26,7 @@ public class OnDeathManipulator extends BaseManipulator implements ITrigger {
     }
 
     @Override
-    public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
         // Nothing?
     }
 
@@ -37,8 +37,9 @@ public class OnDeathManipulator extends BaseManipulator implements ITrigger {
     }
 
     @Override
-    public void onTriggerLoaded(final ConditionalManipulator parent) {
-        parentCondition = parent;
+    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+        this.parent = parentNeed;
+        this.parentCondition = parentCondition;
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asTrigger);
     }
 

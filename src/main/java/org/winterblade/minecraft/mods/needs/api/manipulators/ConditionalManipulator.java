@@ -54,19 +54,20 @@ public class ConditionalManipulator extends BaseManipulator implements IConditio
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
         super.validate(need);
-        validateCondition(this);
+        validateCondition(need, this);
     }
 
     /**
      * Validate as a condition
-     * @param parent The parent condition
+     * @param parentNeed      The parent need
+     * @param parentCondition The parent condition
      */
     @Override
-    public void validateCondition(final ConditionalManipulator parent) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
         if (conditions.isEmpty()) throw new IllegalArgumentException("There must be at least one condition.");
-        if (parent == null && triggers.isEmpty()) throw new IllegalArgumentException("Root conditions must have at least one trigger.");
-        conditions.forEach((c) -> c.validateCondition(this));
-        triggers.forEach((c) -> c.validateTrigger(this));
+        if (parentCondition == null && triggers.isEmpty()) throw new IllegalArgumentException("Root conditions must have at least one trigger.");
+        conditions.forEach((c) -> c.validateCondition(parentNeed, this));
+        triggers.forEach((c) -> c.validateTrigger(parentNeed, this));
     }
 
     /**
@@ -75,18 +76,19 @@ public class ConditionalManipulator extends BaseManipulator implements IConditio
     @Override
     public void onLoaded() {
         super.onLoaded();
-        onConditionLoaded(null);
+        onConditionLoaded(parent, null);
     }
 
     /**
      * Load as a condition
-     * @param parent The parent condition
+     * @param parentNeed      The parent need
+     * @param parentCondition The parent condition
      */
     @Override
-    public void onConditionLoaded(@Nullable final ConditionalManipulator parent) {
-        this.parentCondition = parent;
-        conditions.forEach(c -> c.onConditionLoaded(this));
-        triggers.forEach(t -> t.onTriggerLoaded(this));
+    public void onConditionLoaded(final Need parentNeed, @Nullable final ConditionalManipulator parentCondition) {
+        this.parentCondition = parentCondition;
+        conditions.forEach(c -> c.onConditionLoaded(parentNeed, this));
+        triggers.forEach(t -> t.onTriggerLoaded(parentNeed, this));
         getMatch = amount == null || amount.isRequired(OrConditionalExpressionContext.MATCHED_VALUE);
     }
 

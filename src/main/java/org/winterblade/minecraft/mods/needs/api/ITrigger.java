@@ -2,11 +2,12 @@ package org.winterblade.minecraft.mods.needs.api;
 
 import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 public interface ITrigger {
-    void validateTrigger(ConditionalManipulator parent) throws IllegalArgumentException;
+    void validateTrigger(Need parentNeed, ConditionalManipulator parentCondition) throws IllegalArgumentException;
 
-    void onTriggerLoaded(ConditionalManipulator parent);
+    void onTriggerLoaded(Need parentNeed, ConditionalManipulator parentCondition);
 
     void onTriggerUnloaded();
 

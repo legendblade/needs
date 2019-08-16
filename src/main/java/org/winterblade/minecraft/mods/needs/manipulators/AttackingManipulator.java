@@ -11,6 +11,7 @@ import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.DamageExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.api.manipulators.DamageBasedManipulator;
+import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 import javax.annotation.Nullable;
 
@@ -31,8 +32,8 @@ public class AttackingManipulator extends DamageBasedManipulator {
     }
 
     @Override
-    public void onTriggerLoaded(final ConditionalManipulator parent) {
-        super.onTriggerLoaded(parent);
+    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+        super.onTriggerLoaded(parentNeed, parentCondition);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::processTrigger);
     }
 

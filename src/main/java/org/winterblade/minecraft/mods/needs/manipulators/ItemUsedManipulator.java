@@ -68,13 +68,14 @@ public class ItemUsedManipulator extends TooltipManipulator implements ITrigger 
     }
 
     @Override
-    public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
     @Override
-    public void onTriggerLoaded(final ConditionalManipulator parent) {
-        parentCondition = parent;
+    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+        this.parent = parentNeed;
+        this.parentCondition = parentCondition;
         onLoadedCommon();
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asTrigger);
     }

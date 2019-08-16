@@ -77,9 +77,8 @@ public class OnNeedChangedManipulator extends BaseManipulator implements ITrigge
     }
 
     @Override
-    public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
-        // TODO: need to pass in need in all cases
-        validateCommon(null);
+    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+        validateCommon(parentNeed);
     }
 
     protected void validateCommon(final Need need) {
@@ -100,8 +99,9 @@ public class OnNeedChangedManipulator extends BaseManipulator implements ITrigge
     }
 
     @Override
-    public void onTriggerLoaded(final ConditionalManipulator parent) {
-        parentCondition = parent;
+    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+        this.parent = parentNeed;
+        this.parentCondition = parentCondition;
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asTrigger);
     }
 

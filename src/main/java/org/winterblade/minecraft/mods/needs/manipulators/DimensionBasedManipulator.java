@@ -51,8 +51,13 @@ public class DimensionBasedManipulator extends BaseManipulator implements ICondi
     }
 
     @Override
-    public void validateCondition(final ConditionalManipulator parent) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
         validate();
+    }
+
+    @Override
+    public void onConditionLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+        this.parent = parentNeed;
     }
 
     @Override
@@ -66,15 +71,16 @@ public class DimensionBasedManipulator extends BaseManipulator implements ICondi
     }
 
     @Override
-    public void validateTrigger(final ConditionalManipulator parent) {
+    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) {
         validate();
     }
 
     @Override
-    public void onTriggerLoaded(final ConditionalManipulator parent) {
+    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+        this.parent = parentNeed;
         TickManager.INSTANCE.requestPlayerTickUpdate(this, (player) -> {
             if (!test(player)) return;
-            parent.trigger(player, this);
+            parentCondition.trigger(player, this);
         });
     }
 
