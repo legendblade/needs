@@ -17,7 +17,7 @@ import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionCon
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BlockCheckingManipulator;
-import org.winterblade.minecraft.mods.needs.api.needs.Need;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.util.blocks.BlockStatePredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.IBlockPredicate;
 import org.winterblade.minecraft.mods.needs.util.blocks.TagBlockPredicate;
@@ -37,71 +37,55 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
 
     private static final BlockState VOID_AIR = Blocks.VOID_AIR.getDefaultState();
 
-    private Function<PlayerEntity, Double> onTickFn;
+    private Function<PlayerEntity, Integer> counter;
     private Function<BlockState, Boolean> matchFn;
-
-    @Override
-    public void validate(final Need need) throws IllegalArgumentException {
-        if (radius.isConstant() && radius.apply(null) < 0) throw new IllegalArgumentException("Constant radius must be greater than zero.");
-        super.validate(need);
-    }
+    private double lastCount;
 
     public void onLoaded() {
-        // Optimize the list to only predicates that will match:
-        final IForgeRegistry<Block> blockReg = RegistryManager.ACTIVE.getRegistry(Block.class);
-        final Iterator<IBlockPredicate> iter = blocks.iterator();
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::asManipulator);
+        super.onLoaded();
+    }
 
-        /*
-            TODO: There are probably extra optimizations that can be made here, including
-            precompiling a TreeSet of states that match when comparing against larger lists of predicates
-        */
-        while (iter.hasNext()) {
-            final IBlockPredicate predicate = iter.next();
-            if (predicate instanceof TagBlockPredicate) continue; // Tags aren't registered yet
-            boolean matches = false;
+    @Override
+    public void onTriggerLoaded(final ConditionalManipulator parent) {
+        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::asTrigger);
+        super.onTriggerLoaded(parent);
+    }
 
-            for (final Block block : blockReg.getValues()) {
-                if(predicate instanceof BlockStatePredicate) {
-                    matches = block.getStateContainer().getValidStates().stream().anyMatch(predicate);
-                } else {
-                    matches = predicate.test(block.getDefaultState());
-                }
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        onTriggerUnloaded();
+    }
 
-                if (matches) break;
-            }
+    @Override
+    public void onTriggerUnloaded() {
+        TickManager.INSTANCE.removePlayerTickUpdate(this);
+    }
 
-            if (matches) {
-                continue;
-            }
+    @Override
+    public boolean test(final PlayerEntity player) {
+        return 0 < counter.apply(player);
+    }
 
-            NeedsMod.LOGGER.info("Predicate will match no blocks; it will be removed");
-            iter.remove();
-        }
+    @Override
+    public double getAmount(final PlayerEntity player) {
+        if (amount == null) return 0;
 
-        if (blocks.size() <= 0) {
-            throw new IllegalArgumentException("On/near block manipulator has no predicates that will match blocks.");
-        } else if (blocks.size() <= 1) {
-            final IBlockPredicate head = blocks.get(0);
-            matchFn = head::test;
-        } else if (blocks.stream().anyMatch((b) -> b.test(VOID_AIR))) {
-            // If we need to match void blocks, sort the list accordingly
+        amount.setIfRequired(CountedExpressionContext.COUNT, () -> lastCount);
+        return amount.apply(player);
+    }
 
-            // Move any predicates that match void air up to the top
-            // This will match out-of-bounds blocks faster
-            blocks.sort((b, b2) -> {
-                if (b.equals(b2)) return 0;
+    @Override
+    protected void validateCommon() {
+        if (radius.isConstant() && radius.apply(null) < 0) throw new IllegalArgumentException("Constant radius must be greater than zero.");
+        super.validateCommon();
+    }
 
-                final boolean va = b.test(VOID_AIR);
-                return va == b2.test(VOID_AIR) ? b.compareTo(b2) : va ? -1 : 1;
-            });
-
-            // Use the matcher that will count void blocks:
-            matchFn = this::isMatch;
-        } else {
-            // Sort the list normally, but use the non-void matcher:
-            blocks.sort(Comparable::compareTo);
-            matchFn = this::isNonVoidMatch;
-        }
+    @Override
+    protected void onLoadedCommon() {
+        checkBlockList();
+        setMatchingFunction();
 
         // Predetermine the most expedient function to use:
         final String amountType = amount.isConstant() || !amount.isRequired(CountedExpressionContext.COUNT) ? "" : ", Per";
@@ -111,21 +95,19 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
 
             // Much precompile, very wow
             if (radius <= 0) {
-                onTickFn = amount.isConstant()
-                        ? this::constantAmountZeroRadius
-                        : this::variableAmountZeroRadius;
+                counter = this::variableAmountZeroRadius;
                 postFormat = (sb, player) -> sb.append("  (Standing On)").toString();
             } else {
-                onTickFn = amount.isConstant()
+                counter = amount.isConstant()
                         ? (p) -> constantAmountConstantRadius(p, radius)
                         : (p) -> variableAmountConstantRadius(p, radius);
                 final String range = "  (Within " + radius + " Block" + (radius == 1 ? "" : "s") + amountType + ")";
                 postFormat = (sb, player) -> sb.append(range).toString();
             }
         } else {
-            onTickFn = amount.isConstant()
-                ? this::constantAmountVariableRadius
-                : this::variableAmountVariableRadius;
+            counter = amount.isConstant()
+                    ? this::constantAmountVariableRadius
+                    : this::variableAmountVariableRadius;
             postFormat = (sb, player) -> {
                 radius.setCurrentNeedValue(parent, player);
                 final int radius = (int)Math.floor(this.radius.apply(player));
@@ -139,21 +121,9 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
             This would need to test amount fn to see if it's negative or positive - which could change
             at various points (cos, sin, n - count, etc)
         */
-
-        TickManager.INSTANCE.requestPlayerTickUpdate(this, this::onTick);
-        super.onLoaded();
-
-        if (checkDims) {
-            final Function<PlayerEntity, Double> prevTickFn = onTickFn;
-            onTickFn = (p) -> dimensions.contains(p.world.getDimension().getType().getId()) ? prevTickFn.apply(p) : 0d;
-        }
+        super.onLoadedCommon();
     }
 
-    @Override
-    public void onUnloaded() {
-        super.onUnloaded();
-        TickManager.INSTANCE.removePlayerTickUpdate(this);
-    }
 
     /**
      * Gets the block position at the player's feet
@@ -168,21 +138,21 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      * Called when ticking to calculate
      * @param player The player
      */
-    private void onTick(@Nonnull final PlayerEntity player) {
-        parent.adjustValue(player, onTickFn.apply(player), this);
+    private void asManipulator(@Nonnull final PlayerEntity player) {
+        lastCount = counter.apply(player);
+        if (lastCount <= 0) return;
+
+        parent.adjustValue(player, getAmount(player), this);
     }
 
     /**
-     * Called if {@link NearBlockManipulator#amount} is constant and {@link NearBlockManipulator#radius}
-     * is constant zero
+     * Called when ticking to calculate
      * @param player The player
-     * @return 1 if the block matches, 0 otherwise
      */
-    private double constantAmountZeroRadius(final PlayerEntity player) {
-        final BlockPos center = getBlockAtFeet(player);
-        final BlockState state = player.world.getBlockState(center);
-
-        return matchFn.apply(state) ? amount.apply(player) : 0;
+    private void asTrigger(@Nonnull final PlayerEntity player) {
+        lastCount = counter.apply(player);
+        if (lastCount <= 0) return;
+        parentCondition.trigger(player, this);
     }
 
     /**
@@ -191,12 +161,11 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      * @param player The player
      * @return 1 if the block matches, 0 otherwise
      */
-    private double variableAmountZeroRadius(final PlayerEntity player) {
+    private int variableAmountZeroRadius(final PlayerEntity player) {
         final BlockPos center = getBlockAtFeet(player);
         final BlockState state = player.world.getBlockState(center);
 
-        amount.setIfRequired(CountedExpressionContext.COUNT, () -> matchFn.apply(state) ? 1d : 0);
-        return amount.apply(player);
+        return matchFn.apply(state) ? 1 : 0;
     }
 
     /**
@@ -206,8 +175,8 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      * @param radius The radius
      * @return 1 if the block matches, 0 otherwise
      */
-    private double constantAmountConstantRadius(final PlayerEntity player, final long radius) {
-        return isWithin(player.world, radius, getBlockAtFeet(player)) ? amount.apply(player) : 0;
+    private int constantAmountConstantRadius(final PlayerEntity player, final long radius) {
+        return isWithin(player.world, radius, getBlockAtFeet(player));
     }
 
     /**
@@ -215,11 +184,10 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      * is constant and more than zero
      * @param player The player
      * @param radius The radius
-     * @return 1 if the block matches, 0 otherwise
+     * @return The count of blocks inside the given radius
      */
-    private double variableAmountConstantRadius(final PlayerEntity player, final long radius) {
-        amount.setIfRequired(CountedExpressionContext.COUNT, () -> (double) getCountWithin(player.world, radius, getBlockAtFeet(player)));
-        return amount.apply(player);
+    private int variableAmountConstantRadius(final PlayerEntity player, final long radius) {
+        return getCountWithin(player.world, radius, getBlockAtFeet(player));
     }
 
     /**
@@ -228,10 +196,10 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      * @param player The player
      * @return 1 if the block matches, 0 otherwise
      */
-    private double constantAmountVariableRadius(final PlayerEntity player) {
+    private int constantAmountVariableRadius(final PlayerEntity player) {
         radius.setCurrentNeedValue(parent, player);
-        final Double radius = this.radius.apply(player);
-        return isWithin(player.world, radius, getBlockAtFeet(player)) ? amount.apply(player) : 0;
+        final double radius = this.radius.apply(player);
+        return isWithin(player.world, radius, getBlockAtFeet(player));
     }
 
     /**
@@ -239,10 +207,9 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      * @param player The player
      * @return 1 if the block matches, 0 otherwise
      */
-    private double variableAmountVariableRadius(final PlayerEntity player) {
+    private int variableAmountVariableRadius(final PlayerEntity player) {
         radius.setCurrentNeedValue(parent, player);
-        amount.setIfRequired(CountedExpressionContext.COUNT, () -> (double) getCountWithin(player.world, radius.apply(player), getBlockAtFeet(player)));
-        return amount.apply(player);
+        return getCountWithin(player.world, radius.apply(player), getBlockAtFeet(player));
     }
 
     /**
@@ -266,18 +233,18 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
      * @param center The {@link BlockPos} at the center
      * @return True if at least one block matches, false otherwise
      */
-    private boolean isWithin(final World world, final double radius, final BlockPos center) {
-        if (radius < 0) return false;
+    private int isWithin(final World world, final double radius, final BlockPos center) {
+        if (radius < 0) return 0;
 
         for (double x = -radius; x <= radius; x += 1d) {
             for (double y = -radius; y <= radius; y += 1d) {
                 for (double z = -radius; z <= radius; z += 1d) {
-                    if (matchFn.apply(world.getBlockState(center.add(x, y, z)))) return true;
+                    if (matchFn.apply(world.getBlockState(center.add(x, y, z)))) return 1;
                 }
             }
         }
 
-        return false;
+        return 0;
     }
 
     /**
@@ -304,4 +271,70 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
         return i;
     }
 
+    /**
+     * Iterates the block list and removes any conditions that will never match a block.
+     */
+    private void checkBlockList() {
+        // Optimize the list to only predicates that will match:
+        final IForgeRegistry<Block> blockReg = RegistryManager.ACTIVE.getRegistry(Block.class);
+        final Iterator<IBlockPredicate> iter = blocks.iterator();
+
+        /*
+            TODO: There are probably extra optimizations that can be made here, including
+            precompiling a HashSet of states that match when comparing against larger lists of predicates
+        */
+        while (iter.hasNext()) {
+            final IBlockPredicate predicate = iter.next();
+            if (predicate instanceof TagBlockPredicate) continue; // Tags aren't registered yet
+            boolean matches = false;
+
+            for (final Block block : blockReg.getValues()) {
+                if(predicate instanceof BlockStatePredicate) {
+                    matches = block.getStateContainer().getValidStates().stream().anyMatch(predicate);
+                } else {
+                    matches = predicate.test(block.getDefaultState());
+                }
+
+                if (matches) break;
+            }
+
+            if (matches) {
+                continue;
+            }
+
+            NeedsMod.LOGGER.info("Predicate will match no blocks; it will be removed");
+            iter.remove();
+        }
+    }
+
+    /**
+     * Sets the matching function based on if any conditions will match void
+     * @throws IllegalArgumentException If there are no blocks.
+     */
+    private void setMatchingFunction() throws IllegalArgumentException {
+        if (blocks.size() <= 0) {
+            throw new IllegalArgumentException("On/near block manipulator has no predicates that will match blocks.");
+        } else if (blocks.size() <= 1) {
+            final IBlockPredicate head = blocks.get(0);
+            matchFn = head::test;
+        } else if (blocks.stream().anyMatch((b) -> b.test(VOID_AIR))) {
+            // If we need to match void blocks, sort the list accordingly
+
+            // Move any predicates that match void air up to the top
+            // This will match out-of-bounds blocks faster
+            blocks.sort((b, b2) -> {
+                if (b.equals(b2)) return 0;
+
+                final boolean va = b.test(VOID_AIR);
+                return va == b2.test(VOID_AIR) ? b.compareTo(b2) : va ? -1 : 1;
+            });
+
+            // Use the matcher that will count void blocks:
+            matchFn = this::isMatch;
+        } else {
+            // Sort the list normally, but use the non-void matcher:
+            blocks.sort(Comparable::compareTo);
+            matchFn = this::isNonVoidMatch;
+        }
+    }
 }

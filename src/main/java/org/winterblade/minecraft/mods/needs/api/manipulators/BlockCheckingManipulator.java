@@ -5,6 +5,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import org.winterblade.minecraft.mods.needs.api.ICondition;
+import org.winterblade.minecraft.mods.needs.api.ITrigger;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
@@ -19,7 +21,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("WeakerAccess")
 @Document(description = "A collection of manipulators that check blocks.")
-public abstract class BlockCheckingManipulator extends TooltipManipulator {
+public abstract class BlockCheckingManipulator extends TooltipManipulator implements ITrigger, ICondition {
     @Expose
     @Document(description = "The amount to apply; when this is checking an area, count will refer to the number of matching blocks in the area")
     protected CountedExpressionContext amount;
@@ -27,18 +29,40 @@ public abstract class BlockCheckingManipulator extends TooltipManipulator {
     @Expose
     @Document(type = IBlockPredicate.class, description = "A list of blocks to check")
     protected List<IBlockPredicate> blocks = Collections.emptyList();
+    protected ConditionalManipulator parentCondition;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
         if (amount == null) throw new IllegalArgumentException("Amount must be specified.");
-        if (blocks == null || blocks.isEmpty()) throw new IllegalArgumentException("An array of blocks must be specified.");
+        validateCommon();
         super.validate(need);
     }
 
     @Override
+    public void validateCondition(final ConditionalManipulator parent) throws IllegalArgumentException {
+        validateCommon();
+    }
+
+    @Override
+    public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
+        validateCommon();
+    }
+
+    @Override
     public void onLoaded() {
-        amount.syncAll();
+        onLoadedCommon();
         super.onLoaded();
+    }
+
+    @Override
+    public void onConditionLoaded(final ConditionalManipulator parent) {
+        onLoadedCommon();
+    }
+
+    @Override
+    public void onTriggerLoaded(final ConditionalManipulator parent) {
+        parentCondition = parent;
+        onLoadedCommon();
     }
 
     @Nullable
@@ -73,5 +97,13 @@ public abstract class BlockCheckingManipulator extends TooltipManipulator {
             if (predicate.test(target)) return true;
         }
         return false;
+    }
+
+    protected void validateCommon() {
+        if (blocks == null || blocks.isEmpty()) throw new IllegalArgumentException("An array of blocks must be specified.");
+    }
+
+    protected void onLoadedCommon() {
+        if (amount != null) amount.syncAll();
     }
 }
