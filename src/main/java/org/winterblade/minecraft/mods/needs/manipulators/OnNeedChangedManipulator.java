@@ -112,6 +112,7 @@ public class OnNeedChangedManipulator extends BaseManipulator implements ITrigge
     }
 
     protected void onLoadedCommon() {
+        if (amount != null) amount.syncAll();
         isListening = true;
         checkValue = (minValue != Double.NEGATIVE_INFINITY || maxValue != Double.POSITIVE_INFINITY);
     }

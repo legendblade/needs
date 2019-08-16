@@ -5,7 +5,7 @@ import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipula
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 public interface ITrigger {
-    void validateTrigger(Need parentNeed, ConditionalManipulator parentCondition) throws IllegalArgumentException;
+    default void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {}
 
     void onTriggerLoaded(Need parentNeed, ConditionalManipulator parentCondition);
 

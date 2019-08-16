@@ -1,21 +1,28 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
 import com.google.gson.annotations.Expose;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
-import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.ITrigger;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
+
+import java.util.function.Consumer;
 
 @Document(description = "Fired every in-game hour that passes in a world after the first; will multiply its amount " +
         "by the number of hours that have passed if time skips forward. May not work if time is set back.")
-public class PerHourManipulator extends DimensionBasedManipulator {
+public class PerHourManipulator extends BaseManipulator implements ITrigger {
     @Expose
     @Document(description = "The amount to set per hour")
     private NeedExpressionContext amount;
 
     private long lastFired = 0;
+    private Consumer<PlayerEntity> callback;
+    private long lastDelta;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -23,8 +30,47 @@ public class PerHourManipulator extends DimensionBasedManipulator {
         super.validate(need);
     }
 
-    @SubscribeEvent
-    public void onTick(final TickEvent.WorldTickEvent evt) {
+    @Override
+    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+        // Nah?
+    }
+
+    @Override
+    public void onLoaded() {
+        super.onLoaded();
+        callback = (p) -> parent.adjustValue(p, getAmount(p), this);
+        MinecraftForge.EVENT_BUS.addListener(this::onTick);
+        amount.syncAll();
+    }
+
+    @Override
+    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+        this.parent = parentNeed;
+        callback = (p) -> parentCondition.trigger(p, this);
+        MinecraftForge.EVENT_BUS.addListener(this::onTick);
+        if (amount != null) amount.syncAll();
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        onTriggerUnloaded();
+    }
+
+    @Override
+    public void onTriggerUnloaded() {
+        MinecraftForge.EVENT_BUS.unregister(this);
+    }
+
+    @Override
+    public double getAmount(final PlayerEntity player) {
+        if (amount == null) return 0;
+
+        amount.setCurrentNeedValue(parent, player);
+        return lastDelta * amount.apply(player);
+    }
+
+    private void onTick(final TickEvent.WorldTickEvent evt) {
         if(evt.world.isRemote) return;
 
         final long worldHour = Math.floorDiv(evt.world.getDayTime(), 1000);
@@ -36,25 +82,11 @@ public class PerHourManipulator extends DimensionBasedManipulator {
         }
 
         // TODO: deal with negative delta because `time set` was used
-        final long delta = worldHour - lastFired;
-        if (delta < 1) return;
+        lastDelta = worldHour - lastFired;
+        if (lastDelta < 1) return;
 
         lastFired = worldHour;
 
-        evt.world.getPlayers().forEach((p) -> {
-            if (failsDimensionCheck(p)) return;
-
-            final double adjust;
-            amount.setCurrentNeedValue(parent, p);
-
-            try {
-                adjust = delta * amount.apply(p);
-            } catch (final Exception e) {
-                NeedsMod.LOGGER.error("Unable to calculate adjustment amount because it's too large.");
-                return;
-            }
-
-            parent.adjustValue(p, adjust, this);
-        });
+        evt.world.getPlayers().forEach(callback);
     }
 }
