@@ -55,6 +55,7 @@ public class HoldingManipulator extends TooltipManipulator implements ICondition
 
     @Override
     public void onLoaded() {
+        amount.build();
         TickManager.INSTANCE.requestPlayerTickUpdate(this, this::asManipulator);
         super.onLoaded();
 
@@ -69,7 +70,6 @@ public class HoldingManipulator extends TooltipManipulator implements ICondition
         }
 
         postFormat = (sb, player) -> sb.append(suffix).toString();
-        amount.build();
     }
 
     @Override

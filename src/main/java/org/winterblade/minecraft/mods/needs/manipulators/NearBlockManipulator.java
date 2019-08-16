@@ -85,11 +85,12 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
 
     @Override
     protected void onLoadedCommon() {
+        super.onLoadedCommon();
         checkBlockList();
         setMatchingFunction();
 
         // Predetermine the most expedient function to use:
-        final String amountType = amount.isConstant() || !amount.isRequired(CountedExpressionContext.COUNT) ? "" : ", Per";
+        final String amountType = amount == null || amount.isConstant() || !amount.isRequired(CountedExpressionContext.COUNT) ? "" : ", Per";
         if (radius.isConstant()) {
             // This is only okay because we've checked that it's constant
             final long radius = Math.round(Math.abs(this.radius.apply(null)));
@@ -99,14 +100,14 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
                 counter = this::variableAmountZeroRadius;
                 postFormat = (sb, player) -> sb.append("  (Standing On)").toString();
             } else {
-                counter = amount.isConstant()
+                counter = amount == null || amount.isConstant()
                         ? (p) -> constantAmountConstantRadius(p, radius)
                         : (p) -> variableAmountConstantRadius(p, radius);
                 final String range = "  (Within " + radius + " Block" + (radius == 1 ? "" : "s") + amountType + ")";
                 postFormat = (sb, player) -> sb.append(range).toString();
             }
         } else {
-            counter = amount.isConstant()
+            counter = amount == null || amount.isConstant()
                     ? this::constantAmountVariableRadius
                     : this::variableAmountVariableRadius;
             postFormat = (sb, player) -> {
@@ -122,7 +123,6 @@ public class NearBlockManipulator extends BlockCheckingManipulator {
             This would need to test amount fn to see if it's negative or positive - which could change
             at various points (cos, sin, n - count, etc)
         */
-        super.onLoadedCommon();
     }
 
 

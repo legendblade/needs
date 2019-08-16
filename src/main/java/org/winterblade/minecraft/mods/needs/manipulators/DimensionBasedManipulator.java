@@ -38,6 +38,7 @@ public class DimensionBasedManipulator extends BaseManipulator implements ICondi
     @Override
     public void onLoaded() {
         super.onLoaded();
+        amount.build();
         TickManager.INSTANCE.requestPlayerTickUpdate(this, (player) -> {
             if (!test(player)) return;
             parent.adjustValue(player, get(player), this);
@@ -78,6 +79,7 @@ public class DimensionBasedManipulator extends BaseManipulator implements ICondi
     @Override
     public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
         this.parent = parentNeed;
+        if (amount != null) amount.build();
         TickManager.INSTANCE.requestPlayerTickUpdate(this, (player) -> {
             if (!test(player)) return;
             parentCondition.trigger(player, this);

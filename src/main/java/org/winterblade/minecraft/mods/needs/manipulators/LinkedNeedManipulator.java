@@ -111,6 +111,7 @@ public class LinkedNeedManipulator extends BaseManipulator {
      */
     private void prepLink(final Need need, final LinkHalf ourSide, final LinkHalf otherSide) {
         ourSide.instance = need;
+        ourSide.amount.build();
         unravels.put(need, otherSide);
     }
 
