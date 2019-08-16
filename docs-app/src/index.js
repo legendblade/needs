@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import ScrollableAnchor from 'react-scrollable-anchor'
+import Octicon, {Check,CircleSlash} from '@primer/octicons-react'
 import { cloneDeep, clone, startCase, snakeCase, union, unionBy, map, sortBy, differenceBy, isString } from 'lodash';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import js from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
@@ -127,8 +128,8 @@ function Field(props) {
         })];
     }
 
-    return [field,map(props.expressionVars, (v, k) => {
-        return Field({
+    return [field,map(sortBy(map(props.expressionVars, (v, k) => {
+        return {
             'name': k,
             'description': v,
             'type': 'Variable',
@@ -136,8 +137,8 @@ function Field(props) {
             'depth': props.depth + 1,
             'parent': props.parent,
             'expressionVar': true
-        });
-    })];
+        };
+    }), 'name'), Field)];
 
 }
 
@@ -199,6 +200,27 @@ function Entry(props, parentFields) {
                 <ReactMarkdown source={props.description || noDesc} linkTarget='_blank' />
 
                 <AliasList aliases={props.aliases} />
+                {
+                    props.baseType !== 'manipulators' || props.aliases.length <= 0
+                        ? ''
+                        : (
+                            <div>
+                                Counts as:
+                                <div class="badge col-2 m-3 badge-dark">
+                                    <span class='float-left'><Octicon icon={Check} /></span>
+                                    Manipulator
+                                </div>
+                                <div class={"badge col-2 m-3 " + (props.extras.isTrigger ? 'badge-warning' : 'badge-light text-muted')}>
+                                    <span class='float-left'><Octicon icon={props.extras.isTrigger ? Check : CircleSlash} /></span>
+                                    Trigger
+                                </div>
+                                <div class={"badge col-2 m-3 " + (props.extras.isCondition ? 'badge-info' : 'badge-light text-muted')}>
+                                    <span class='float-left'><Octicon icon={props.extras.isCondition ? Check : CircleSlash} /></span>
+                                    Condition
+                                </div>
+                            </div>
+                        )
+                }
                 {FieldList(union(parentFields, props.fields))}
             </div>
         </ScrollableAnchor>
@@ -242,6 +264,7 @@ class App extends React.Component {
         console.log(response);
         const convertToNav = (v, r) => {
             v.href = snakeCase(r + '_' + v.id);
+            v.baseType = r;
             return {
                 "title": startCase(v.id),
                 "root": "#" + v.href,
@@ -369,6 +392,25 @@ class App extends React.Component {
                                     the <code>sunlight</code> need with the <code>health</code> need. But maybe that's too nice, and instead you want to... convince the
                                     player to be more passive, you could use the <code>holding</code> manipulator to say that anytime they're holding a sword or axe, you
                                     want to decrease their <code>health</code> by a certain amount - you can do that too.
+                                </p>
+                                <p>
+                                    If the basic manipulators aren't enough, there are also the <b>Conditional Manipulators</b>, which represent basic logical operators
+                                    - namely <code>and</code>, <code>or</code>, <code>not</code>, and <code>xor</code>, and allow you to combine together one or more
+                                    triggers with a collection of conditions to test when triggered.
+                                </p>
+                                <p>
+                                    Manipulators which can be used as a trigger will be marked with <div class='badge badge-warning'>Trigger</div> and can be used in
+                                    the <code>triggers</code> property of a conditional manipulator.
+                                </p>
+                                <p>
+                                    Likewise, manipulators which can be used as a condition will be marked with <div class='badge badge-info'>Condition</div> and can
+                                    be used in the <code>conditions</code> property of the <code>and</code>, <code>or</code>, and <code>xor</code> conditional
+                                    manipulators, and the <code>condition</code> property of the <code>not</code> conditional manipulator. Every conditional manipulator 
+                                    is also a condition itself, so you can nest multiple layers of conditions in order to fully define the conditions you want things to run under.
+                                </p>
+                                <p>
+                                    Lastly, the amount expression of the individual conditional manipulators provides access to both any value from the source trigger, as
+                                    well as the matched condition(s), which can be used to further tailor how things interact.
                                 </p>
                             </dl>
                             <dt class="col-sm-2">Levels</dt>

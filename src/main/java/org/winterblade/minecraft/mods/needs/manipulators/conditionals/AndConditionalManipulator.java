@@ -25,7 +25,7 @@ public class AndConditionalManipulator extends ConditionalManipulator {
 
     @Expose
     @SuppressWarnings("FieldMayBeFinal")
-    @Document(description = "The conditions to check when this manipulator is triggered")
+    @Document(description = "The conditions to check when this manipulator is triggered", type = ICondition.class)
     private List<ICondition> conditions = Collections.emptyList();
 
     private boolean getMatch;

@@ -10,6 +10,8 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.ICondition;
+import org.winterblade.minecraft.mods.needs.api.ITrigger;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.actions.ILevelAction;
 import org.winterblade.minecraft.mods.needs.api.actions.LevelAction;
@@ -36,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,7 +56,8 @@ public class DocumentationBuilder {
             final DocumentationRoot root = new DocumentationRoot();
             root.needs = document("needs", NeedRegistry.INSTANCE, Need.class, null);
             root.mixins = document("mixins", MixinRegistry.INSTANCE, BaseMixin.class, IMixin.class);
-            root.manipulators = document("manipulators", ManipulatorRegistry.INSTANCE, IManipulator.class, IManipulator.class);
+            root.manipulators = document("manipulators", ManipulatorRegistry.INSTANCE, IManipulator.class, IManipulator.class,
+                    DocumentationBuilder::tagManipulatorExtras);
             root.actions = document("levelActions", LevelActionRegistry.INSTANCE, LevelAction.class, ILevelAction.class);
 
             // If we're in dev, output the docs to our directory for upload
@@ -89,12 +93,33 @@ public class DocumentationBuilder {
         }
     }
 
-    private static <T> List<DocumentationEntry> document(final String documentType, final TypedRegistry<T> registry, final Class<? extends T> root, final Class<T> intf) {
+    private static <T> void tagManipulatorExtras(final Class<? extends T> clazz, final DocumentationEntry entry) {
+        entry.extras.put("isCondition", ICondition.class.isAssignableFrom(clazz));
+        entry.extras.put("isTrigger", ITrigger.class.isAssignableFrom(clazz));
+    }
+
+    private static <T> List<DocumentationEntry> document(
+            final String documentType,
+            final TypedRegistry<T> registry,
+            final Class<? extends T> root,
+            final Class<T> intf) {
+        return document(documentType, registry, root, intf, (c,d) -> {});
+    }
+
+    private static <T> List<DocumentationEntry> document(
+            final String documentType,
+            final TypedRegistry<T> registry,
+            final Class<? extends T> root,
+            final Class<T> intf,
+            final BiConsumer<Class<? extends T>,DocumentationEntry> extras) {
         final String docTag = NeedsMod.MODID + "." + documentType + ".";
 
         final Map<Class<? extends T>, DocumentationEntry> entries = new HashMap<>();
 
-        registry.getRegistrants().forEach((id, clazz) -> getEntry(registry, root, intf, id, clazz, entries, docTag));
+        registry.getRegistrants().forEach((id, clazz) -> {
+            final DocumentationEntry entry = getEntry(registry, root, intf, id, clazz, entries, docTag);
+            extras.accept(clazz, entry);
+        });
 
         return entries.values()
                 .stream()
@@ -115,7 +140,7 @@ public class DocumentationBuilder {
      * @param docTag   The document tag
      * @param <T>      The type of classes to process
      */
-    private static <T> void getEntry(
+    private static <T> DocumentationEntry getEntry(
             final TypedRegistry<T> registry,
             final Class<? extends T> root,
             final Class<? extends T> intf,
@@ -128,7 +153,7 @@ public class DocumentationBuilder {
             final DocumentationEntry entry = entries.get(clazz);
             entry.id = id.getPath();
             entry.mod = getMod(id);
-            return;
+            return entry;
         }
 
         // Create this entry:
@@ -175,7 +200,7 @@ public class DocumentationBuilder {
         if (superclass == null || (intf != null && Arrays.stream(clazz.getInterfaces()).anyMatch((i) -> i.equals(intf)))
                 || superclass.equals(root) || !root.isAssignableFrom(superclass)) {
             entry.isRoot = true;
-            return;
+            return entry;
         }
 
         // We have actually checked this.
@@ -186,6 +211,7 @@ public class DocumentationBuilder {
 
         // This should always be true, but just in case?
         if (entries.containsKey(sc)) entries.get(sc).children.add(entry);
+        return entry;
     }
 
     /**
@@ -297,6 +323,9 @@ public class DocumentationBuilder {
 
             else if (IBlockPredicate.class.isAssignableFrom(fieldType)) field.type = "Block/Tag";
             else if (IIngredient.class.isAssignableFrom(fieldType)) field.type = "Item/Tag";
+
+            else if (ICondition.class.isAssignableFrom(fieldType)) field.type = "Condition";
+            else if (ITrigger.class.isAssignableFrom(fieldType)) field.type = "Trigger";
 
             // Give up:
             else field.type = fieldType.getSimpleName();

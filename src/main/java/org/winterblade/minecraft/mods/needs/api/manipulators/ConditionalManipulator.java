@@ -11,13 +11,14 @@ import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
+@Document(description = "A collection of conditional manipulators for more precise logic-based checks.")
 public abstract class ConditionalManipulator extends BaseManipulator implements ICondition {
     @Expose
     @SuppressWarnings("FieldMayBeFinal")
-    @Document(description = "The conditions which will trigger this manipulator. Triggers should be placed on the top " +
-            "level condition for clarity, but triggers on inner conditions will propagate up to the top most condition " +
+    @Document(description = "The things which will trigger this manipulator. Triggers should be placed on the top " +
+            "level manipulator for clarity, but triggers on inner manipulators will propagate up to the top most manipulator " +
             "before being tested.\n\n" +
-            "The root condition must have at least one trigger, even if there are triggers on inner conditions.")
+            "The root manipulator must have at least one trigger, even if there are triggers on inner manipulators.", type = ITrigger.class)
     protected List<ITrigger> triggers = Collections.emptyList();
 
     protected ConditionalManipulator parentCondition;
@@ -39,7 +40,7 @@ public abstract class ConditionalManipulator extends BaseManipulator implements 
 
     @Override
     public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
-        if (parentCondition == null && triggers.isEmpty()) throw new IllegalArgumentException("Root conditions must have at least one trigger.");
+        if (parentCondition == null && triggers.isEmpty()) throw new IllegalArgumentException("Root manipulators must have at least one trigger.");
         triggers.forEach((c) -> c.validateTrigger(parentNeed, this));
     }
 
