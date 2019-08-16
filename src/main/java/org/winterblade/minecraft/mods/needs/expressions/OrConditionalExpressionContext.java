@@ -1,6 +1,8 @@
-package org.winterblade.minecraft.mods.needs.api.expressions;
+package org.winterblade.minecraft.mods.needs.expressions;
 
 import com.google.gson.annotations.JsonAdapter;
+import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
+import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 
 import java.util.HashMap;
 import java.util.List;

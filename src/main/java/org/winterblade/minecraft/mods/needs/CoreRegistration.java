@@ -2,7 +2,9 @@ package org.winterblade.minecraft.mods.needs;
 
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import org.winterblade.minecraft.mods.needs.actions.*;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.manipulators.conditionals.AndConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.manipulators.conditionals.NotConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.manipulators.conditionals.OrConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
 import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
@@ -10,6 +12,7 @@ import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.capabilities.itemuse.IItemUsedCountCapability;
 import org.winterblade.minecraft.mods.needs.capabilities.itemuse.ItemUsedCountCapability;
 import org.winterblade.minecraft.mods.needs.manipulators.*;
+import org.winterblade.minecraft.mods.needs.manipulators.conditionals.XorConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.mixins.*;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 import org.winterblade.minecraft.mods.needs.capabilities.customneed.INeedCapability;
@@ -87,7 +90,12 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "onNeedChanged", OnNeedChangedManipulator.class);
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "linkChain", LinkedNeedManipulator.class, "link", "chain");
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "tick", TickManipulator.class, "onTick");
-        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "or", ConditionalManipulator.class);
+
+        // Conditionals
+        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "or", OrConditionalManipulator.class);
+        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "not", NotConditionalManipulator.class);
+        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "and", AndConditionalManipulator.class);
+        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "xor", XorConditionalManipulator.class);
     }
 
     private static void registerActions() {
