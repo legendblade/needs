@@ -1,6 +1,5 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
-import com.sun.istack.internal.NotNull;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.EntityDamageSource;
@@ -13,6 +12,7 @@ import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipula
 import org.winterblade.minecraft.mods.needs.api.manipulators.DamageBasedManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @Document(description = "Triggered when the player attacks another entity.")
@@ -89,7 +89,7 @@ public class AttackingManipulator extends DamageBasedManipulator {
      * @return The player if the event matches, null otherwise.
      */
     @Nullable
-    private PlayerEntity matchPlayer(@NotNull final LivingDamageEvent event) {
+    private PlayerEntity matchPlayer(@Nonnull final LivingDamageEvent event) {
         if (!(event.getSource() instanceof EntityDamageSource)) return null;
         if (event.getAmount() < minAmount || maxAmount < event.getAmount()) return null;
 
