@@ -1,9 +1,11 @@
 package org.winterblade.minecraft.mods.needs.manipulators;
 
 import com.google.gson.annotations.Expose;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.ITrigger;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
@@ -11,13 +13,17 @@ import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.OtherNeedChangedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @SuppressWarnings("WeakerAccess")
 @Document(description = "Affect this need when another need has changed; do not set to the same need this is applied to. " +
         "You have been warned. Can be applied multiple times to the same need with different values.")
-public class OnNeedChangedManipulator extends BaseManipulator {
+public class OnNeedChangedManipulator extends BaseManipulator implements ITrigger {
     @Expose
     @Document(description = "The name of the other need to check.")
     protected LazyNeed need;
@@ -48,6 +54,12 @@ public class OnNeedChangedManipulator extends BaseManipulator {
 
     protected boolean isListening;
     protected boolean checkValue;
+    private ConditionalManipulator parentCondition;
+
+    private Supplier<Double> lastValue;
+    private double lastCurrent;
+    private double lastPrevious;
+    private double lastDiff;
 
     public OnNeedChangedManipulator() {
         minChange = Double.NEGATIVE_INFINITY;
@@ -60,49 +72,99 @@ public class OnNeedChangedManipulator extends BaseManipulator {
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
         if (amount == null) throw new IllegalArgumentException("Amount must be specified.");
-        if (this.need == null) throw new IllegalArgumentException("onNeedChanged requires a 'need' property.");
-        if (!this.need.isNot(need)) throw new IllegalArgumentException("onNeedChanged cannot target itself.");
+        validateCommon(need);
         super.validate(need);
     }
 
     @Override
+    public void validateTrigger(final ConditionalManipulator parent) throws IllegalArgumentException {
+        // TODO: need to pass in need in all cases
+        validateCommon(null);
+    }
+
+    protected void validateCommon(final Need need) {
+        if (this.need == null) throw new IllegalArgumentException("onNeedChanged requires a 'need' property.");
+        if (!this.need.isNot(need)) throw new IllegalArgumentException("onNeedChanged cannot target itself.");
+    }
+
+    @Override
     public void onLoaded() {
+        onLoadedCommon();
+        super.onLoaded();
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asManipulator);
+    }
+
+    @Override
+    public void onUnloaded() {
+        onTriggerUnloaded();
+    }
+
+    @Override
+    public void onTriggerLoaded(final ConditionalManipulator parent) {
+        parentCondition = parent;
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asTrigger);
+    }
+
+    @Override
+    public void onTriggerUnloaded() {
+        isListening = false;
+        need.discard();
+    }
+
+    protected void onLoadedCommon() {
         isListening = true;
         checkValue = (minValue != Double.NEGATIVE_INFINITY || maxValue != Double.POSITIVE_INFINITY);
     }
 
     @Override
-    public void onUnloaded() {
-        isListening = false;
-        need.discard();
+    public double getAmount(final PlayerEntity player) {
+        if (amount == null) return 0;
+
+        amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, lastValue);
+        amount.setIfRequired(OtherNeedChangedExpressionContext.OTHER, () -> lastCurrent);
+        amount.setIfRequired(OtherNeedChangedExpressionContext.PREVIOUS, () -> lastPrevious);
+        amount.setIfRequired(OtherNeedChangedExpressionContext.CHANGE, () -> lastDiff);
+
+        return amount.apply(player);
     }
 
-    @SubscribeEvent
-    protected void onOtherNeedChanged(final NeedAdjustmentEvent.Post event) {
-        need.get(event, this::onNeedExists, this::onNonexistentNeed);
+    protected void asManipulator(final NeedAdjustmentEvent.Post event) {
+        need.get(event,
+                (other, evt) -> onNeedExists(other, evt,
+                        (pl) -> parent.adjustValue(pl, getAmount(pl), this)),
+                this::onNonexistentNeed);
     }
 
-    protected void onNeedExists(final Need other, final NeedAdjustmentEvent.Post event) {
+    protected void asTrigger(final NeedAdjustmentEvent.Post event) {
+        need.get(event,
+                (other, evt) -> onNeedExists(other, evt,
+                        (pl) -> parentCondition.trigger(pl, this)),
+                this::onNonexistentNeed);
+    }
+
+    protected void onNeedExists(final Need other, final NeedAdjustmentEvent.Post event, final Consumer<PlayerEntity> callback) {
         if(!event.getNeed().equals(other)) return;
 
-        final double diff = event.getCurrent() - event.getPrevious();
-        if (diff < minChange || maxChange < diff) return;
-
-        if (checkValue) {
-            final double value = event.getNeed().getValue(event.getPlayer());
-            if (value < minValue || maxValue < value) return;
-
-            amount.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> value);
-        } else {
-            amount.setCurrentNeedValue(parent, event.getPlayer());
-        }
-
-        amount.setIfRequired(OtherNeedChangedExpressionContext.OTHER, event::getCurrent);
-        amount.setIfRequired(OtherNeedChangedExpressionContext.PREVIOUS, event::getPrevious);
-        amount.setIfRequired(OtherNeedChangedExpressionContext.CHANGE, () -> diff);
-
         // TODO: Determine best way to prevent loops
-        TickManager.INSTANCE.doLater(() -> parent.adjustValue(event.getPlayer(), amount.apply(event.getPlayer()), this));
+        TickManager.INSTANCE.doLater(() -> {
+            final double diff = event.getCurrent() - event.getPrevious();
+            if (diff < minChange || maxChange < diff) return;
+
+            if (checkValue) {
+                final double value = event.getNeed().getValue(event.getPlayer());
+                if (value < minValue || maxValue < value) return;
+
+                lastValue = () -> value;
+            } else {
+                lastValue = () -> parent.getValue(event.getPlayer());
+            }
+
+            lastCurrent = event.getCurrent();
+            lastPrevious = event.getPrevious();
+            lastDiff = diff;
+
+            callback.accept(event.getPlayer());
+        });
     }
 
     public void onNonexistentNeed() {
