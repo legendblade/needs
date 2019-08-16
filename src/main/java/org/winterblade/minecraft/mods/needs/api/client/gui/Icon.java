@@ -86,8 +86,11 @@ public class Icon {
         if (textureWidth == Integer.MIN_VALUE) textureWidth = width;
         if (textureHeight == Integer.MIN_VALUE) textureHeight = height;
 
+        textureX.build();
+        textureY.build();
+
         texture = icon != null
-                ? new ExpressionPositionedTexture(
+            ? new ExpressionPositionedTexture(
                 icon,
                 textureWidth,
                 textureHeight,
@@ -96,10 +99,6 @@ public class Icon {
                 width,
                 height
         ) : GENERIC_ICON;
-
-        // If we have any dependent needs, make sure they're synced.
-        textureX.build();
-        textureY.build();
     }
 
     public ExpressionPositionedTexture getTexture() {

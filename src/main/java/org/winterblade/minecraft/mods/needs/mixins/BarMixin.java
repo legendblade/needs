@@ -70,6 +70,7 @@ public abstract class BarMixin extends BaseMixin {
     @Override
     public void onLoaded(final Need need) {
         super.onLoaded(need);
+        if (displayFormat != null) displayFormat.build();
         if (icon != null) icon.onLoaded();
         if (background != null) background.onLoaded();
 
