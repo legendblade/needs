@@ -45,6 +45,7 @@ public class AdjustNeedLevelAction extends LevelAction {
     @Override
     public void onLoaded(final Need parentNeed, final NeedLevel parentLevel) {
         super.onLoaded(parentNeed, parentLevel);
+        amount.build();
 
         // If there wasn't a need specified, assume they want the parent need.
         if (need == null) need = LazyNeed.of(parentNeed);
