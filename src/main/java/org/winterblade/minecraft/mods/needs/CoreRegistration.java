@@ -2,13 +2,10 @@ package org.winterblade.minecraft.mods.needs;
 
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import org.winterblade.minecraft.mods.needs.actions.*;
+import org.winterblade.minecraft.mods.needs.api.registries.*;
 import org.winterblade.minecraft.mods.needs.manipulators.conditionals.AndConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.manipulators.conditionals.NotConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.manipulators.conditionals.OrConditionalManipulator;
-import org.winterblade.minecraft.mods.needs.api.registries.LevelActionRegistry;
-import org.winterblade.minecraft.mods.needs.api.registries.ManipulatorRegistry;
-import org.winterblade.minecraft.mods.needs.api.registries.MixinRegistry;
-import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.capabilities.itemuse.IItemUsedCountCapability;
 import org.winterblade.minecraft.mods.needs.capabilities.itemuse.ItemUsedCountCapability;
 import org.winterblade.minecraft.mods.needs.manipulators.*;
@@ -34,6 +31,8 @@ public class CoreRegistration {
 
         registerNeeds();
         registerManipulators();
+        registerConditions();
+        registerTriggers();
         registerMixins();
         registerActions();
         registerDebug();
@@ -96,6 +95,40 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "not", NotConditionalManipulator.class);
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "and", AndConditionalManipulator.class);
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "xor", XorConditionalManipulator.class);
+    }
+
+    private static void registerConditions() {
+        // Base game type things
+        ConditionRegistry.INSTANCE.register("minecraft", "onBlock", NearBlockManipulator.class, "block", "nearBlock", "aroundBlock");
+        ConditionRegistry.INSTANCE.register("minecraft", "holding", HoldingManipulator.class);
+        ConditionRegistry.INSTANCE.register("minecraft", "biome", BiomeManipulator.class, "inBiome", "inBiomeType", "biomeType");
+        ConditionRegistry.INSTANCE.register("minecraft", "lookingAt", LookingAtManipulator.class, "lookingAtBlock");
+
+        // Conditionals
+        ConditionRegistry.INSTANCE.register(NeedsMod.MODID, "or", OrConditionalManipulator.class);
+        ConditionRegistry.INSTANCE.register(NeedsMod.MODID, "not", NotConditionalManipulator.class);
+        ConditionRegistry.INSTANCE.register(NeedsMod.MODID, "and", AndConditionalManipulator.class);
+        ConditionRegistry.INSTANCE.register(NeedsMod.MODID, "xor", XorConditionalManipulator.class);
+    }
+
+    private static void registerTriggers() {
+        // Base game type things
+        TriggerRegistry.INSTANCE.register("minecraft", "itemUsed", ItemUsedManipulator.class);
+        TriggerRegistry.INSTANCE.register("minecraft", "countedItemUse", ItemUsedCountManipulator.class, "itemUsedOnce");
+        TriggerRegistry.INSTANCE.register("minecraft", "perHour", PerHourManipulator.class);
+        TriggerRegistry.INSTANCE.register("minecraft", "onDeath", OnDeathManipulator.class);
+        TriggerRegistry.INSTANCE.register("minecraft", "onBlock", NearBlockManipulator.class, "block", "nearBlock", "aroundBlock");
+        TriggerRegistry.INSTANCE.register("minecraft", "holding", HoldingManipulator.class);
+        TriggerRegistry.INSTANCE.register("minecraft", "attacking", AttackingManipulator.class, "onAttack", "attack");
+        TriggerRegistry.INSTANCE.register("minecraft", "hurt", HurtManipulator.class, "damaged", "attacked");
+        TriggerRegistry.INSTANCE.register("minecraft", "heal", HealManipulator.class, "healed");
+        TriggerRegistry.INSTANCE.register("minecraft", "biome", BiomeManipulator.class, "inBiome", "inBiomeType", "biomeType");
+        TriggerRegistry.INSTANCE.register("minecraft", "lookingAt", LookingAtManipulator.class, "lookingAtBlock");
+        TriggerRegistry.INSTANCE.register("minecraft", "slept", SleepingManipulator.class, "woken");
+
+        // Need specifics
+        TriggerRegistry.INSTANCE.register(NeedsMod.MODID, "onNeedChanged", OnNeedChangedManipulator.class);
+        TriggerRegistry.INSTANCE.register(NeedsMod.MODID, "tick", TickManipulator.class, "onTick");
     }
 
     private static void registerActions() {
