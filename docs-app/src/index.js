@@ -1033,8 +1033,8 @@ class App extends React.Component {
                         {TutorialCode({
                             "type": "and",
                             "amount": 0.05,
-                            "conditions": [
-                                {
+                            "conditions": {
+                                "book": {
                                     "type": "holding",
                                     "mainhand": true,
                                     "offhand": true,
@@ -1042,7 +1042,7 @@ class App extends React.Component {
                                         "writable_book"
                                     ]
                                 },
-                                {
+                                "ink": {
                                     "type": "holding",
                                     "mainhand": true,
                                     "offhand": true,
@@ -1051,7 +1051,7 @@ class App extends React.Component {
                                         "ink_sac"
                                     ]
                                 }                                
-                            ],
+                            },
                             "triggers": [
                                 {
                                     "type": "lookingAt",
@@ -1082,19 +1082,27 @@ class App extends React.Component {
                             we don't care which hand they're holding it in. <small>It's worth noting that technically we don't need to specify
                             that we want to use <code>mainhand</code>, because the default is to use it, but I'm adding it here for clarity.</small>
                         </p>
+                        <p class="alert alert-dark mx-3">
+                            I need to take a moment here to point out the fact that <code>and</code> conditions use a key/value map, unlike <code>or</code> and
+                            it's cousin <code>xor</code>, which use an array. This is because unlike those two, which can only return a single value, the
+                            conditions in an <code>and</code> can return multiple values. It's important that the keys are unique, and don't overlap with
+                            the names of other variables already in the expression (<code>current</code>, <code>need</code>, and <code>source</code>), or
+                            the names of any of the values, functions, or constants provided by mXparser. Just be descriptive and you <i>generally</i> shouldn't
+                            have any issues.
+                        </p>
                         <p>
-                            One more thing. Since we're saying that the second condition returns a value, let's make sure we're <i>using</i> the value in our
+                            One more thing. Since we're saying that the <code>ink</code> condition returns a value, let's make sure we're <i>using</i> the value in our
                             actual amount. Change the code to look like this (not... not literally, leave the <code>conditions</code> and 
                             the <code>triggers</code> alone, those are just omitted for brevity, but, like... the amount. Change that):
                         </p>
                         {TutorialCode({
                             "type": "and",
-                            "amount": "0.01 * (match2 / 2)",
+                            "amount": "0.01 * (ink / 2)",
                             "conditions": [],
                             "triggers": []
                         })}
                         <p>
-                            We're reducing the amount base amount from 0.05 to 0.01, but then we're multiplying it by half the value returned by the second condition.
+                            We're reducing the amount base amount from 0.05 to 0.01, but then we're multiplying it by half the value returned by the <code>ink</code> condition.
                             Which all of that was a mouthful, but means if we're looking at a bookshelf, while holding a writable book in one hand, and at least one
                             ink sac in the other hand, we're going to increase our learning by a small amount - more if we have more ink sacs.
                         </p>
@@ -1110,24 +1118,26 @@ class App extends React.Component {
                             "manipulators": [
                                 {
                                     "type": "and",
-                                    "amount": "0.01 * (match2 / 2)",
-                                    "conditions": [
-                                        {
+                                    "amount": "0.01 * (ink / 2)",
+                                    "conditions": {
+                                        "book": {
                                             "type": "holding",
+                                            "mainhand": true,
                                             "offhand": true,
                                             "items": [
                                                 "writable_book"
                                             ]
                                         },
-                                        {
+                                        "ink": {
                                             "type": "holding",
+                                            "mainhand": true,
                                             "offhand": true,
                                             "amount": "count",
                                             "items": [
                                                 "ink_sac"
                                             ]
                                         }
-                                    ],
+                                    },
                                     "triggers": [
                                         {
                                             "type": "lookingAt",
