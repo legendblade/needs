@@ -278,7 +278,7 @@ class App extends React.Component {
             "class": "navbar-brand d-block text-wrap",
             "children": [
                 { "title": "Overview", "root": "#overview" },
-                { "title": "Needs", "root": "#needs" },
+                { "title": "Tutorial", "root": "#needs" },
                 { "title": "Need Types", "root": "#needTypes", "children": map(sortEntries(response.needs), (c) => convertToNav(c, "needTypes")) },
                 { "title": "Mixins", "root": "#mixins", "children": map(sortEntries(response.mixins), (c) => convertToNav(c, "mixins")) },
                 { "title": "Manipulators", "root": "#manipulators", "children": map(sortEntries(response.manipulators), (c) => convertToNav(c, "manipulators")) },
@@ -321,7 +321,7 @@ class App extends React.Component {
 
                 <div class="col-12 col-lg-8 px-4" style={{'border-left': '1px solid #DEDEDE'}}>
                     <div>
-                        <h2>Foreward</h2>
+                        <h2>Foreword</h2>
                         <p class="lead">
                             Needs, Wants, and Desires (or Needs for short) is a work of <del>love</del> <del>like</del> insanity borne 
                             from a desire to allow Minecraft pack makers to have the tools available to them to define arbitrary stats and 
@@ -520,7 +520,7 @@ class App extends React.Component {
                     </div>
                     <hr />
                     <div id="needs">
-                        <h2>Needs</h2>
+                        <h2>Tutorial</h2>
                         <p>
                             In order to get started creating needs, you'll want to fire up a text editor (or preferably an IDE like VSCode), and navigate
                             to <code>&lt;Minecraft&gt;/config/needs</code>. This directory will be where all of your needs get configured (go figure, right?).
@@ -996,8 +996,214 @@ class App extends React.Component {
                             <img src="https://pbs.twimg.com/media/EBYtuCVUcAAL_32?format=png" alt="UI example" class="rounded" />
                         </div>
                         <p>
-                            There you go. Your very own custom stat that does things. Now go out and conquer the world. Or at least create new and <del>obtuse</del> interesting
-                            stat systems to <del>torture</del> entertain your players with.
+                            In testing, though, if we were to go look at a bookshelf, it ends up being a bit too quick, and a bit unrealistic. I mean, we're
+                            not even writing our results down. That's not science, it's madness! Let's go back and fix that. 
+                        </p>
+                        <p>
+                            Go up to the <code>lookingAt</code> manipulator, and change it from this...
+                        </p>
+                        {TutorialCode({
+                            "type": "lookingAt",
+                            "amount": 0.05,
+                            "blocks": [
+                                "minecraft:bookshelf"
+                            ]
+                        })}
+                        <p>
+                            Over to this...
+                        </p>
+                        {TutorialCode({
+                            "type": "and",
+                            "amount": 0.05,
+                            "triggers": [
+                                {
+                                    "type": "lookingAt",
+                                    "blocks": [
+                                        "minecraft:bookshelf"
+                                    ]
+                                }
+                            ]
+                        })}
+                        <p>
+                            You might ask what that's accomplished... and you'd be right to ask, because right now, that's done nothing other than change it from
+                            using the <code>lookingAt</code> manipulator to using the <code>and</code> conditional manipulator with <code>lookingAt</code> being
+                            used as a trigger. In fact, if you were to try and run things now, it won't work, because there are no conditions. Let's add those.
+                        </p>
+                        <p>
+                        {TutorialCode({
+                            "type": "and",
+                            "amount": 0.05,
+                            "conditions": [
+                                {
+                                    "type": "holding",
+                                    "mainhand": true,
+                                    "offhand": true,
+                                    "items": [
+                                        "writable_book"
+                                    ]
+                                },
+                                {
+                                    "type": "holding",
+                                    "mainhand": true,
+                                    "offhand": true,
+                                    "amount": "count",
+                                    "items": [
+                                        "ink_sac"
+                                    ]
+                                }                                
+                            ],
+                            "triggers": [
+                                {
+                                    "type": "lookingAt",
+                                    "blocks": [
+                                        "minecraft:bookshelf"
+                                    ]
+                                }
+                            ]
+                        })}
+                        </p>
+                        <p>
+                            Okay, we have two conditions and one trigger - or, if you want to think about it in a different way: three conditions that all must be
+                            true in order for this to pass (because it's an <code>and</code>, if we used a different conditional, that would change things).
+                        </p>
+                        <p>
+                            You can have one or more triggers - which function almost identically to how they would as a regular manipulator - and when any one of
+                            the triggers activates - in this case, when we're looking at a bookshelf - it will start checking the conditions associated with the
+                            conditional manipulator. Note that unlike when <code>lookingAt</code> was a manipulator, we're not specifying the <code>amount</code> property
+                            on the trigger. We <i>could</i>, and then later access that through the <code>source</code> variable in the conditional, but we're not.
+                        </p>
+                        <p>
+                            Now, moving on to the conditionals, we're using two of the same condition to test that you have both a writable book <code>and</code> at
+                            least one ink sac - I say at least one because, if you notice, for the ink sac condition, we have the <code>amount</code> specified
+                            as <code>count</code>, this means that we can later use the number of ink sacs the player is holding.
+                        </p>
+                        <p>
+                            We're also specifying <code>mainhand</code> and <code>offhand</code> here, meaning that while the player needs to be holding both,
+                            we don't care which hand they're holding it in. <small>It's worth noting that technically we don't need to specify
+                            that we want to use <code>mainhand</code>, because the default is to use it, but I'm adding it here for clarity.</small>
+                        </p>
+                        <p>
+                            One more thing. Since we're saying that the second condition returns a value, let's make sure we're <i>using</i> the value in our
+                            actual amount. Change the code to look like this (not... not literally, leave the <code>conditions</code> and 
+                            the <code>triggers</code> alone, those are just omitted for brevity, but, like... the amount. Change that):
+                        </p>
+                        {TutorialCode({
+                            "type": "and",
+                            "amount": "0.01 * (match2 / 2)",
+                            "conditions": [],
+                            "triggers": []
+                        })}
+                        <p>
+                            We're reducing the amount base amount from 0.05 to 0.01, but then we're multiplying it by half the value returned by the second condition.
+                            Which all of that was a mouthful, but means if we're looking at a bookshelf, while holding a writable book in one hand, and at least one
+                            ink sac in the other hand, we're going to increase our learning by a small amount - more if we have more ink sacs.
+                        </p>
+                        <p>
+                            One more time, let's look at the entire file:
+                        </p>
+                        {TutorialCode({
+                            "name": "Learning",
+                            "type": "custom",
+                            "min": 0,
+                            "max": 100,
+                            "initial": 15,
+                            "manipulators": [
+                                {
+                                    "type": "and",
+                                    "amount": "0.01 * (match2 / 2)",
+                                    "conditions": [
+                                        {
+                                            "type": "holding",
+                                            "offhand": true,
+                                            "items": [
+                                                "writable_book"
+                                            ]
+                                        },
+                                        {
+                                            "type": "holding",
+                                            "offhand": true,
+                                            "amount": "count",
+                                            "items": [
+                                                "ink_sac"
+                                            ]
+                                        }
+                                    ],
+                                    "triggers": [
+                                        {
+                                            "type": "lookingAt",
+                                            "blocks": [
+                                                "minecraft:bookshelf"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "itemUsed",
+                                    "defaultAmount": 5,
+                                    "showTooltip": true,
+                                    "items": {
+                                        "milk_bucket": null,
+                                        "rotten_flesh": "-current/2"
+                                    },
+                                    "formatting": {
+                                        "white": "(0,10]"
+                                    }
+                                },
+                                {
+                                    "type": "onDeath",
+                                    "amount": "min(-current/4, -10)",
+                                    "downTo": 15
+                                }
+                            ],
+                            "levels": [
+                                {
+                                    "name": "Genius",
+                                    "min": 80,
+                                    "actions": [
+                                        {
+                                            "type": "potionEffect",
+                                            "effect": "jump_boost",
+                                            "amplifier": 2
+                                        },
+                                        {
+                                            "type": "adjustNeed",
+                                            "need": "attack",
+                                            "amount": 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Learned",
+                                    "min": 50,
+                                    "max": 80,
+                                    "actions": [
+                                        {
+                                            "type": "potionEffect",
+                                            "effect": "jump_boost"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "Dumb as Rocks",
+                                    "max": 10
+                                }
+                            ],
+                            "mixins": [
+                                {
+                                    "type": "ui",
+                                    "color": "#99CDC9",
+                                    "icon": "w_book01"
+                                }
+                            ]
+                        })}
+                        <p>
+                            Phew.
+                        </p>
+                        <p>
+                            If you've gotten this far, congratulate yourself on a job well done - if you've gotten this far and actually <i>understood</i> my ramblings,
+                            give yourself a pat on the back while congratulating yourself on a job well done, because I'm not sure I understand myself. No, I'm pretty
+                            sure I don't understand myself. But. What you have now, is your very own custom stat that does things, and supports some nifty logic. Now 
+                            go out and conquer the world. Or at least create new and <del>obtuse</del> interesting stat systems to <del>torture</del> entertain your players with.
                         </p>
                     </div>
                     <div id="needTypes">
