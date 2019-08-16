@@ -393,6 +393,9 @@ class App extends React.Component {
                                     player to be more passive, you could use the <code>holding</code> manipulator to say that anytime they're holding a sword or axe, you
                                     want to decrease their <code>health</code> by a certain amount - you can do that too.
                                 </p>
+                                </dl>
+                            <dt class="col-sm-2">Conditional Manipulators</dt>
+                            <dl class="col-sm-10">
                                 <p>
                                     If the basic manipulators aren't enough, there are also the <b>Conditional Manipulators</b>, which represent basic logical operators
                                     - namely <code>and</code>, <code>or</code>, <code>not</code>, and <code>xor</code>, and allow you to combine together one or more
@@ -409,8 +412,9 @@ class App extends React.Component {
                                     is also a condition itself, so you can nest multiple layers of conditions in order to fully define the conditions you want things to run under.
                                 </p>
                                 <p>
-                                    Lastly, the amount expression of the individual conditional manipulators provides access to both any value from the source trigger, as
-                                    well as the matched condition(s), which can be used to further tailor how things interact.
+                                    Lastly, the <code>amount</code> expression of the individual conditional manipulators provides access to both any value from the source trigger, as
+                                    well as the matched condition(s), which can be used to further tailor how things interact. As with all expressions, which will be
+                                    discussed more below, only the values that you're actively using in the expression will be calculated.
                                 </p>
                             </dl>
                             <dt class="col-sm-2">Levels</dt>
