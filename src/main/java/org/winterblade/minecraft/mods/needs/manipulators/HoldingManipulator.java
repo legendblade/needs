@@ -101,12 +101,13 @@ public class HoldingManipulator extends TooltipManipulator implements ICondition
 
     @Override
     public boolean test(final PlayerEntity player) {
+        lastCount = 0;
         final ItemStack mainhand = this.mainhand ? player.getHeldItemMainhand() : ItemStack.EMPTY;
         final ItemStack offhand = this.offhand ? player.getHeldItemOffhand() : ItemStack.EMPTY;
 
-        if (amount.isConstant()) {
+        if (amount == null || amount.isConstant()) {
             if (items.stream().noneMatch((p) -> p.test(mainhand) || p.test(offhand))) return false;
-            lastCount = 0;
+            lastCount = 1;
             return true;
         }
 
@@ -114,14 +115,14 @@ public class HoldingManipulator extends TooltipManipulator implements ICondition
         int offCount = 0;
 
         for (final IIngredient item : items) {
-            if (mainCount == 0 && item.test(mainhand)) {
+            if (this.mainhand && mainCount == 0 && item.test(mainhand)) {
                 mainCount = mainhand.getCount();
             }
-            if (offCount == 0 && item.test(offhand)) {
+            if (this.offhand && offCount == 0 && item.test(offhand)) {
                 offCount = offhand.getCount();
             }
 
-            if (mainCount != 0 && offCount != 0) break;
+            if ((!this.mainhand || mainCount != 0) && (!this.offhand || offCount != 0)) break;
         }
 
         final int c = mainCount + offCount;

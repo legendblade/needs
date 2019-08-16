@@ -43,7 +43,7 @@ public class AndConditionalManipulator extends ConditionalManipulator {
         conditions.forEach((c) -> c.validateCondition(parentNeed, this));
 
         if (amount == null) return;
-        for (int i = conditions.size(); i <= AndConditionalExpressionContext.MATCH_COUNT; i++) {
+        for (int i = conditions.size() + 1; i <= AndConditionalExpressionContext.MATCH_COUNT + 1; i++) {
             if (amount.isRequired("match" + i)) {
                 throw new IllegalArgumentException("The amount expression uses 'match" + i + "', but you only have " +
                     conditions.size() + " conditions.");
@@ -69,6 +69,7 @@ public class AndConditionalManipulator extends ConditionalManipulator {
             if (!amount.isRequired(key)) continue;
 
             args.add((p) -> amount.setIfRequired(key, () -> c.getAmount(p)));
+            getMatch = true;
         }
 
         if (amount == null) getMatch = false;

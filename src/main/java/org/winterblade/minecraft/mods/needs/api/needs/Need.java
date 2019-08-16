@@ -1,7 +1,6 @@
 package org.winterblade.minecraft.mods.needs.api.needs;
 
 import com.google.common.collect.*;
-import com.google.gson.JsonParseException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
@@ -353,6 +352,7 @@ public abstract class Need {
      * Checks if the need should be synced
      * @return True if the need should sync
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public final boolean shouldSync() {
         return shouldSync;
     }

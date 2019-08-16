@@ -37,7 +37,7 @@ public interface IIngredient extends Predicate<ItemStack> {
 
         final JsonArray jsonArray = json.getAsJsonArray();
         final List<IIngredient> output = new ArrayList<>(jsonArray.size());
-        jsonArray.forEach((e) -> output.add(getIngredient(json.getAsJsonPrimitive().getAsString())));
+        jsonArray.forEach((e) -> output.add(getIngredient(e.getAsJsonPrimitive().getAsString())));
 
         return output;
     }
