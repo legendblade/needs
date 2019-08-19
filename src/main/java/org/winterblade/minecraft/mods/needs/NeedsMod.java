@@ -35,8 +35,8 @@ public class NeedsMod
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::imc);
 
         // Register configs? Probably?
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CoreConfig.commonSpec);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CoreConfig.clientSpec);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, CoreConfig.serverSpec);
     }
 
     @SuppressWarnings("unused")

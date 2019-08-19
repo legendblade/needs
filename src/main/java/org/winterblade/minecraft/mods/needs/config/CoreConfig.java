@@ -13,27 +13,27 @@ import static net.minecraftforge.common.ForgeConfigSpec.*;
 @SuppressWarnings("WeakerAccess")
 public class CoreConfig {
     public static Client CLIENT;
-    public static Server SERVER;
+    public static Common COMMON;
 
     public static final ForgeConfigSpec clientSpec;
-    public static final ForgeConfigSpec serverSpec;
+    public static final ForgeConfigSpec commonSpec;
 
     static {
-        final Pair<Server, ForgeConfigSpec> serverPair = new Builder().configure(Server::new);
-        serverSpec = serverPair.getRight();
-        SERVER = serverPair.getLeft();
+        final Pair<Common, ForgeConfigSpec> commonPair = new Builder().configure(Common::new);
+        commonSpec = commonPair.getRight();
+        COMMON = commonPair.getLeft();
 
         final Pair<Client, ForgeConfigSpec> clientPair = new Builder().configure(Client::new);
         clientSpec = clientPair.getRight();
         CLIENT = clientPair.getLeft();
     }
 
-    public static class Server {
+    public static class Common {
         public final IntValue tickBuckets;
 
-        public Server(final Builder builder) {
-            builder.comment("Server configuration settings")
-                    .push("server");
+        public Common(final Builder builder) {
+            builder.comment("Common configuration settings")
+                    .push("common");
 
             tickBuckets = builder
                     .comment(

@@ -8,6 +8,7 @@ import net.minecraftforge.fml.LogicalSidedProvider;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.TickEvent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.config.CoreConfig;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,7 +19,7 @@ import java.util.function.Consumer;
 
 public class TickManager {
     public static TickManager INSTANCE = new TickManager();
-    private static final int buckets = 5; // TODO: This needs to be a config option
+    private final int buckets;
 
     private final WeakHashMap<Object, Consumer<PlayerEntity>> perPlayerTick = new WeakHashMap<>();
     private final List<List<PlayerEntity>> players = new ArrayList<>();
@@ -30,6 +31,7 @@ public class TickManager {
         MinecraftForge.EVENT_BUS.addListener(this::onPlayerLeave);
 
         // Init our buckets
+        buckets = Math.max(CoreConfig.COMMON.tickBuckets.get(), 1);
         for(int i = 0; i < buckets; i++) {
             players.add(new ArrayList<>());
         }
