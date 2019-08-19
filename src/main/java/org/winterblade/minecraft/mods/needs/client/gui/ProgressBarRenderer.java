@@ -19,10 +19,11 @@ public class ProgressBarRenderer implements IBarRenderer {
     private ProgressBarRenderer(final ProgressBarMixin mx) {
         final Rectangle2d bounds = new Rectangle2d(0, 0, mx.getWidth(), mx.getHeight());
         component = new ProgressBarComponent(bounds, mx.showText());
-        component.setColor(mx.getColor());
+        final int color = mx.getColor();
+        component.setColor(color);
 
         background = new ColorBarComponent(bounds);
-        background.setColor(0x77000000 + (mx.getColor() & 0x888888));
+        background.setColor(0x77000000 + (color & 0x888888));
         background.setRight(bounds.getWidth());
     }
 

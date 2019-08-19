@@ -5,14 +5,14 @@ import com.google.gson.annotations.JsonAdapter;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
-import org.winterblade.minecraft.mods.needs.util.ColorAdapter;
+import org.winterblade.minecraft.mods.needs.util.ColorSet;
 
 @Document(description = "Adds a colored progress bar to the user's HUD.")
 public class ProgressBarMixin extends BarMixin {
     @Expose
     @Document(description = "Color of the bar.")
-    @JsonAdapter(ColorAdapter.class)
-    private int color;
+    @JsonAdapter(ColorSet.Deserializer.class)
+    private ColorSet color;
 
     @Expose
     @Document(description = "The width of the bar.")
@@ -48,6 +48,6 @@ public class ProgressBarMixin extends BarMixin {
     }
 
     public int getColor() {
-        return color;
+        return color.get();
     }
 }

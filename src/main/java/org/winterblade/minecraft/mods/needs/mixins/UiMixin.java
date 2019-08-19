@@ -14,7 +14,7 @@ import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.client.gui.ExpressionPositionedTexture;
-import org.winterblade.minecraft.mods.needs.util.ColorAdapter;
+import org.winterblade.minecraft.mods.needs.util.ColorSet;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -50,11 +50,11 @@ public class UiMixin extends BaseMixin {
     private int precision = 0;
 
     @Expose
-    @JsonAdapter(ColorAdapter.class)
+    @JsonAdapter(ColorSet.Deserializer.class)
     @Document(description = "Sets the RGB color of the bar; this can either be the integer representation of the color, " +
             "or you can specify a hexidecimal string starting with either # or 0x - when specifying it as hex, you " +
             "may use shorthand (e.g. `'#777'` will expand to `'#777777'`).")
-    private int color;
+    private ColorSet color;
 
 
     @Expose
@@ -106,7 +106,11 @@ public class UiMixin extends BaseMixin {
     }
 
     public int getColor() {
-        return color;
+        return getColorVs(0x8b8b8b);
+    }
+
+    public int getColorVs(final int background) {
+        return color.getAgainst(background);
     }
 
     public String getPrecision() {
