@@ -10,7 +10,6 @@ import java.util.TreeMap;
 
 @JsonAdapter(ExpressionContext.Deserializer.class)
 public class AndConditionalExpressionContext extends NeedExpressionContext {
-    public static final int MATCH_COUNT = 20; // TODO: Config option?
     public static final String SOURCE = "source";
     protected static final Map<String, String> docs = new TreeMap<>(NeedExpressionContext.docs);
 
@@ -25,9 +24,6 @@ public class AndConditionalExpressionContext extends NeedExpressionContext {
 
     @Override
     public List<String> getElements() {
-        for (int i = 1; i <= MATCH_COUNT; i++) {
-            elements.add("match" + i);
-        }
         elements.add(SOURCE);
         return elements;
     }
