@@ -93,7 +93,7 @@ public class Formatting {
      */
     public void init() {
         precisionString = "%." + precision + "f";
-        fmtString = prepend + " %s%s%s" + unitOfMeasure + append;
+        fmtString = (prepend + " %s%s%s" + unitOfMeasure + append).trim();
         if (expression != null) expression.build();
 
         min = Math.pow(10, -precision);
