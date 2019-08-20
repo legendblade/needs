@@ -85,7 +85,7 @@ public class NeedComponent extends TexturedComponent {
         minText.setText(String.format(precision, min));
         maxText.setText(String.format(precision, max));
 
-        if ((lower < min) && (max < upper)) {
+        if ((lower <= min) && (max <= upper)) {
             currentBounds.setVisible(false);
             lowerBound.setVisible(false);
             return;

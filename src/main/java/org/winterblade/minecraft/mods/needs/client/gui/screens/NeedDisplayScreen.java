@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.inventory.InventoryScreen;
 import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
@@ -13,6 +14,7 @@ import org.winterblade.minecraft.mods.needs.client.gui.Texture;
 import org.winterblade.minecraft.mods.needs.client.gui.components.*;
 import org.winterblade.minecraft.mods.needs.client.gui.widgets.InventoryButton;
 import org.winterblade.minecraft.mods.needs.mixins.UiMixin;
+import org.winterblade.minecraft.mods.needs.util.MathLib;
 
 import java.util.List;
 
@@ -62,12 +64,12 @@ public class NeedDisplayScreen extends ComponentScreen {
 
                     final PlayerEntity player = Minecraft.getInstance().player;
                     c.setBarValues(
-                        mixin.doFormat(localNeed.getMin(), player),
-                        mixin.doFormat(localNeed.getMax(), player),
-                        mixin.doFormat(localNeed.getValue(), player),
+                        mixin.doFormat(MathLib.max3(localNeed.getMin(), mixin.getMin(), mixin.getBarMin()), player),
+                        mixin.doFormat(MathLib.min3(localNeed.getMax(), mixin.getMax(), mixin.getBarMax()), player),
+                        mixin.doFormat(MathHelper.clamp(localNeed.getValue(), mixin.getMin(), mixin.getMax()), player),
                         mixin.getColor(),
-                        mixin.doFormat(localNeed.getLower(), player),
-                        mixin.doFormat(localNeed.getUpper(), player),
+                        mixin.doFormat(MathLib.max3(localNeed.getLower(), mixin.getMin(), mixin.getBarMin()), player),
+                        mixin.doFormat(MathLib.min3(localNeed.getUpper(), mixin.getMax(), mixin.getBarMax()), player),
                         mixin.getPrecision()
                     );
 

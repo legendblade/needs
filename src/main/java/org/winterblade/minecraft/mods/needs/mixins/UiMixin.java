@@ -64,6 +64,34 @@ public class UiMixin extends BaseMixin {
     @OptionalField(defaultValue = "None")
     protected NeedExpressionContext displayFormat;
 
+    @Expose
+    @SuppressWarnings("FieldMayBeFinal")
+    @Document(description = "The minimum value to display in the UI; the actual displayed minimum will be either this " +
+            "or the minimum value of the need, whichever is greater.")
+    @OptionalField(defaultValue = "None")
+    private double min = Double.NEGATIVE_INFINITY;
+
+    @Expose
+    @SuppressWarnings("FieldMayBeFinal")
+    @Document(description = "The maximum value to display in the UI; the actual displayed maximum will be either this " +
+            "or the maximum value of the need, whichever is lesser.")
+    @OptionalField(defaultValue = "None")
+    private double max = Double.POSITIVE_INFINITY;
+
+    @Expose
+    @SuppressWarnings("FieldMayBeFinal")
+    @Document(description = "The minimum value of the bar in the UI; the actual displayed minimum will be either this, " +
+            "the value of min, or the minimum value of the need, whichever is the greatest.")
+    @OptionalField(defaultValue = "None")
+    private double barMin = Double.NEGATIVE_INFINITY;
+
+    @Expose
+    @SuppressWarnings("FieldMayBeFinal")
+    @Document(description = "The maximum value of the bar in the UI; the actual displayed maximum will be either this, " +
+            "the value of max, or the maximum value of the need, whichever is the least.")
+    @OptionalField(defaultValue = "None")
+    private double barMax = Double.POSITIVE_INFINITY;
+
     private boolean shouldDisplay = true;
     private String precisionFormat;
 
@@ -122,6 +150,22 @@ public class UiMixin extends BaseMixin {
 
         displayFormat.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> input);
         return displayFormat.apply(player);
+    }
+
+    public double getMin() {
+        return min;
+    }
+
+    public double getMax() {
+        return max;
+    }
+
+    public double getBarMin() {
+        return barMin;
+    }
+
+    public double getBarMax() {
+        return barMax;
     }
 
     /**
