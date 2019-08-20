@@ -30,18 +30,18 @@ public class NeedDisplayScreen extends ComponentScreen {
         window = new WindowComponent(texture.getSubtexture(guiWidth, guiHeight), guiWidth, guiHeight);
 
         // Components
-        window.addComponent(new TextComponent("Needs, Wants, and Desires", 7, 7, 0xFFFFFF, true));
+        window.addComponent(new TextComponent("Needs, Wants, and Desires", 7, 7, 0x404040, false));
 
         final ScrollbarComponent bar = new ScrollbarComponent(
-            new Rectangle2d(298, 24, 12, 195),
+            new Rectangle2d(298, 24, 12, 190),
             texture.getSubtexture(12, 15, 318, 0),
             texture.getSubtexture(12, 15, 330, 0),
-            () -> (UiMixin.getLocalNeeds().size() * ITEM_HEIGHT) - 195
+            () -> (UiMixin.getLocalNeeds().size() * ITEM_HEIGHT) - 190
         );
         window.addComponent(bar);
         window.addComponent(new ScrollpaneComponent<>(
                 bar,
-                new Rectangle2d(8, 24, 284, 195),
+                new Rectangle2d(8, 24, 284, 190),
                 (i) -> new NeedComponent(texture.getSubtexture(284, ITEM_HEIGHT, 0, 222), new Rectangle2d(0, 0, 284, ITEM_HEIGHT)),
                 ITEM_HEIGHT,
                 (c, i) -> {

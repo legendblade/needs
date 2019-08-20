@@ -26,20 +26,20 @@ public class NeedComponent extends TexturedComponent {
     public NeedComponent(final Texture texture, final Rectangle2d bounds) {
         super(texture, bounds);
 
-        title = new TextComponent("", 38, 4, 0xFFFFFF, true);
+        title = new TextComponent("", 38, 4, 0x404040, false);
         addComponent(title);
 
         final Rectangle2d barBounds = new Rectangle2d(38, 15, BAR_WIDTH, 10);
         progress = new ProgressBarComponent(barBounds);
         addComponent(progress);
 
-        minText = new TextComponent("", 37, 28, 0xFFFFFF);
+        minText = new TextComponent("", 37, 28, 0x404040);
         addComponent(minText);
 
-        maxText = new TextComponent("", 281, 28, 0xFFFFFF, TextTable.Alignment.RIGHT);
+        maxText = new TextComponent("", 281, 28, 0x404040, TextTable.Alignment.RIGHT);
         addComponent(maxText);
 
-        level = new TextComponent("", 281, 4, 0xFFFFFF, true, TextTable.Alignment.RIGHT);
+        level = new TextComponent("", 281, 4, 0x404040, false, TextTable.Alignment.RIGHT);
         addComponent(level);
 
         currentBounds = new ColorBarComponent(new Rectangle2d(38, barBounds.getY() + 2, BAR_WIDTH, barBounds.getHeight() - 4));
