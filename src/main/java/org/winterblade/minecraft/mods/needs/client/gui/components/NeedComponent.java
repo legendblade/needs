@@ -6,6 +6,7 @@ import org.winterblade.minecraft.mods.needs.api.levels.NeedLevel;
 import org.winterblade.minecraft.mods.needs.client.gui.Texture;
 
 import java.lang.ref.WeakReference;
+import java.util.function.Function;
 
 public class NeedComponent extends TexturedComponent {
     private static final int BAR_WIDTH = 242;
@@ -69,21 +70,21 @@ public class NeedComponent extends TexturedComponent {
 
     /**
      * Sets the values for the progress bar, as well as the lower and upper bounds of the current level
-     * @param min   The min value
-     * @param max   The max value
-     * @param value The current value
-     * @param color The color of the bar
-     * @param lower The lower bound
-     * @param upper The upper bound
-     * @param precision The amount of digits to display
+     * @param min    The min value
+     * @param max    The max value
+     * @param value  The current value
+     * @param color  The color of the bar
+     * @param lower  The lower bound
+     * @param upper  The upper bound
+     * @param format The formating function
      */
-    public void setBarValues(final double min, final double max, final double value, final int color, final double lower, final double upper, final String precision) {
+    public void setBarValues(final double min, final double max, final double value, final int color, final double lower, final double upper, final Function<Double, String> format) {
         progress.setMinMax(min, max);
-        progress.setValue(value, String.format(precision, value));
+        progress.setValue(value, format.apply(value));
         progress.setColor(color);
 
-        minText.setText(String.format(precision, min));
-        maxText.setText(String.format(precision, max));
+        minText.setText(format.apply(min));
+        maxText.setText(format.apply(max));
 
         if ((lower <= min) && (max <= upper)) {
             currentBounds.setVisible(false);

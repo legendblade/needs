@@ -2,13 +2,12 @@ package org.winterblade.minecraft.mods.needs.mixins;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.JsonAdapter;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.common.MinecraftForge;
+import org.winterblade.minecraft.mods.needs.api.Formatting;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.client.gui.Icon;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
-import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.mixins.BaseMixin;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
@@ -44,12 +43,6 @@ public class UiMixin extends BaseMixin {
     private Icon icon;
 
     @Expose
-    @OptionalField(defaultValue = "0")
-    @Document(description = "Sets the number of decimal places displayed in the UI; by default, this is 0")
-    @SuppressWarnings("FieldMayBeFinal")
-    private int precision = 0;
-
-    @Expose
     @JsonAdapter(ColorSet.Deserializer.class)
     @Document(description = "Sets the RGB color of the bar; this can either be the integer representation of the color, " +
             "or you can specify a hexidecimal string starting with either # or 0x - when specifying it as hex, you " +
@@ -58,11 +51,9 @@ public class UiMixin extends BaseMixin {
 
 
     @Expose
-    @Document(description = "Optional expression that will be used to modify the value prior to displaying it (in case you " +
-            "want to multiply it, round it, square root things, etc). The min, max, value, and upper and lower bounds of the " +
-            "current level will all be run through this expression.")
+    @Document(description = "Defines any extra formatting parameters to apply")
     @OptionalField(defaultValue = "None")
-    protected NeedExpressionContext displayFormat;
+    protected Formatting formatting;
 
     @Expose
     @SuppressWarnings("FieldMayBeFinal")
@@ -93,7 +84,6 @@ public class UiMixin extends BaseMixin {
     private double barMax = Double.POSITIVE_INFINITY;
 
     private boolean shouldDisplay = true;
-    private String precisionFormat;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -106,8 +96,8 @@ public class UiMixin extends BaseMixin {
         super.onLoaded(need);
         need.enableSyncing();
 
-        precisionFormat = "%." + precision + "f";
-        if (displayFormat != null) displayFormat.build();
+        if (formatting == null) formatting = new Formatting();
+        formatting.init();
         icon.onLoaded();
     }
 
@@ -141,15 +131,8 @@ public class UiMixin extends BaseMixin {
         return color.getAgainst(background);
     }
 
-    public String getPrecision() {
-        return precisionFormat;
-    }
-
-    public double doFormat(final double input, final PlayerEntity player) {
-        if (displayFormat == null) return input;
-
-        displayFormat.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> input);
-        return displayFormat.apply(player);
+    public Formatting getFormatting() {
+        return formatting;
     }
 
     public double getMin() {

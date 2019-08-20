@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
+import org.winterblade.minecraft.mods.needs.api.Formatting;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
@@ -63,14 +64,15 @@ public class NeedDisplayScreen extends ComponentScreen {
                     c.setTitle(mixin.getDisplayName());
 
                     final PlayerEntity player = Minecraft.getInstance().player;
+                    final Formatting formatter = mixin.getFormatting();
                     c.setBarValues(
-                        mixin.doFormat(MathLib.max3(localNeed.getMin(), mixin.getMin(), mixin.getBarMin()), player),
-                        mixin.doFormat(MathLib.min3(localNeed.getMax(), mixin.getMax(), mixin.getBarMax()), player),
-                        mixin.doFormat(MathHelper.clamp(localNeed.getValue(), mixin.getMin(), mixin.getMax()), player),
+                        formatter.calculate(MathLib.max3(localNeed.getMin(), mixin.getMin(), mixin.getBarMin()), player),
+                        formatter.calculate(MathLib.min3(localNeed.getMax(), mixin.getMax(), mixin.getBarMax()), player),
+                        formatter.calculate(MathHelper.clamp(localNeed.getValue(), mixin.getMin(), mixin.getMax()), player),
                         mixin.getColor(),
-                        mixin.doFormat(MathLib.max3(localNeed.getLower(), mixin.getMin(), mixin.getBarMin()), player),
-                        mixin.doFormat(MathLib.min3(localNeed.getUpper(), mixin.getMax(), mixin.getBarMax()), player),
-                        mixin.getPrecision()
+                        formatter.calculate(MathLib.max3(localNeed.getLower(), mixin.getMin(), mixin.getBarMin()), player),
+                        formatter.calculate(MathLib.min3(localNeed.getUpper(), mixin.getMax(), mixin.getBarMax()), player),
+                        formatter::format
                     );
 
                     c.setLevel(localNeed.getLevel(), localNeed.hasLevels());
