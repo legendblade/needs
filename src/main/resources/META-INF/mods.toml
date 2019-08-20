@@ -1,6 +1,6 @@
 modLoader="javafml"
 loaderVersion="[28,)"
-# issueTrackerURL="http://my.issue.tracker/"
+issueTrackerURL="https://github.com/legendblade/needs/issues"
 
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]]
@@ -8,12 +8,14 @@ loaderVersion="[28,)"
     version="${file.jarVersion}"
     displayName="Needs, Wants, Desires"
     # updateJSONURL="http://myurl.me/"
-    # displayURL="http://example.com/"
+    displayURL="https://legendblade.github.io/needs"
     # logoFile="examplemod.png"
     credits="The Nutrition mod for the idea"
     authors="Taryn Winterblade and associated cats"
     description='''
-        This is a description.
+Needs, Wants, and Desires (or Needs for short) is a work of insanity borne from a desire to allow Minecraft pack makers to have the tools available to them to define arbitrary stats and stat systems that they can use to differentiate their pack, and help bring their world alive.
+
+At a core level, it could be seen as a spiritual successor to mods like Nutrition, or in some aspects, Tough as Nails, because both the core nutrition system from Nutrition, and the temperature system from TAN could be recreated through the Needs system. However, the actual possibilities for systems that could be created through Needs are much larger and, in many ways, much more complicated than that - you can start as simple as one single stat that tracks along with the number of steps the player has taken, to entire stat trees that all interconnect and provide distinctions and drawbacks as the player gains (or loses) levels.
     '''
 
 [[dependencies.needswantsdesires]]
