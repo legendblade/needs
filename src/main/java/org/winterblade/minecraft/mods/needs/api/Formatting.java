@@ -77,6 +77,7 @@ public class Formatting {
     private boolean initialized;
     private String fmtString;
     private String precisionString;
+    private double min;
 
     @SuppressWarnings("unused") // Deserialized by default GSON, needs default constructor to setup default values
     public Formatting() {
@@ -94,6 +95,9 @@ public class Formatting {
         precisionString = "%." + precision + "f";
         fmtString = prepend + " %s%s%s" + unitOfMeasure + append;
         if (expression != null) expression.build();
+
+        min = Math.pow(10, -precision);
+
         initialized = true;
     }
 
@@ -138,7 +142,7 @@ public class Formatting {
                 order += 3;
             }
         } else if (0 < val){
-            while(val < 1) {
+            while(val < min) {
                 val *= 1000.0;
                 order -= 3;
             }
@@ -148,7 +152,7 @@ public class Formatting {
             fmtString,
             value <= 0 ? "-" : "",
             String.format(precisionString, val),
-            si.getOrDefault(order, "?")
+            si.getOrDefault(order, "\u209310^" + order)
         );
     }
 
