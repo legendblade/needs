@@ -53,6 +53,7 @@ public class CoreRegistration {
         NeedRegistry.INSTANCE.register("minecraft", "sunlight", SunlightNeed.class);
         NeedRegistry.INSTANCE.register("minecraft", "moonPhase", MoonPhaseNeed.class, "moon");
         NeedRegistry.INSTANCE.register("minecraft", "scoreboard", ScoreboardNeed.class, "score");
+        NeedRegistry.INSTANCE.register("minecraft", "distance", DistanceFromSpawnNeed.class);
 
         // Attributes
         NeedRegistry.INSTANCE.register("minecraft", "maxHealth", MaxHealthNeed.class, "maxhp");
