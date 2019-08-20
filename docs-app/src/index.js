@@ -421,7 +421,7 @@ class App extends React.Component {
                             <dl class="col-sm-10">
                                 <p>
                                     Okay, so you have a need, and that's cool, but you want to affect the player in certain ways when they're at a certain level - take
-                                    the idea that spawned this mod: nutritition (or, specifically: Nutrtition, the mod). You want to apply buffs when the player is at
+                                    the idea that spawned this mod: nutritition (or, specifically: Nutrition, the mod). You want to apply buffs when the player is at
                                     high nutritional values, and apply debuffs when they're at low values. That's where levels come into play.
                                 </p>
                                 <p>
