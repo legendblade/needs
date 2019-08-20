@@ -1,6 +1,7 @@
 package org.winterblade.minecraft.mods.needs.client.gui;
 
 import net.minecraft.client.Minecraft;
+import org.winterblade.minecraft.mods.needs.api.Formatting;
 import org.winterblade.minecraft.mods.needs.api.client.gui.IBarRenderer;
 import org.winterblade.minecraft.mods.needs.api.client.gui.Icon;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
@@ -46,14 +47,8 @@ public class IconBarRenderer implements IBarRenderer {
         final double max = Math.min(this.max, need.getMax());
 
         // Get our value:
-        final NeedExpressionContext fmt = mixin.getDisplayFormat();
-        double value;
-        if (fmt != null) {
-            fmt.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, need::getValue);
-            value = fmt.apply(Minecraft.getInstance().player);
-        } else {
-            value = need.getValue();
-        }
+        final Formatting fmt = mixin.getDisplayFormat();
+        double value = fmt.calculate(need.getValue(), Minecraft.getInstance().player);
 
         // Clamp it:
         if (value < min) value = min;

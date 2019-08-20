@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.DistExecutor;
+import org.winterblade.minecraft.mods.needs.api.Formatting;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.client.gui.Icon;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
@@ -55,10 +56,9 @@ public abstract class BarMixin extends BaseMixin {
     private int y;
 
     @Expose
-    @Document(description = "An expression to return the value that should be used for display purposes; this is " +
-            "used either for the text on the bar (if not using `filledIcon`) or to determine how many / what portion " +
-            "of each icon to display (if using `filledIcon`).")
-    private NeedExpressionContext displayFormat;
+    @Document(description = "Defines any extra formatting parameters to apply")
+    @OptionalField(defaultValue = "None")
+    private Formatting formatting;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -70,9 +70,11 @@ public abstract class BarMixin extends BaseMixin {
     @Override
     public void onLoaded(final Need need) {
         super.onLoaded(need);
-        if (displayFormat != null) displayFormat.build();
         if (icon != null) icon.onLoaded();
         if (background != null) background.onLoaded();
+
+        if (formatting == null) formatting = new Formatting();
+        formatting.init();
 
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(BarRenderDispatcher.class));
     }
@@ -107,8 +109,8 @@ public abstract class BarMixin extends BaseMixin {
         return y;
     }
 
-    public NeedExpressionContext getDisplayFormat() {
-        return displayFormat;
+    public Formatting getDisplayFormat() {
+        return formatting;
     }
 
     public Icon getBackground() {

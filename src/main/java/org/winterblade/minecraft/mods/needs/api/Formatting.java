@@ -116,7 +116,7 @@ public class Formatting {
      * @return The formatted string
      */
     @Nonnull
-    public String format(double value) {
+    public String format(final double value) {
         // Make sure all our stuff is ready
         if (!initialized) init();
 
@@ -150,5 +150,15 @@ public class Formatting {
             String.format(precisionString, val),
             si.getOrDefault(order, "?")
         );
+    }
+
+    /**
+     * Calculates the input value by the expression if any and then formats it
+     * @param input  The input
+     * @param player The player to pass off to the expression (if any)
+     * @return The formatted string
+     */
+    public String calculateAndFormat(final double input, @Nonnull final PlayerEntity player) {
+        return format(calculate(input, player));
     }
 }

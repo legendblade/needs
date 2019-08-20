@@ -2,6 +2,7 @@ package org.winterblade.minecraft.mods.needs.client.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Rectangle2d;
+import org.winterblade.minecraft.mods.needs.api.Formatting;
 import org.winterblade.minecraft.mods.needs.api.client.gui.IBarRenderer;
 import org.winterblade.minecraft.mods.needs.api.client.gui.Icon;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
@@ -39,14 +40,8 @@ public class ProgressBarRenderer implements IBarRenderer {
         component.setMinMax(need.getMin(), need.getMax());
 
         // Calculate our format
-        final String display;
-        final NeedExpressionContext fmt = mixin.getDisplayFormat();
-        if (fmt != null) {
-            fmt.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, need::getValue);
-            display = fmt.apply(Minecraft.getInstance().player).toString();
-        } else {
-            display = String.format("%.1f", need.getValue());
-        }
+        final Formatting fmt = mixin.getDisplayFormat();
+        final String display = fmt.calculateAndFormat(need.getValue(), Minecraft.getInstance().player);
 
         component.setValue(need.getValue(), display);
 
