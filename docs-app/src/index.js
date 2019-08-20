@@ -706,14 +706,14 @@ class App extends React.Component {
                                         "milk_bucket": null,
                                         "rotten_flesh": "-current/2"
                                     },
-                                    "formatting": {
+                                    "formatCode": {
                                         "white": "(0,10]"
                                     }
                                 }
                             ]
                         })}
                         <p>
-                            Well that's a bit ugly, but it gets the job done, right? The new <code>formatting</code> object is another key/value map, this time
+                            Well that's a bit ugly, but it gets the job done, right? The new <code>formatCode</code> object is another key/value map, this time
                             with Minecraft text formatting codes (which are available over 
                             at <a href="https://minecraft.gamepedia.com/Formatting_codes#Color_codes">https://minecraft.gamepedia.com/Formatting_codes#Color_codes</a>)
                             acting as the key, and a range or interval specified as the value (in this case, from 0, inclusive, to 10, exclusive - which is really a way of saying
@@ -934,7 +934,7 @@ class App extends React.Component {
                                         "milk_bucket": null,
                                         "rotten_flesh": "-current/2"
                                     },
-                                    "formatting": {
+                                    "formatCode": {
                                         "white": "(0,10]"
                                     }
                                 },
@@ -1155,7 +1155,7 @@ class App extends React.Component {
                                         "milk_bucket": null,
                                         "rotten_flesh": "-current/2"
                                     },
-                                    "formatting": {
+                                    "formatCode": {
                                         "white": "(0,10]"
                                     }
                                 },

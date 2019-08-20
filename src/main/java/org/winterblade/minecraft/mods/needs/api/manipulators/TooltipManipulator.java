@@ -18,6 +18,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.DistExecutor;
+import org.winterblade.minecraft.mods.needs.api.Formatting;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
@@ -43,12 +44,6 @@ public abstract class TooltipManipulator extends BaseManipulator {
             "the client; defaults to false")
     protected boolean showTooltip;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Expose
-    @OptionalField(defaultValue = "1")
-    @Document(description = "The number of decimal places to show in tooltips; defaults to 1.")
-    protected int precision = 1;
-
     @Expose
     @OptionalField(defaultValue = "Normal tooltip")
     @Document(description = "If this is set, will override the value of the tooltip itself with this string.")
@@ -57,16 +52,14 @@ public abstract class TooltipManipulator extends BaseManipulator {
     @Expose
     @Document(description = "A key/value map of formatting/color codes to their associated interval to format tooltips with", type = String.class)
     @JsonAdapter(FormattingDeserializer.class)
-    protected final RangeMap<Double, String> formatting = TreeRangeMap.create();
+    protected final RangeMap<Double, String> formatCode = TreeRangeMap.create();
 
     @Expose
-    @Document(description = "Optional expression that will be used to modify the value prior to displaying it (in case you " +
-            "want to multiply it, round it, square root things, etc). Not used if 'tooltip' is set.")
+    @Document(description = "Defines any extra formatting parameters to apply")
     @OptionalField(defaultValue = "None")
-    protected NeedExpressionContext displayFormat;
+    protected Formatting formatting;
 
     protected int capacity = 0;
-    protected String precisionFormat;
     protected BiFunction<StringBuilder, PlayerEntity, String> postFormat;
 
     private static final Supplier<String> emptySupplier = () -> "";
@@ -82,15 +75,15 @@ public abstract class TooltipManipulator extends BaseManipulator {
 
         // Rough string capacity for tooltips:
         capacity = parent.getName().length() + 12;
-        precisionFormat = "%." + precision + "f";
 
         // Default colors:
-        if (formatting.asMapOfRanges().isEmpty()) {
-            formatting.put(Range.greaterThan(0d), TextFormatting.GREEN.toString());
-            formatting.put(Range.lessThan(0d), TextFormatting.RED.toString());
+        if (formatCode.asMapOfRanges().isEmpty()) {
+            formatCode.put(Range.greaterThan(0d), TextFormatting.GREEN.toString());
+            formatCode.put(Range.lessThan(0d), TextFormatting.RED.toString());
         }
 
-        if (displayFormat != null) displayFormat.build();
+        if (formatting == null) formatting = new Formatting();
+        formatting.init();
     }
 
     @Override
@@ -173,7 +166,7 @@ public abstract class TooltipManipulator extends BaseManipulator {
      */
     private String formatOutput(final double value, final PlayerEntity player) {
         final StringBuilder theLine = new StringBuilder(capacity);
-        final String color = formatting.get(value);
+        final String color = formatCode.get(value);
         theLine.append(color != null ? color : TextFormatting.AQUA.toString());
 
         theLine.append(parent.getName());
@@ -181,15 +174,10 @@ public abstract class TooltipManipulator extends BaseManipulator {
 
         if (tooltip != null && !tooltip.isEmpty()) return theLine.append(tooltip).toString();
 
-        final double adjustedValue;
-        if (displayFormat != null) {
-            displayFormat.setIfRequired(NeedExpressionContext.CURRENT_NEED_VALUE, () -> value);
-            adjustedValue = displayFormat.apply(player);
-        }
-        else adjustedValue = value;
+        final double adjustedValue = formatting.calculate(value, player);
 
         theLine.append(adjustedValue < 0 ? '-' : '+');
-        theLine.append(String.format(precisionFormat, Math.abs(adjustedValue)));
+        theLine.append(formatting.format(Math.abs(adjustedValue)));
         theLine.append("  ");
         theLine.append(adjustedValue < 0 ? '\u25bc' : '\u25b2'); // Up or down arrows
 
