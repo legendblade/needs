@@ -88,6 +88,7 @@ public class NeedComponent extends TexturedComponent {
 
         if ((lower <= min) && (max <= upper)) {
             currentBounds.setVisible(false);
+            upperBound.setVisible(false);
             lowerBound.setVisible(false);
             return;
         }
