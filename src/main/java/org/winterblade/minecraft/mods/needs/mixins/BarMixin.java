@@ -56,6 +56,12 @@ public abstract class BarMixin extends BaseMixin {
     private int y;
 
     @Expose
+    @Document(description = "Optional rotation to apply to the bar, in degrees - positive will rotate it counterclockwise, " +
+            "negative will rotate it clockwise.")
+    @OptionalField(defaultValue = "0")
+    private int rotation;
+
+    @Expose
     @Document(description = "Defines any extra formatting parameters to apply")
     @OptionalField(defaultValue = "None")
     private Formatting formatting;
@@ -115,6 +121,10 @@ public abstract class BarMixin extends BaseMixin {
 
     public Icon getBackground() {
         return background;
+    }
+
+    public double getRotation() {
+        return rotation;
     }
 
     public enum HorizontalAnchor {

@@ -11,6 +11,7 @@ import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.client.gui.ExpressionPositionedTexture;
+import org.winterblade.minecraft.mods.needs.client.gui.GuiLib;
 import org.winterblade.minecraft.mods.needs.mixins.BarMixin;
 
 import javax.annotation.Nonnull;
@@ -93,17 +94,22 @@ public class BarRenderDispatcher {
                     GlStateManager.depthMask(false);
 
                     final Icon bgIcon = theBar.getBackground();
-                    if (bgIcon != null) {
-                        final ExpressionPositionedTexture bg = bgIcon.getTexture();
-                        bg.setAndRecalculate(NeedExpressionContext.CURRENT_NEED_VALUE, n::getValue);
-                        bg.bind();
-                        bg.draw(x + theBar.getX() + bgIcon.getX(), y + theBar.getY() + bgIcon.getY(), -90);
-                    }
-
-                    renderers
+                    final IBarRenderer renderer = renderers
                             .computeIfAbsent(theBar,
-                                    (bi) -> renderRegistry.getOrDefault(bi.getClass(), (n2, b2) -> NOOP).apply(need, bi))
-                            .render(n, theBar,x + theBar.getX(), y + theBar.getY());
+                                    (bi) -> renderRegistry.getOrDefault(bi.getClass(), (n2, b2) -> NOOP).apply(need, bi));
+
+                    final int x1 = x + theBar.getX();
+                    final int y1 = y + theBar.getY();
+                    GuiLib.rotateAndDraw(theBar.getRotation(), x1, y1, () -> {
+                        if (bgIcon != null) {
+                            final ExpressionPositionedTexture bg = bgIcon.getTexture();
+                            bg.setAndRecalculate(NeedExpressionContext.CURRENT_NEED_VALUE, n::getValue);
+                            bg.bind();
+                            bg.draw(x1 + bgIcon.getX(), y1 + bgIcon.getY(), -90);
+                        }
+
+                        renderer.render(n, theBar, x1, y1);
+                    });
 
                     GlStateManager.depthMask(true);
                     GlStateManager.enableDepthTest();
