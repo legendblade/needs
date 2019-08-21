@@ -86,6 +86,7 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register("minecraft", "biome", BiomeManipulator.class, "inBiome", "inBiomeType", "biomeType");
         ManipulatorRegistry.INSTANCE.register("minecraft", "lookingAt", LookingAtManipulator.class, "lookingAtBlock");
         ManipulatorRegistry.INSTANCE.register("minecraft", "slept", SleepingManipulator.class, "woken");
+        ManipulatorRegistry.INSTANCE.register("minecraft", "wearing", WearingManipulator.class);
 
         // Need specifics
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "onNeedChanged", OnNeedChangedManipulator.class);
@@ -105,6 +106,7 @@ public class CoreRegistration {
         ConditionRegistry.INSTANCE.register("minecraft", "holding", HoldingManipulator.class);
         ConditionRegistry.INSTANCE.register("minecraft", "biome", BiomeManipulator.class, "inBiome", "inBiomeType", "biomeType");
         ConditionRegistry.INSTANCE.register("minecraft", "lookingAt", LookingAtManipulator.class, "lookingAtBlock");
+        ConditionRegistry.INSTANCE.register("minecraft", "wearing", WearingManipulator.class);
 
         // Conditionals
         ConditionRegistry.INSTANCE.register(NeedsMod.MODID, "or", OrConditionalManipulator.class);
@@ -127,6 +129,7 @@ public class CoreRegistration {
         TriggerRegistry.INSTANCE.register("minecraft", "biome", BiomeManipulator.class, "inBiome", "inBiomeType", "biomeType");
         TriggerRegistry.INSTANCE.register("minecraft", "lookingAt", LookingAtManipulator.class, "lookingAtBlock");
         TriggerRegistry.INSTANCE.register("minecraft", "slept", SleepingManipulator.class, "woken");
+        TriggerRegistry.INSTANCE.register("minecraft", "wearing", WearingManipulator.class);
 
         // Need specifics
         TriggerRegistry.INSTANCE.register(NeedsMod.MODID, "onNeedChanged", OnNeedChangedManipulator.class);
