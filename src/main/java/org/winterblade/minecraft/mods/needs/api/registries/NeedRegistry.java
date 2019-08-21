@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -189,6 +190,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      * @param max   The max value of the need for this player
      */
     public void setLocalNeed(final String name, final double value, final double min, final double max) {
+        final AtomicBoolean updated = new AtomicBoolean();
         localCache.compute(name.toLowerCase(), (k, v) -> {
             if (v != null) {
                 v.setMin(min);
@@ -197,13 +199,14 @@ public class NeedRegistry extends TypedRegistry<Need> {
                 return v;
             }
 
-            MinecraftForge.EVENT_BUS.post(new LocalCacheUpdatedEvent());
-
             final Need need = getByName(name);
             if (need == null) return null;
 
+            updated.set(true);
             return new LocalCachedNeed(need, value, min, max);
         });
+
+        if (updated.get()) MinecraftForge.EVENT_BUS.post(new LocalCacheUpdatedEvent());
     }
 
     /**
@@ -292,6 +295,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
      */
     public void onConfigSynced(final PlayerEntity player, final BiConsumer<Need, Double> callback) {
         // TODO: I'd prefer to sync slowly instead of all at once; figure out a way to appropriately run later
+        // Alternatively, sync all values in a single packet.
         instances.forEach((n) -> {
             // Only sync the need values if it's required on the clietn
             if(!n.shouldSync()) return;

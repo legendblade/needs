@@ -6,12 +6,11 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.DistExecutor;
 import org.winterblade.minecraft.mods.needs.api.Formatting;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
+import org.winterblade.minecraft.mods.needs.api.client.gui.BarRenderDispatcher;
 import org.winterblade.minecraft.mods.needs.api.client.gui.Icon;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
-import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.mixins.BaseMixin;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
-import org.winterblade.minecraft.mods.needs.api.client.gui.BarRenderDispatcher;
 
 @Document(description = "A collection of options for displaying bars on the user's HUD")
 public abstract class BarMixin extends BaseMixin {
@@ -81,6 +80,7 @@ public abstract class BarMixin extends BaseMixin {
 
         if (formatting == null) formatting = new Formatting();
         formatting.init();
+        need.enableSyncing();
 
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(BarRenderDispatcher.class));
     }

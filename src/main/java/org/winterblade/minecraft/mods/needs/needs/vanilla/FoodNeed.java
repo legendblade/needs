@@ -1,11 +1,15 @@
 package org.winterblade.minecraft.mods.needs.needs.vanilla;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
-import org.winterblade.minecraft.mods.needs.api.needs.CachedTickingNeed;
 
 @Document(description = "Tracks the player's hunger meter")
-public class FoodNeed extends CachedTickingNeed {
+public class FoodNeed extends ConcealableHudNeed {
+
+    public FoodNeed() {
+        super(RenderGameOverlayEvent.ElementType.FOOD);
+    }
 
     @Override
     public String getName() {

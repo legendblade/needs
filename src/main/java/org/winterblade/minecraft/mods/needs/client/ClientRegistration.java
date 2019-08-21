@@ -5,6 +5,7 @@ import org.winterblade.minecraft.mods.needs.api.client.gui.BarRenderDispatcher;
 import org.winterblade.minecraft.mods.needs.client.gui.IconBarRenderer;
 import org.winterblade.minecraft.mods.needs.client.gui.ProgressBarRenderer;
 import org.winterblade.minecraft.mods.needs.client.gui.widgets.NeedsUiButton;
+import org.winterblade.minecraft.mods.needs.mixins.HideBarMixin;
 import org.winterblade.minecraft.mods.needs.mixins.IconBarMixin;
 import org.winterblade.minecraft.mods.needs.mixins.ProgressBarMixin;
 
@@ -18,5 +19,7 @@ public class ClientRegistration {
 
         BarRenderDispatcher.registerBarRenderer(ProgressBarMixin.class, ProgressBarRenderer::getRenderer);
         BarRenderDispatcher.registerBarRenderer(IconBarMixin.class, IconBarRenderer::getRenderer);
+
+        HideBarMixin.register();
     }
 }

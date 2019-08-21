@@ -1,12 +1,16 @@
 package org.winterblade.minecraft.mods.needs.needs.vanilla;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
-import org.winterblade.minecraft.mods.needs.api.needs.CachedTickingNeed;
-import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "Tracks the player's breath meter")
-public class BreathNeed extends CachedTickingNeed {
+public class BreathNeed extends ConcealableHudNeed {
+
+    public BreathNeed() {
+        super(RenderGameOverlayEvent.ElementType.AIR);
+    }
+
     @Override
     public String getName() {
         return "Breath";
@@ -37,4 +41,5 @@ public class BreathNeed extends CachedTickingNeed {
         player.setAir((int) newValue);
         return newValue;
     }
+
 }

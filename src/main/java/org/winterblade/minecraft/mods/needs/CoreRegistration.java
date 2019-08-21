@@ -69,6 +69,7 @@ public class CoreRegistration {
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "ui", UiMixin.class, "gui");
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "iconBar", IconBarMixin.class);
         MixinRegistry.INSTANCE.register(NeedsMod.MODID, "progressBar", ProgressBarMixin.class, "bar");
+        MixinRegistry.INSTANCE.register(NeedsMod.MODID, "hideBar", HideBarMixin.class, "hideHud");
     }
 
     private static void registerManipulators() {
