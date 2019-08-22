@@ -1,8 +1,12 @@
 package org.winterblade.minecraft.mods.needs;
 
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import org.winterblade.minecraft.mods.needs.actions.*;
 import org.winterblade.minecraft.mods.needs.api.registries.*;
+import org.winterblade.minecraft.mods.needs.capabilities.CapabilityCloner;
+import org.winterblade.minecraft.mods.needs.capabilities.latch.ILatchedCapability;
+import org.winterblade.minecraft.mods.needs.capabilities.latch.LatchedCapability;
 import org.winterblade.minecraft.mods.needs.manipulators.conditionals.AndConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.manipulators.conditionals.NotConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.manipulators.conditionals.OrConditionalManipulator;
@@ -22,12 +26,7 @@ import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 
 public class CoreRegistration {
     public static void register() {
-        CapabilityManager.INSTANCE.register(INeedCapability.class, NeedCapability.Storage.INSTANCE, NeedCapability::new);
-        CapabilityManager.INSTANCE.register(
-                IItemUsedCountCapability.class,
-                ItemUsedCountCapability.Storage.INSTANCE,
-                ItemUsedCountCapability::new
-        );
+        registerCapabilities();
 
         registerNeeds();
         registerManipulators();
@@ -38,6 +37,22 @@ public class CoreRegistration {
         registerDebug();
 
         NetworkManager.register();
+    }
+
+    private static void registerCapabilities() {
+        MinecraftForge.EVENT_BUS.register(CapabilityCloner.class);
+
+        CapabilityManager.INSTANCE.register(INeedCapability.class, NeedCapability.Storage.INSTANCE, NeedCapability::new);
+        CapabilityManager.INSTANCE.register(
+                IItemUsedCountCapability.class,
+                ItemUsedCountCapability.Storage.INSTANCE,
+                ItemUsedCountCapability::new
+        );
+        CapabilityManager.INSTANCE.register(
+                ILatchedCapability.class,
+                LatchedCapability.Storage.INSTANCE,
+                LatchedCapability::new
+        );
     }
 
     private static void registerNeeds() {
@@ -98,6 +113,7 @@ public class CoreRegistration {
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "not", NotConditionalManipulator.class);
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "and", AndConditionalManipulator.class);
         ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "xor", XorConditionalManipulator.class);
+        ManipulatorRegistry.INSTANCE.register(NeedsMod.MODID, "latch", LatchedManipulator.class, "latched");
     }
 
     private static void registerConditions() {
@@ -113,6 +129,7 @@ public class CoreRegistration {
         ConditionRegistry.INSTANCE.register(NeedsMod.MODID, "not", NotConditionalManipulator.class);
         ConditionRegistry.INSTANCE.register(NeedsMod.MODID, "and", AndConditionalManipulator.class);
         ConditionRegistry.INSTANCE.register(NeedsMod.MODID, "xor", XorConditionalManipulator.class);
+        ConditionRegistry.INSTANCE.register(NeedsMod.MODID, "latch", LatchedManipulator.class, "latched");
     }
 
     private static void registerTriggers() {
@@ -134,6 +151,9 @@ public class CoreRegistration {
         // Need specifics
         TriggerRegistry.INSTANCE.register(NeedsMod.MODID, "onNeedChanged", OnNeedChangedManipulator.class);
         TriggerRegistry.INSTANCE.register(NeedsMod.MODID, "tick", TickManipulator.class, "onTick");
+
+        // Conditionals
+        TriggerRegistry.INSTANCE.register(NeedsMod.MODID, "latch", LatchedManipulator.class, "latched");
     }
 
     private static void registerActions() {

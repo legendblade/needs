@@ -59,7 +59,7 @@ public class WearingManipulator extends TooltipManipulator implements ICondition
 
     private long lastCount;
     private ConditionalManipulator parentCondition;
-    private List<ItemStack> wornItems;
+    private final List<ItemStack> wornItems = new ArrayList<>();
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -82,7 +82,6 @@ public class WearingManipulator extends TooltipManipulator implements ICondition
         if (chest) slots.add("Chest");
         if (legs) slots.add("Legs");
         if (feet) slots.add("Feet");
-        wornItems = new ArrayList<>(slots.size());
 
         suffix = "  (Worn on " + slots.stream().collect(Collectors.joining("/")) + amountType + ")";
         postFormat = (sb, player) -> sb.append(suffix).toString();

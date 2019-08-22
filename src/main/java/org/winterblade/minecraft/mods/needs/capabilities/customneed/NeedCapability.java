@@ -1,18 +1,13 @@
 package org.winterblade.minecraft.mods.needs.capabilities.customneed;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.DoubleNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
@@ -66,16 +61,10 @@ public class NeedCapability implements INeedCapability {
                 .computeIfAbsent(needName, (kv) -> 0d);
     }
 
+    @Nonnull
     @Override
     public Map<String, Map<String, Double>> getLevelAdjustments() {
         return levelAdjustments;
-    }
-
-    @SubscribeEvent
-    public static void attach(final AttachCapabilitiesEvent<Entity> evt) {
-        if (!(evt.getObject() instanceof PlayerEntity)) return;
-
-        evt.addCapability(new ResourceLocation("needs:custom_needs"), new Provider());
     }
 
     public static class Storage implements Capability.IStorage<INeedCapability> {
@@ -155,11 +144,11 @@ public class NeedCapability implements INeedCapability {
         }
     }
 
-    static class Provider extends CapabilityProvider<Provider> implements INBTSerializable<CompoundNBT> {
+    public static class Provider extends CapabilityProvider<Provider> implements INBTSerializable<CompoundNBT> {
         private final INeedCapability theActualBloodyCap = new NeedCapability();
         private final LazyOptional<INeedCapability> capability = LazyOptional.of(() -> theActualBloodyCap);
 
-        protected Provider() {
+        public Provider() {
             super(Provider.class);
         }
 

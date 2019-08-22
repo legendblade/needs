@@ -84,7 +84,10 @@ public class TickManager {
     private void onTick(final TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
 
-        players.get(currentBucket++).forEach((p) -> perPlayerTick.forEach((k, v) -> v.accept(p)));
+        players.get(currentBucket++).forEach((p) -> {
+            if (p == null) return; // How?
+            perPlayerTick.forEach((k, v) -> v.accept(p));
+        });
         if (buckets <= currentBucket) currentBucket = 0;
     }
 

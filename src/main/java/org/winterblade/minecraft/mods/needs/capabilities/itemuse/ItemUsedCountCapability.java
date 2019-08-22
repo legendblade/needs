@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class ItemUsedCountCapability implements IItemUsedCountCapability {
     private final Map<String, Map<String, ItemUseStorage>> storage = new HashMap<>();
 
+    @Nonnull
     @Override
     public Map<String, Map<String, ItemUseStorage>> getStorage() {
         return storage;
@@ -79,11 +80,11 @@ public class ItemUsedCountCapability implements IItemUsedCountCapability {
         }
     }
 
-    protected static class Provider extends CapabilityProvider<Provider> implements INBTSerializable<CompoundNBT> {
+    public static class Provider extends CapabilityProvider<Provider> implements INBTSerializable<CompoundNBT> {
         private final IItemUsedCountCapability instance = new ItemUsedCountCapability();
         private final LazyOptional<IItemUsedCountCapability> capability = LazyOptional.of(() -> instance);
 
-        protected Provider() {
+        public Provider() {
             super(Provider.class);
         }
 

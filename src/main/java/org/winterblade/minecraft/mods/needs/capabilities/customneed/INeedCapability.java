@@ -18,6 +18,7 @@ public interface INeedCapability {
 
     double getLevelAdjustment(String needName, String levelName);
 
+    @Nonnull
     Map<String,Map<String,Double>> getLevelAdjustments();
 
 }

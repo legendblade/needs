@@ -130,20 +130,4 @@ public class CustomNeed extends Need {
         setValue(entity, getInitial(), getValue(entity) - getInitial());
     }
 
-    @SubscribeEvent
-    protected void onClone(final PlayerEvent.Clone event) {
-        if (!event.isWasDeath()) return;
-
-        // Oof
-        event
-            .getOriginal()
-                .getCapability(CAPABILITY)
-                .map(INeedCapability::getValues)
-                .ifPresent((values) ->
-                        event
-                            .getPlayer()
-                                .getCapability(CAPABILITY)
-                                .ifPresent((cap) -> values.forEach(cap::setValue))
-                );
-    }
 }

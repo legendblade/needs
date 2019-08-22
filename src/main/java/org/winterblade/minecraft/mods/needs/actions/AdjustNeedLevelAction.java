@@ -25,7 +25,7 @@ public class AdjustNeedLevelAction extends LevelAction {
     }
 
     @CapabilityInject(INeedCapability.class)
-    public static final Capability<INeedCapability> CAPABILITY;
+    public static Capability<INeedCapability> CAPABILITY;
 
     @Expose
     @OptionalField(defaultValue = "The parent need")

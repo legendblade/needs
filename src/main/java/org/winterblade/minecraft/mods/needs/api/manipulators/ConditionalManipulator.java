@@ -7,6 +7,7 @@ import org.winterblade.minecraft.mods.needs.api.ITrigger;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,7 +55,7 @@ public abstract class ConditionalManipulator extends BaseManipulator implements 
     }
 
     @Override
-    public void onConditionLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onConditionLoaded(final Need parentNeed, @Nullable final ConditionalManipulator parentCondition) {
         this.parentCondition = parentCondition;
         triggers.forEach(t -> t.onTriggerLoaded(parentNeed, this));
     }
