@@ -16,7 +16,7 @@ import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 import java.util.*;
@@ -46,7 +46,7 @@ public class BiomeManipulator extends BaseManipulator implements ICondition, ITr
 
     protected boolean trackTypes = false;
     protected boolean trackBiomes = false;
-    private ConditionalManipulator parentCondition;
+    private ITriggerable parentCondition;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -69,12 +69,12 @@ public class BiomeManipulator extends BaseManipulator implements ICondition, ITr
     }
 
     @Override
-    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
     @Override
-    public void onConditionLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onConditionLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         loadCommon();
@@ -113,12 +113,12 @@ public class BiomeManipulator extends BaseManipulator implements ICondition, ITr
     }
 
     @Override
-    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         loadCommon();

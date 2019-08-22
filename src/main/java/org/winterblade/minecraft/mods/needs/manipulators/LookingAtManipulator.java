@@ -11,7 +11,7 @@ import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BlockCheckingManipulator;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "Triggered while the player is looking at, every 5 ticks.")
@@ -28,7 +28,7 @@ public class LookingAtManipulator extends BlockCheckingManipulator {
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         TickManager.INSTANCE.requestPlayerTickUpdate(this, this::handleTrigger);
         super.onTriggerLoaded(parentNeed, parentCondition);
     }

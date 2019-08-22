@@ -9,7 +9,7 @@ import org.winterblade.minecraft.mods.needs.api.ITrigger;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "Triggered when the player dies.")
@@ -17,7 +17,7 @@ public class OnDeathManipulator extends BaseManipulator implements ITrigger {
     @Expose
     @Document(description = "The amount to change by.")
     private NeedExpressionContext amount;
-    private ConditionalManipulator parentCondition;
+    private ITriggerable parentCondition;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -26,7 +26,7 @@ public class OnDeathManipulator extends BaseManipulator implements ITrigger {
     }
 
     @Override
-    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         // Nothing?
     }
 
@@ -38,7 +38,7 @@ public class OnDeathManipulator extends BaseManipulator implements ITrigger {
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asTrigger);

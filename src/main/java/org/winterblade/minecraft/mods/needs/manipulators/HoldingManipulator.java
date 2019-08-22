@@ -11,7 +11,7 @@ import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.CountedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.manipulators.TooltipManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.util.items.IIngredient;
@@ -43,7 +43,7 @@ public class HoldingManipulator extends TooltipManipulator implements ICondition
     protected List<IIngredient> items;
 
     private int lastCount;
-    private ConditionalManipulator parentCondition;
+    private ITriggerable parentCondition;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -79,12 +79,12 @@ public class HoldingManipulator extends TooltipManipulator implements ICondition
     }
 
     @Override
-    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
     @Override
-    public void onConditionLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onConditionLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         if (amount != null) amount.build();
@@ -133,12 +133,12 @@ public class HoldingManipulator extends TooltipManipulator implements ICondition
     }
 
     @Override
-    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         TickManager.INSTANCE.requestPlayerTickUpdate(this, this::asTrigger);

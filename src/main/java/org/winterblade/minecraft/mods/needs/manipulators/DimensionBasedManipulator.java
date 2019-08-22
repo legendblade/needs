@@ -9,7 +9,7 @@ import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 import java.util.Collections;
@@ -52,12 +52,12 @@ public class DimensionBasedManipulator extends BaseManipulator implements ICondi
     }
 
     @Override
-    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validate();
     }
 
     @Override
-    public void onConditionLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onConditionLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
     }
 
@@ -72,12 +72,12 @@ public class DimensionBasedManipulator extends BaseManipulator implements ICondi
     }
 
     @Override
-    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void validateTrigger(final Need parentNeed, final ITriggerable parentCondition) {
         validate();
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
         if (amount != null) amount.build();
         TickManager.INSTANCE.requestPlayerTickUpdate(this, (player) -> {

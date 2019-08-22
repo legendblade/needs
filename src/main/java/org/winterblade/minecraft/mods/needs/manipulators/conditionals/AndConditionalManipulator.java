@@ -5,6 +5,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.api.ICondition;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.expressions.AndConditionalExpressionContext;
 
@@ -35,7 +36,7 @@ public class AndConditionalManipulator extends ConditionalManipulator {
      * @param parentCondition The parent condition
      */
     @Override
-    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         super.validateCondition(parentNeed, parentCondition);
         if (conditions.isEmpty()) throw new IllegalArgumentException("There must be at least one condition.");
         conditions.forEach((k, v) -> {
@@ -52,7 +53,7 @@ public class AndConditionalManipulator extends ConditionalManipulator {
      * @param parentCondition The parent condition
      */
     @Override
-    public void onConditionLoaded(final Need parentNeed, @Nullable final ConditionalManipulator parentCondition) {
+    public void onConditionLoaded(final Need parentNeed, @Nullable final ITriggerable parentCondition) {
         super.onConditionLoaded(parentNeed, parentCondition);
         conditions.forEach((key, c) -> {
             c.onConditionLoaded(parentNeed, this);

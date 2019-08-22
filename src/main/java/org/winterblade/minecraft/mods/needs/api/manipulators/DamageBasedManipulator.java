@@ -44,7 +44,7 @@ public abstract class DamageBasedManipulator extends BaseManipulator implements 
     @Document(description = "The maximum amount of damage required to trigger this")
     protected double maxAmount = Double.POSITIVE_INFINITY;
 
-    protected ConditionalManipulator parentCondition;
+    protected ITriggerable parentCondition;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -59,12 +59,12 @@ public abstract class DamageBasedManipulator extends BaseManipulator implements 
     }
 
     @Override
-    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         // No need
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         if (amount != null) amount.build();
         this.parent = parentNeed;
         this.parentCondition = parentCondition;

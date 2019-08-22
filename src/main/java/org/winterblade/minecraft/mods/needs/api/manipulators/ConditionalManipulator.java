@@ -13,7 +13,7 @@ import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
 @Document(description = "A collection of conditional manipulators for more precise logic-based checks.")
-public abstract class ConditionalManipulator extends BaseManipulator implements ICondition {
+public abstract class ConditionalManipulator extends BaseManipulator implements ICondition, ITriggerable {
     @Expose
     @SuppressWarnings("FieldMayBeFinal")
     @Document(description = "The things which will trigger this manipulator. Triggers should be placed on the top " +
@@ -22,7 +22,7 @@ public abstract class ConditionalManipulator extends BaseManipulator implements 
             "The root manipulator must have at least one trigger, even if there are triggers on inner manipulators.", type = ITrigger.class)
     protected List<ITrigger> triggers = Collections.emptyList();
 
-    protected ConditionalManipulator parentCondition;
+    protected ITriggerable parentCondition;
 
     // We only get away with this because MC is single-threaded. Otherwise, this'd have to go into a thread context
     protected double lastMatch;
@@ -40,7 +40,7 @@ public abstract class ConditionalManipulator extends BaseManipulator implements 
     }
 
     @Override
-    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         if (parentCondition == null && triggers.isEmpty()) throw new IllegalArgumentException("Root manipulators must have at least one trigger.");
         triggers.forEach((c) -> c.validateTrigger(parentNeed, this));
     }
@@ -55,7 +55,7 @@ public abstract class ConditionalManipulator extends BaseManipulator implements 
     }
 
     @Override
-    public void onConditionLoaded(final Need parentNeed, @Nullable final ConditionalManipulator parentCondition) {
+    public void onConditionLoaded(final Need parentNeed, @Nullable final ITriggerable parentCondition) {
         this.parentCondition = parentCondition;
         triggers.forEach(t -> t.onTriggerLoaded(parentNeed, this));
     }
@@ -74,6 +74,7 @@ public abstract class ConditionalManipulator extends BaseManipulator implements 
      * Triggers the {@link ConditionalManipulator} to check its conditions
      * @param player The player to test
      */
+    @Override
     public void trigger(final PlayerEntity player, final ITrigger trigger) {
         lastSource = trigger;
 

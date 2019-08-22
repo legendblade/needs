@@ -13,7 +13,7 @@ import org.winterblade.minecraft.mods.needs.api.events.NeedAdjustmentEvent;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.expressions.OtherNeedChangedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
@@ -54,7 +54,7 @@ public class OnNeedChangedManipulator extends BaseManipulator implements ITrigge
 
     protected boolean isListening;
     protected boolean checkValue;
-    private ConditionalManipulator parentCondition;
+    private ITriggerable parentCondition;
 
     private Supplier<Double> lastValue;
     private double lastCurrent;
@@ -77,7 +77,7 @@ public class OnNeedChangedManipulator extends BaseManipulator implements ITrigge
     }
 
     @Override
-    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validateCommon(parentNeed);
     }
 
@@ -99,7 +99,7 @@ public class OnNeedChangedManipulator extends BaseManipulator implements ITrigge
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, this::asTrigger);

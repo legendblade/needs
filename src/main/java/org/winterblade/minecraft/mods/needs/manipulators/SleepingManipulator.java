@@ -10,7 +10,7 @@ import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 public class SleepingManipulator extends BaseManipulator implements ITrigger {
@@ -30,7 +30,7 @@ public class SleepingManipulator extends BaseManipulator implements ITrigger {
     @OptionalField(defaultValue = "False")
     private boolean woken = false;
 
-    private ConditionalManipulator parentCondition;
+    private ITriggerable parentCondition;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -40,7 +40,7 @@ public class SleepingManipulator extends BaseManipulator implements ITrigger {
     }
 
     @Override
-    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
@@ -52,7 +52,7 @@ public class SleepingManipulator extends BaseManipulator implements ITrigger {
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         if (amount != null) amount.build();
         this.parent = parentNeed;
         this.parentCondition = parentCondition;

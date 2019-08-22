@@ -8,18 +8,21 @@ import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.capabilities.latch.ILatchedCapability;
 import org.winterblade.minecraft.mods.needs.capabilities.latch.LatchedCapability;
 import org.winterblade.minecraft.mods.needs.expressions.ConditionalExpressionContext;
+import org.winterblade.minecraft.mods.needs.expressions.OrConditionalExpressionContext;
 
 @Document(description = "Creates a latched condition which only passes the first time a condition is met, and will only " +
         "reset when the associated condition is no longer met.\n\n" +
         "Note that if using this as a trigger or a condition, the latch will still reset regardless of if the " +
         "manipulator as a whole activates.\n\n" +
-        "Note too (as well) and two (secondly) that triggers on the condition(s) under this one will be ignored.")
-public class LatchedManipulator extends BaseManipulator implements ICondition, ITrigger {
+        "Note too (as well) and two (secondly) that triggers on the condition(s) under this one will act in addition to " +
+        "the constant on-tick behavior when used as a trigger/manipulator; to avoid it ticking, use it as a condition " +
+        "instead with a different trigger.")
+public class LatchedManipulator extends BaseManipulator implements ICondition, ITrigger, ITriggerable {
     @Expose
     @Document(description = "An ID for the latch; if two latches share the same name, they will share their state. Be " +
             "careful if using the same latch ID in a subcondition, as you might produce a latch that flips on and off " +
@@ -27,21 +30,24 @@ public class LatchedManipulator extends BaseManipulator implements ICondition, I
     private String id;
 
     @Expose
-    @Document(description = "The amount to apply when this latch triggers.")
+    @Document(description = "The amount to apply when this latch triggers; `source` is only valid when used with a " +
+            "condition that has triggers.")
     @OptionalField(defaultValue = "matchedValue")
-    private ConditionalExpressionContext amount;
+    private OrConditionalExpressionContext amount;
 
     @Expose
-    @Document(description = "The amount to apply when this latch is no longer being triggered")
+    @Document(description = "The amount to apply when this latch is no longer being triggered; `source` is only valid " +
+            "when used with a condition that has triggers")
     @OptionalField(defaultValue = "-amount")
-    private ConditionalExpressionContext unlatchAmount;
+    private OrConditionalExpressionContext unlatchAmount;
 
     @Expose
     @Document(description = "The associated condition to check.")
     private ICondition condition;
 
     private boolean isUnlatch = false;
-    private ConditionalManipulator parentCondition;
+    private ITriggerable parentCondition;
+    private ITrigger lastSource;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -50,12 +56,12 @@ public class LatchedManipulator extends BaseManipulator implements ICondition, I
     }
 
     @Override
-    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
     @Override
-    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
@@ -67,12 +73,12 @@ public class LatchedManipulator extends BaseManipulator implements ICondition, I
     }
 
     @Override
-    public void onConditionLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onConditionLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         loadCommon();
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         loadCommon();
         this.parentCondition = parentCondition;
         TickManager.INSTANCE.requestPlayerTickUpdate(this, this::asTrigger);
@@ -122,19 +128,33 @@ public class LatchedManipulator extends BaseManipulator implements ICondition, I
         return true;
     }
 
+    @Override
+    public void trigger(final PlayerEntity player, final ITrigger trigger) {
+        lastSource = trigger;
+        if (parentCondition != null) {
+            parentCondition.trigger(player, this);
+            return;
+        }
+
+        if (!test(player)) return;
+
+        parent.adjustValue(player, getAmount(player), this);
+        lastSource = null;
+    }
+
     protected void asManipulator(final PlayerEntity player) {
         if (!test(player)) return;
         parent.adjustValue(player, getAmount(player), this);
     }
 
     protected void asTrigger(final PlayerEntity player) {
-        if (!test(player)) return;
-        parentCondition.trigger(player, this);
+        trigger(player, this);
     }
 
     protected double getAmount(final PlayerEntity player, final ConditionalExpressionContext expr) {
         expr.setCurrentNeedValue(parent, player);
         expr.setIfRequired(ConditionalExpressionContext.MATCHED_VALUE, () -> condition.getAmount(player));
+        expr.setIfRequired(OrConditionalExpressionContext.SOURCE, () -> lastSource != null ? lastSource.getAmount(player) : 0);
         return expr.apply(player);
     }
 

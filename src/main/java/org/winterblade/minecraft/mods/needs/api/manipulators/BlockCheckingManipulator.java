@@ -29,7 +29,7 @@ public abstract class BlockCheckingManipulator extends TooltipManipulator implem
     @Expose
     @Document(type = IBlockPredicate.class, description = "A list of blocks to check")
     protected List<IBlockPredicate> blocks = Collections.emptyList();
-    protected ConditionalManipulator parentCondition;
+    protected ITriggerable parentCondition;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -39,12 +39,12 @@ public abstract class BlockCheckingManipulator extends TooltipManipulator implem
     }
 
     @Override
-    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
     @Override
-    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
@@ -55,14 +55,14 @@ public abstract class BlockCheckingManipulator extends TooltipManipulator implem
     }
 
     @Override
-    public void onConditionLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onConditionLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         onLoadedCommon();
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         onLoadedCommon();

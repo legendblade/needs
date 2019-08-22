@@ -3,7 +3,7 @@ package org.winterblade.minecraft.mods.needs.manipulators.conditionals;
 import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.api.ICondition;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "Represents a series of conditions that will be tested one after another to check that only " +
@@ -15,7 +15,7 @@ public class XorConditionalManipulator extends OrConditionalManipulator {
      * @param parentCondition The parent condition
      */
     @Override
-    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         if (conditions.size() < 2) throw new IllegalArgumentException("There must be at least two condition.");
         super.validateCondition(parentNeed, parentCondition);
     }

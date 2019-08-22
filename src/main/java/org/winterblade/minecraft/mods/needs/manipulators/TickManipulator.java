@@ -7,7 +7,7 @@ import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.NeedExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.BaseManipulator;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 
 @Document(description = "Triggered on tick")
@@ -16,7 +16,7 @@ public class TickManipulator extends BaseManipulator implements ITrigger {
     @Document(description = "The amount to adjust by; multiplied by the number of ticks between checks")
     protected NeedExpressionContext amount;
 
-    private ConditionalManipulator parentCondition;
+    private ITriggerable parentCondition;
 
     @Override
     public void validate(final Need need) throws IllegalArgumentException {
@@ -32,7 +32,7 @@ public class TickManipulator extends BaseManipulator implements ITrigger {
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         TickManager.INSTANCE.requestPlayerTickUpdate(this, this::asTrigger);

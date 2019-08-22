@@ -5,6 +5,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import org.winterblade.minecraft.mods.needs.api.ICondition;
 import org.winterblade.minecraft.mods.needs.api.OptionalField;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.expressions.OrConditionalExpressionContext;
 import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
@@ -37,7 +38,7 @@ public class OrConditionalManipulator extends ConditionalManipulator {
      * @param parentCondition The parent condition
      */
     @Override
-    public void validateCondition(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateCondition(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         super.validateCondition(parentNeed, parentCondition);
         if (conditions.isEmpty()) throw new IllegalArgumentException("There must be at least one condition.");
         conditions.forEach((c) -> c.validateCondition(parentNeed, this));
@@ -49,7 +50,7 @@ public class OrConditionalManipulator extends ConditionalManipulator {
      * @param parentCondition The parent condition
      */
     @Override
-    public void onConditionLoaded(final Need parentNeed, @Nullable final ConditionalManipulator parentCondition) {
+    public void onConditionLoaded(final Need parentNeed, @Nullable final ITriggerable parentCondition) {
         super.onConditionLoaded(parentNeed, parentCondition);
         conditions.forEach(c -> c.onConditionLoaded(parentNeed, this));
         getMatch = amount == null || amount.isRequired(OrConditionalExpressionContext.MATCHED_VALUE);

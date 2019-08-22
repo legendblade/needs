@@ -12,7 +12,7 @@ import org.winterblade.minecraft.mods.needs.api.ITrigger;
 import org.winterblade.minecraft.mods.needs.api.TickManager;
 import org.winterblade.minecraft.mods.needs.api.documentation.Document;
 import org.winterblade.minecraft.mods.needs.api.expressions.ExpressionContext;
-import org.winterblade.minecraft.mods.needs.api.manipulators.ConditionalManipulator;
+import org.winterblade.minecraft.mods.needs.api.manipulators.ITriggerable;
 import org.winterblade.minecraft.mods.needs.api.manipulators.TooltipManipulator;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.expressions.FoodExpressionContext;
@@ -38,7 +38,7 @@ public class ItemUsedManipulator extends TooltipManipulator implements ITrigger 
 
     protected ExpressionContext lastMatch;
     protected ItemStack lastItem;
-    protected ConditionalManipulator parentCondition;
+    protected ITriggerable parentCondition;
 
     public ItemUsedManipulator() {
         postFormat = (sb, player) -> sb.append("  (Use)").toString();
@@ -68,12 +68,12 @@ public class ItemUsedManipulator extends TooltipManipulator implements ITrigger 
     }
 
     @Override
-    public void validateTrigger(final Need parentNeed, final ConditionalManipulator parentCondition) throws IllegalArgumentException {
+    public void validateTrigger(final Need parentNeed, final ITriggerable parentCondition) throws IllegalArgumentException {
         validateCommon();
     }
 
     @Override
-    public void onTriggerLoaded(final Need parentNeed, final ConditionalManipulator parentCondition) {
+    public void onTriggerLoaded(final Need parentNeed, final ITriggerable parentCondition) {
         this.parent = parentNeed;
         this.parentCondition = parentCondition;
         onLoadedCommon();
