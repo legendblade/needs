@@ -190,10 +190,11 @@ public abstract class Need {
 
         // Check if we shouldn't adjust the player at this moment
         final double current = getValue(player);
-        if (MinecraftForge.EVENT_BUS.post(new NeedAdjustmentEvent.Pre(this, player, source))) return current;
+        final NeedAdjustmentEvent.Pre event = new NeedAdjustmentEvent.Pre(this, player, source, adjust);
+        if (MinecraftForge.EVENT_BUS.post(event) || event.getAmount() == 0) return current;
 
         // Get our clamped value:
-        double newValue = MathLib.clamp(current + adjust, getMin(player), getMax(player), source.getLowestToSetNeed(), source.getHighestToSetNeed());
+        double newValue = MathLib.clamp(current + event.getAmount(), getMin(player), getMax(player), source.getLowestToSetNeed(), source.getHighestToSetNeed());
 
         // If the new value is the same as the current because we've hit the max/min, don't do anything
         if (newValue == current) return newValue;

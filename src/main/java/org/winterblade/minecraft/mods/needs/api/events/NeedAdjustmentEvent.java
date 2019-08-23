@@ -24,9 +24,19 @@ public class NeedAdjustmentEvent extends NeedEvent {
      */
     @Cancelable
     public static class Pre extends NeedAdjustmentEvent {
+        private double amount;
 
-        public Pre(final Need need, final PlayerEntity player, final IManipulator source) {
+        public Pre(final Need need, final PlayerEntity player, final IManipulator source, final double amount) {
             super(need, player, source);
+            this.amount = amount;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
+
+        public void setAmount(final double amount) {
+            this.amount = amount;
         }
     }
 
