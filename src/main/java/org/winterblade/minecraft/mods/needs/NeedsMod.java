@@ -45,6 +45,7 @@ public class NeedsMod
         LOGGER.info("Needs, Wants, Desires uses mXparser for expression parsing. mXparser is released under the following license:\n" + mXparser.getLicense());
 
         MinecraftForge.EVENT_BUS.addListener(NeedRegistry.INSTANCE::onLogin);
+        MinecraftForge.EVENT_BUS.addListener(NeedRegistry.INSTANCE::onServerStarting);
         MinecraftForge.EVENT_BUS.addListener(NeedRegistry.INSTANCE::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(NeedRegistry.INSTANCE::onServerStopped);
     }

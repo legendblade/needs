@@ -1,17 +1,23 @@
 package org.winterblade.minecraft.mods.needs.api.registries;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.resources.IResourcePack;
+import net.minecraft.resources.ResourcePackInfo;
+import net.minecraft.resources.ResourcePackType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
@@ -19,6 +25,9 @@ import org.winterblade.minecraft.mods.needs.api.needs.LazyNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.LocalCachedNeed;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
 import org.winterblade.minecraft.mods.needs.api.events.LocalCacheUpdatedEvent;
+import org.winterblade.minecraft.mods.needs.api.needs.NeedConfigSources;
+import org.winterblade.minecraft.mods.needs.config.NeedDefinition;
+import org.winterblade.minecraft.mods.needs.config.NeedInitializer;
 import org.winterblade.minecraft.mods.needs.network.ConfigCheckPacket;
 import org.winterblade.minecraft.mods.needs.network.ConfigDesyncPacket;
 import org.winterblade.minecraft.mods.needs.network.ConfigSyncedPacket;
@@ -26,6 +35,7 @@ import org.winterblade.minecraft.mods.needs.network.NetworkManager;
 import org.winterblade.minecraft.mods.needs.util.TypedRegistry;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +50,7 @@ public class NeedRegistry extends TypedRegistry<Need> {
     public static final NeedRegistry INSTANCE = new NeedRegistry();
 
     private final Queue<String> dependencies = new LinkedList<>();
+    private final HashMultimap<NeedConfigSources, NeedDefinition> definitions = HashMultimap.create();
     private final Set<Need> instances = new HashSet<>();
 
     /**
@@ -89,26 +100,17 @@ public class NeedRegistry extends TypedRegistry<Need> {
     }
 
     /**
-     * Register the created need
-     * @param need The need to register
-     * @throws IllegalArgumentException If the need could not be registered because it isn't valid
-     */
-    public void register(final Need need) throws IllegalArgumentException {
-        if (!isValid(need)) throw new IllegalArgumentException("Tried to register need of same name or singleton with same class.");
-        instances.add(need);
-    }
-
-    /**
      * Registers a need from a file
-     * @param need    The need
-     * @param id      The ID
-     * @param digest  The digest of the file
-     * @param content The file content, if on the server
+     * @param source  The source of the need
+     * @param def     The need definition
      */
-    public void register(final Need need, final String id, final byte[] digest, @Nullable final String content) {
-        register(need);
-        cachedConfigHashes.put(id, digest);
-        if (content != null) cachedConfigs.put(id, content);
+    public void register(final NeedConfigSources source, final NeedDefinition def) {
+        try {
+            def.getNeed().beginValidate();
+        } catch (final IllegalArgumentException ex) {
+            NeedsMod.LOGGER.error("Unable to register " + def.getNeed().getName() + ": " + ex.getMessage());
+        }
+        definitions.put(source, def);
     }
 
     public void validateDependencies() {
@@ -302,6 +304,66 @@ public class NeedRegistry extends TypedRegistry<Need> {
 
             callback.accept(n, n.getValue(player));
         });
+    }
+
+    /**
+     * Called when the server is starting or the client is loading a world
+     * @param event The event
+     */
+    public void onServerStarting(final FMLServerStartingEvent event) {
+        final Collection<ResourcePackInfo> packs = event.getServer().getResourcePacks().getEnabledPacks();
+
+        // Iterate all our active datapacks:
+        for (final ResourcePackInfo info : packs) {
+            NeedsMod.LOGGER.info("Checking " + info.getName() + " for needs.");
+            final IResourcePack pack = info.getResourcePack();
+
+            // Find all matching needs from the datapack
+            final Collection<ResourceLocation> files = pack
+                    .getAllResourceLocations(
+                                ResourcePackType.SERVER_DATA,
+                        "needs",
+                                Integer.MAX_VALUE,
+                                (file) -> file.endsWith(".json")
+                    );
+
+            for (final ResourceLocation res : files) {
+                final NeedDefinition result;
+                // Try to pull the stream from the pack and parse it.
+                try {
+                    result = NeedInitializer.INSTANCE.parseStream(pack.getResourceStream(ResourcePackType.SERVER_DATA, res));
+                } catch (final IOException e) {
+                    NeedsMod.LOGGER.error("Error getting " + res.toString() + " from " + info.getName() + ": " + e.toString());
+                    continue;
+                }
+
+                if (result == null) {
+                    NeedsMod.LOGGER.warn("Unable to read " + res.toString() + " from " + info.getName());
+                    continue;
+                }
+
+                register(NeedConfigSources.DATAPACK, result);
+            }
+        }
+
+        // Now, shift it all
+        instances.clear();
+        cachedConfigHashes.clear();
+        cachedConfigs.clear();
+
+        for (final NeedConfigSources source : NeedConfigSources.values()) {
+            for (final NeedDefinition def: definitions.get(source)) {
+                final Need need = def.getNeed();
+                if (!isValid(need)) {
+                    NeedsMod.LOGGER.warn("Skipping duplicate need of same name or singleton with same class: " + need.getName());
+                    continue;
+                }
+
+                instances.add(need);
+                cachedConfigHashes.put(need.getName(), def.getDigest());
+                if (def.getContent() != null && 0 < def.getContent().length()) cachedConfigs.put(need.getName(), def.getContent());
+            }
+        }
     }
 
     public void onServerStarted(@SuppressWarnings("unused") final FMLServerStartedEvent event) {

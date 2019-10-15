@@ -2,7 +2,6 @@ package org.winterblade.minecraft.mods.needs.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -10,11 +9,14 @@ import org.apache.commons.io.FilenameUtils;
 import org.winterblade.minecraft.mods.needs.CoreRegistration;
 import org.winterblade.minecraft.mods.needs.NeedsMod;
 import org.winterblade.minecraft.mods.needs.api.needs.Need;
+import org.winterblade.minecraft.mods.needs.api.needs.NeedConfigSources;
 import org.winterblade.minecraft.mods.needs.api.registries.NeedRegistry;
 import org.winterblade.minecraft.mods.needs.needs.CustomNeed;
 
-import javax.annotation.Nullable;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,27 +54,19 @@ public class NeedInitializer {
                     .filter(file -> Files.isRegularFile(file) && file.toString().endsWith(".json"));
 
             for (final Path file : (Iterable<Path>)files::iterator) {
+                final String filename = file.toString();
                 try {
-                    final MessageDigest md = MessageDigest.getInstance("MD5");
-                    final DigestInputStream dis = new DigestInputStream(Files.newInputStream(file), md);
-                    final InputStreamReader reader = new InputStreamReader(dis);
+                    final NeedDefinition result = parseStream(Files.newInputStream(file));
+                    if (result == null) continue;
 
-                    // If we're on the client, don't bother with the extra step to store content
-                    DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
-                        final Need need = GetGson().fromJson(reader, Need.class);
-                        register(file, md, need, null);
-                    });
+                    final Need need = result.getNeed();
+                    if (need instanceof CustomNeed && (need.getName() == null || need.getName().isEmpty())) {
+                        ((CustomNeed) need).setName(FilenameUtils.getBaseName(filename));
+                    }
 
-                    // Otherwise, do.
-                    DistExecutor.runWhenOn(Dist.DEDICATED_SERVER, () -> () -> {
-                        final BufferedReader buf = new BufferedReader(reader);
-                        final String content = buf.lines().collect(Collectors.joining());
-
-                        final Need need = GetGson().fromJson(content, Need.class);
-                        register(file, md, need, content);
-                    });
+                    NeedRegistry.INSTANCE.register(NeedConfigSources.CONFIG, result);
                 } catch (final Exception e) {
-                    NeedsMod.LOGGER.warn("Error reading needs file '" + file.toString() + "': " + e.toString());
+                    NeedsMod.LOGGER.warn("Error reading needs file '" + filename + "': " + e.toString());
                 }
             }
         } catch (final Exception e) {
@@ -83,23 +77,28 @@ public class NeedInitializer {
     }
 
     /**
-     * Registers the need after deserialization
-     * @param file    The file the need was loaded from
-     * @param md      The message digest
-     * @param need    The need itself
-     * @param content The file content if on the server side
+     * Parses a need stream
+     * @param inputStream The input stream to parse
      */
-    private void register(final Path file, final MessageDigest md, final Need need, @Nullable final String content) {
-        if (need instanceof CustomNeed && (need.getName() == null || need.getName().isEmpty())) {
-            ((CustomNeed)need).setName(FilenameUtils.getBaseName(file.toString()));
-        }
+    public NeedDefinition parseStream(final InputStream inputStream) {
+        try {
+            final MessageDigest md = MessageDigest.getInstance("MD5");
+            final DigestInputStream dis = new DigestInputStream(inputStream, md);
+            final InputStreamReader reader = new InputStreamReader(dis);
 
-        if (!NeedRegistry.INSTANCE.isValid(need)) {
-            throw new IllegalArgumentException("This need duplicates another need");
-        }
+            // If we're on the client, don't bother with the extra step to store content
+            return DistExecutor.runForDist(
+                    () -> () -> new NeedDefinition(GetGson().fromJson(reader, Need.class), "", md.digest()),
+                    () -> () -> {
+                        final BufferedReader buf = new BufferedReader(reader);
+                        final String content = buf.lines().collect(Collectors.joining());
 
-        need.beginValidate();
-        NeedRegistry.INSTANCE.register(need, need.getName(), md.digest(), content);
+                        return new NeedDefinition(GetGson().fromJson(content, Need.class), content, md.digest());
+                    });
+        } catch (final Exception ex) {
+            NeedsMod.LOGGER.error("Error parsing need: " + ex.toString());
+            return null;
+        }
     }
 
     private Gson GetGson() {
@@ -107,4 +106,5 @@ public class NeedInitializer {
 
         return gson;
     }
+
 }
