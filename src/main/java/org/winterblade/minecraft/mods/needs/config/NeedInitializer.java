@@ -72,8 +72,6 @@ public class NeedInitializer {
         } catch (final Exception e) {
             NeedsMod.LOGGER.warn("Error reading needs directory: " + e.toString());
         }
-
-        NeedRegistry.INSTANCE.validateDependencies();
     }
 
     /**

@@ -364,6 +364,8 @@ public class NeedRegistry extends TypedRegistry<Need> {
                 if (def.getContent() != null && 0 < def.getContent().length()) cachedConfigs.put(need.getName(), def.getContent());
             }
         }
+
+        NeedRegistry.INSTANCE.validateDependencies();
     }
 
     public void onServerStarted(@SuppressWarnings("unused") final FMLServerStartedEvent event) {

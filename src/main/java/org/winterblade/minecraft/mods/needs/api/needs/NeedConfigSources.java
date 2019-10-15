@@ -4,6 +4,5 @@ public enum NeedConfigSources {
     CONFIG,
     OVERRIDES,
     MOD,
-    DATAPACK,
-    DEPENDENCY
+    DATAPACK
 }
